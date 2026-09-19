@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RIID — Repositorio de Información Documentada · SGOE ISO 21001 · FI URP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --brand:#0f8f5e;--brand-oscuro:#0b6e48;--brand-suave:#e6f4ee;
+  --tinta:#15201b;--tinta-media:#5a6660;--tinta-tenue:#8c948f;
+  --linea:#dfe4e1;--fondo:#f6f8f7;--papel:#fff;
+  --ok:#0f8f5e;--parcial:#b8860b;--parcial-suave:#fbf3dc;--falla:#c0392b;--falla-suave:#fbe9e7;
+  --azul:#2f5f8a;--azul-suave:#e8eff6;--radio:8px;
+}
+*{box-sizing:border-box}
+html{zoom:1.22}
+body{margin:0;background:var(--fondo);color:var(--tinta);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.mono{font-family:'IBM Plex Mono',monospace}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+a{color:var(--brand)}
+.oculto{display:none!important}
+
+header{background:var(--papel);border-bottom:1px solid var(--linea);padding:10px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:30}
+.sello{width:30px;height:30px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none;font-family:'IBM Plex Mono',monospace}
+.marca{display:flex;flex-direction:column;line-height:1.2}
+.marca b{font-size:14px;font-weight:600}
+.marca span{font-size:11px;color:var(--tinta-media)}
+.espacio{flex:1}
+.usuario{text-align:right;line-height:1.25}
+.usuario b{display:block;font-size:12px;font-weight:600}
+.usuario span{font-size:11px;color:var(--tinta-media)}
+
+nav.pestanas{background:var(--papel);border-bottom:1px solid var(--linea);padding:0 20px;display:flex;gap:4px;overflow-x:auto;position:sticky;top:51px;z-index:25}
+nav.pestanas button{border:0;background:none;padding:11px 12px;color:var(--tinta-media);font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+nav.pestanas button.activa{color:var(--brand);border-bottom-color:var(--brand)}
+.contador{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--parcial);color:#fff;font-size:11px;line-height:18px;text-align:center}
+
+main{max-width:1240px;margin:0 auto;padding:20px}
+.titulo-seccion{display:flex;align-items:flex-end;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.titulo-seccion h2{font-size:18px}
+.titulo-seccion p{margin:2px 0 0;color:var(--tinta-media);font-size:12.5px}
+
+.btn{text-decoration:none;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:7px 14px;border-radius:var(--radio);font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--brand-oscuro)}
+.btn.g{background:transparent;color:var(--brand)}
+.btn.g:hover{background:var(--brand-suave)}
+.btn.n{background:transparent;color:var(--tinta-media);border-color:var(--linea)}
+.btn.rojo{background:var(--falla);border-color:var(--falla)}
+.btn.ambar{background:var(--parcial);border-color:var(--parcial)}
+.btn.sm{padding:4px 10px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.caja{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:16px}
+.caja h3{font-size:13.5px;margin-bottom:10px}
+.rejilla{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
+
+.cifras{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--linea);border-radius:10px;background:var(--papel);margin-bottom:14px}
+.cifras div{padding:12px 14px;border-right:1px solid var(--linea)}
+.cifras div:last-child{border-right:0}
+.cifras b{display:block;font-size:22px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.cifras span{font-size:11px;color:var(--tinta-media);text-transform:uppercase;letter-spacing:.04em}
+@media(max-width:900px){.cifras{grid-template-columns:repeat(3,1fr)}}
+
+.barra-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input[type=text],input[type=url],input[type=email],input[type=date],input[type=number],select,textarea{border:1px solid var(--linea);border-radius:6px;padding:7px 9px;background:var(--papel);min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-suave);border-color:var(--brand)}
+textarea{width:100%;min-height:70px;resize:vertical}
+.buscar{flex:1;min-width:220px}
+
+.tabla-envoltura{overflow-x:auto;border:1px solid var(--linea);border-radius:10px;background:var(--papel)}
+table{border-collapse:collapse;width:100%}
+th{position:sticky;top:0;background:#fafbfa;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta-media);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--linea);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #eef1ef;vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr.clic{cursor:pointer}
+tbody tr.clic:hover{background:#f8fbf9}
+.cod{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;white-space:nowrap}
+.sub{font-size:12px;color:var(--tinta-media)}
+.vacio{padding:26px;text-align:center;color:var(--tinta-tenue)}
+
+.eti{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11.5px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.e-vigente{background:var(--brand-suave);color:var(--brand-oscuro)}
+.e-obsoleto{background:#eee;color:#666;text-decoration:line-through}
+.e-flujo{background:var(--azul-suave);color:var(--azul)}
+.e-observada{background:var(--parcial-suave);color:#8a6508}
+.e-rechazada{background:var(--falla-suave);color:var(--falla)}
+.e-neutra{background:#f1f3f2;color:var(--tinta-media)}
+.e-vencida{background:var(--falla-suave);color:var(--falla)}
+.e-proxima{background:var(--parcial-suave);color:#8a6508}
+.e-restringida{border-color:var(--linea);color:var(--tinta-media)}
+
+.barras .fila{display:grid;grid-template-columns:150px 1fr 34px;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}
+.barras .pista{height:8px;background:#eef1ef;border-radius:4px;overflow:hidden}
+.barras .relleno{height:100%;background:var(--brand)}
+.barras .num{font-family:'IBM Plex Mono',monospace;text-align:right}
+
+.lista-tareas .tarea{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #eef1ef;cursor:pointer}
+.lista-tareas .tarea:last-child{border-bottom:0}
+.lista-tareas .tarea:hover .t-tit{color:var(--brand)}
+.t-tit{font-weight:500}
+
+/* modales */
+.velo{position:fixed;inset:0;background:rgba(21,32,27,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:28px 14px;overflow-y:auto}
+.modal{background:var(--papel);border-radius:12px;width:100%;max-width:760px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.modal.ancho{max-width:1180px}
+.modal-cab{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-bottom:1px solid var(--linea)}
+.modal-cab h2{font-size:16px}
+.modal-cuerpo{padding:16px 18px}
+.modal-pie{padding:12px 18px;border-top:1px solid var(--linea);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.cerrar{border:0;background:none;font-size:22px;line-height:1;color:var(--tinta-tenue);padding:0 4px}
+
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.campos .completo{grid-column:1/-1}
+.campo label{display:block;font-size:11.5px;font-weight:600;color:var(--tinta-media);margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
+.campo input,.campo select{width:100%}
+.campo .ayuda{font-size:11.5px;color:var(--tinta-tenue);margin-top:2px}
+.req::after{content:' *';color:var(--falla)}
+@media(max-width:700px){.campos{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips label{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--linea);border-radius:14px;padding:3px 10px;font-size:12.5px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--tinta);cursor:pointer}
+.chips input{margin:0}
+.codigo-previo{display:flex;align-items:center;gap:10px;background:var(--brand-suave);border-radius:8px;padding:9px 12px;margin-bottom:12px}
+.codigo-previo b{font-family:'IBM Plex Mono',monospace;font-size:15px}
+
+/* ficha del documento */
+.ficha{display:grid;grid-template-columns:1.35fr 1fr;min-height:560px}
+@media(max-width:980px){.ficha{grid-template-columns:1fr}}
+.visor{background:#e9ecea;border-right:1px solid var(--linea);display:flex;flex-direction:column}
+.visor-banda{display:flex;align-items:center;gap:10px;padding:7px 12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--brand)}
+.visor-banda.obsoleto{background:var(--falla)}
+.visor-marco{position:relative;flex:1;min-height:520px}
+.visor-marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.marca-agua{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.marca-agua.obsoleto{background:repeating-linear-gradient(-45deg,rgba(192,57,43,.07) 0 18px,transparent 18px 36px)}
+.marca-agua span{position:absolute;top:45%;left:-10%;right:-10%;text-align:center;transform:rotate(-28deg);font-weight:700;font-size:54px;color:rgba(192,57,43,.18);letter-spacing:.1em}
+.sin-archivo{display:grid;place-items:center;height:100%;color:var(--tinta-tenue);text-align:center;padding:30px}
+.panel{display:flex;flex-direction:column;min-width:0}
+.subpestanas{display:flex;border-bottom:1px solid var(--linea);padding:0 12px}
+.subpestanas button{border:0;background:none;padding:10px;color:var(--tinta-media);border-bottom:2px solid transparent;font-weight:500;font-size:13px}
+.subpestanas button.activa{color:var(--brand);border-bottom-color:var(--brand)}
+.panel-cuerpo{padding:14px 16px;overflow-y:auto;max-height:600px}
+dl.meta{display:grid;grid-template-columns:150px 1fr;gap:6px 10px;margin:0;font-size:13px}
+dl.meta dt{color:var(--tinta-media);font-size:12px}
+dl.meta dd{margin:0;word-break:break-word}
+.linea-tiempo{border-left:2px solid var(--linea);margin-left:6px;padding-left:14px}
+.hito{position:relative;margin-bottom:12px}
+.hito::before{content:'';position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--papel);border:2px solid var(--brand)}
+.hito.vigente::before{background:var(--brand)}
+.hito .h-cab{font-size:12.5px}
+.hito .h-txt{font-size:13px;margin-top:2px;white-space:pre-wrap}
+.nota{border:1px solid var(--linea);border-radius:8px;padding:9px 11px;margin-bottom:8px}
+.nota .n-cab{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--tinta-media);flex-wrap:wrap}
+.nota .n-txt{margin-top:4px;white-space:pre-wrap}
+.nota .n-resp{margin-top:6px;border-left:3px solid var(--brand);padding-left:8px;font-size:12.5px;color:var(--tinta-media)}
+.aviso-caja{border-left:3px solid var(--parcial);background:var(--parcial-suave);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12.5px;margin-bottom:10px}
+.aviso-caja.info{border-color:var(--azul);background:var(--azul-suave)}
+.cambio{background:#fff8e1}
+
+/* acceso */
+.acceso{min-height:calc(100vh/1.22);display:grid;place-items:center;padding:20px}
+.acceso .caja{max-width:470px;width:100%;padding:28px}
+.acceso h1{font-size:20px;margin:14px 0 6px}
+.acceso p{color:var(--tinta-media);font-size:13px;margin:0 0 18px}
+
+#carga{position:fixed;inset:0;background:rgba(246,248,247,.7);z-index:80;display:grid;place-items:center}
+.giro{width:30px;height:30px;border:3px solid var(--brand-suave);border-top-color:var(--brand);border-radius:50%;animation:g 0.8s linear infinite}
+@keyframes g{to{transform:rotate(360deg)}}
+#avisos{position:fixed;bottom:18px;right:18px;z-index:90;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--tinta);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;max-width:380px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.toast.error{background:var(--falla)}
+
+.solo-impresion{display:none}
+@media print{
+  html{zoom:1}
+  header,nav,.no-imprimir,#avisos,.modal-pie,.visor,.subpestanas{display:none!important}
+  .velo{position:static;background:none;padding:0}
+  .modal{box-shadow:none}
+  .ficha{display:block}
+  .panel-cuerpo{max-height:none}
+  .solo-impresion{display:block;border:2px solid #000;padding:8px;margin-bottom:10px;font-size:12px}
+  main>*:not(.velo){display:none}
+}
+</style>
+</head>
+<body>
+
+<section id="pantallaAcceso" class="acceso">
+  <div class="caja">
+    <div class="sello">RI</div>
+    <h1>Repositorio Institucional de Información Documentada</h1>
+    <p>SGOE ISO 21001 · Facultad de Ingeniería · Universidad Ricardo Palma.<br>Ingresa con tu cuenta institucional @urp.edu.pe.</p>
+    <div id="botonGoogle"></div>
+    <div id="errorAcceso" class="sub" style="color:var(--falla);margin-top:12px"></div>
+  </div>
+</section>
+
+<div id="aplicacion" class="oculto">
+  <header>
+    <div class="sello">RI</div>
+    <div class="marca"><b>Repositorio de Información Documentada</b><span>SGOE ISO 21001 · Facultad de Ingeniería URP</span></div>
+    <div class="espacio"></div>
+    <div class="usuario"><b id="uNombre"></b><span id="uRol"></span></div>
+    <button class="btn n sm" onclick="salir()">Salir</button>
+  </header>
+  <nav class="pestanas" id="nav">
+    <button data-vista="tablero" class="activa">Tablero</button>
+    <button data-vista="maestra">Lista maestra</button>
+    <button data-vista="flujo" data-req="registrado">Flujo documental<span id="cPend" class="contador oculto"></span></button>
+    <button data-vista="registros" data-req="registrado">Registros y evidencias</button>
+    <button data-vista="admin" data-req="bitacora">Administración</button>
+  </nav>
+  <main id="principal">
+    <section id="v-tablero"></section>
+    <section id="v-maestra" class="oculto"></section>
+    <section id="v-flujo" class="oculto"></section>
+    <section id="v-registros" class="oculto"></section>
+    <section id="v-admin" class="oculto"></section>
+    <div id="modales"></div>
+  </main>
+</div>
+
+<div id="carga" class="oculto"><div class="giro"></div></div>
+<div id="avisos"></div>
+
+<script>
+'use strict';
+const CFG = window.RIID_CONFIG;
+const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
+const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
+const DISPOSICION = ['Evaluar al vencer','Eliminar','Transferir a archivo central','Conservación permanente'];
+
+let S = { cred:'', perfil:null, cat:null, cand:null, docs:[], sols:[], obsAbiertas:{}, totalReg:0, hoy:'', prefijo:'FI', registros:null, vista:'tablero' };
+const F = { q:'', tipo:'', macro:'', proceso:'', programa:'', estado:'Vigente' };
+const FR = { q:'', formato:'', programa:'', periodo:'' };
+
+/* ------------------------------------------------------------ utilidades */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fechaCorta = f => { const m = /^(\d{4})-(\d{2})-(\d{2})(.*)$/.exec(f||''); return m ? `${m[3]}/${m[2]}/${m[1]}${m[4]}` : (f||'—'); };
+const opciones = (lista, sel, vacio) => (vacio!==undefined?`<option value="">${esc(vacio)}</option>`:'') + lista.map(o => {
+  const v = typeof o === 'string' ? o : o.v, t = typeof o === 'string' ? o : o.t;
+  return `<option value="${esc(v)}"${v===sel?' selected':''}>${esc(t)}</option>`; }).join('');
+const diasEntre = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+
+function aviso(msg, error){ const d=document.createElement('div'); d.className='toast'+(error?' error':''); d.textContent=msg; $('avisos').appendChild(d); setTimeout(()=>d.remove(), error?7000:3500); }
+function cargando(on){ $('carga').classList.toggle('oculto', !on); }
+
+async function api(ruta, cuerpo){
+  cargando(true);
+  try{
+    const r = await fetch(CFG.API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ ruta, cred:S.cred, cuerpo: cuerpo||{} }) });
+    const d = await r.json();
+    if (d.error){
+      if (/sesión venció|Sesión ausente/i.test(d.error)){ salir(true); }
+      throw new Error(d.error);
+    }
+    return d;
+  } finally { cargando(false); }
+}
+
+function vistaPrevia(url){
+  if(!url) return '';
+  let m = /drive\.google\.com\/file\/d\/([\w-]+)/.exec(url) || /[?&]id=([\w-]+)/.exec(url);
+  if (m && /google\.com/.test(url)) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  m = /docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([\w-]+)/.exec(url);
+  if (m) return `https://docs.google.com/${m[1]}/d/${m[2]}/preview`;
+  return url;
+}
+
+function etiEstado(e){
+  const c = {'Vigente':'e-vigente','Obsoleto':'e-obsoleto','En revisión':'e-flujo','En aprobación':'e-flujo','Observada':'e-observada','Rechazada':'e-rechazada','Aprobada':'e-vigente','Desistida':'e-neutra'}[e] || 'e-neutra';
+  return `<span class="eti ${c}">${esc(e||'—')}</span>`;
+}
+function etiRevision(d){
+  if (d.estado!=='Vigente' || !d.proximaRevision) return `<span class="sub">${fechaCorta(d.proximaRevision)}</span>`;
+  const dias = diasEntre(S.hoy, d.proximaRevision);
+  if (dias < 0) return `<span class="eti e-vencida">Vencida ${fechaCorta(d.proximaRevision)}</span>`;
+  if (dias <= 60) return `<span class="eti e-proxima">${fechaCorta(d.proximaRevision)} · ${dias} d</span>`;
+  return `<span class="sub mono">${fechaCorta(d.proximaRevision)}</span>`;
+}
+const procNombre = c => (S.cat.procesos.find(p=>p.codigo===c)||{}).nombre || c;
+
+/* --------------------------------------------------------------- acceso */
+function iniciarGoogle(){
+  if (!window.google || !google.accounts){ return setTimeout(iniciarGoogle, 200); }
+  google.accounts.id.initialize({ client_id: CFG.CLIENT_ID, hd: CFG.DOMINIO, auto_select: true,
+    callback: r => { S.cred = r.credential; sessionStorage.setItem('riid_cred', r.credential); entrar(); } });
+  google.accounts.id.renderButton($('botonGoogle'), { theme:'outline', size:'large', text:'signin_with', locale:'es' });
+}
+function salir(vencida){
+  sessionStorage.removeItem('riid_cred'); S.cred='';
+  if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
+  $('aplicacion').classList.add('oculto'); $('pantallaAcceso').classList.remove('oculto');
+  if (vencida) $('errorAcceso').textContent = 'Tu sesión venció. Ingresa nuevamente.';
+}
+async function entrar(){
+  $('errorAcceso').textContent='';
+  try{
+    await recargar();
+    $('pantallaAcceso').classList.add('oculto'); $('aplicacion').classList.remove('oculto');
+    $('uNombre').textContent = S.perfil.nombre;
+    $('uRol').textContent = S.perfil.roles.join(' · ');
+    document.querySelectorAll('#nav button').forEach(b => {
+      const req = b.dataset.req;
+      const ok = !req || (req==='registrado' ? S.perfil.registrado : S.perfil.puede[req]);
+      b.classList.toggle('oculto', !ok);
+    });
+    mostrar(S.vista);
+  }catch(e){ $('errorAcceso').textContent = e.message; }
+}
+async function recargar(){
+  const d = await api('/inicio');
+  Object.assign(S, { perfil:d.perfil, cat:d.catalogos, cand:d.candidatos, docs:d.documentos, sols:d.solicitudes,
+    obsAbiertas:d.observacionesAbiertas, totalReg:d.totalRegistros, hoy:d.hoy, prefijo:d.prefijo });
+  const pend = pendientes().length;
+  $('cPend').textContent = pend; $('cPend').classList.toggle('oculto', !pend);
+}
+$('nav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) mostrar(b.dataset.vista); });
+function mostrar(v){
+  S.vista = v;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('activa', b.dataset.vista===v));
+  ['tablero','maestra','flujo','registros','admin'].forEach(x => $('v-'+x).classList.toggle('oculto', x!==v));
+  ({tablero:vTablero, maestra:vMaestra, flujo:vFlujo, registros:vRegistros, admin:vAdmin})[v]();
+}
+
+function pendientes(){
+  const c = S.perfil?.correo;
+  return S.sols.filter(s => (s.etapa==='En revisión' && s.correoRevisor===c) || (s.etapa==='En aprobación' && s.correoAprobador===c) || (s.etapa==='Observada' && s.correoSolicitante===c));
+}
+function aQuienLeToca(s){
+  return s.etapa==='En revisión' ? s.revisor : s.etapa==='En aprobación' ? s.aprobador : s.etapa==='Observada' ? s.solicitante : '—';
+}
+
+/* -------------------------------------------------------------- tablero */
+function vTablero(){
+  const vig = S.docs.filter(d=>d.estado==='Vigente');
+  const vencidas = vig.filter(d=>d.proximaRevision && d.proximaRevision < S.hoy);
+  const proximas = vig.filter(d=>d.proximaRevision && d.proximaRevision >= S.hoy && diasEntre(S.hoy,d.proximaRevision)<=60);
+  const enFlujo = S.sols.filter(s=>['En revisión','En aprobación','Observada'].includes(s.etapa));
+  const nObs = Object.values(S.obsAbiertas).reduce((a,b)=>a+b,0);
+  const reg = S.perfil.registrado;
+  const barras = (clave, lista) => {
+    const cuenta = {}; vig.forEach(d => { const k = d[clave] || 'Sin dato'; cuenta[k]=(cuenta[k]||0)+1; });
+    const max = Math.max(1, ...Object.values(cuenta));
+    const orden = (lista||Object.keys(cuenta)).filter(k=>cuenta[k]);
+    return orden.length ? orden.map(k => `<div class="fila"><span>${esc(k)}</span><div class="pista"><div class="relleno" style="width:${cuenta[k]/max*100}%"></div></div><span class="num">${cuenta[k]}</span></div>`).join('') : '<div class="vacio">Sin documentos vigentes</div>';
+  };
+  const macros = [...new Set(S.cat.procesos.map(p=>p.grupo))];
+  const pend = pendientes();
+  const alertas = vencidas.concat(proximas).sort((a,b)=>a.proximaRevision.localeCompare(b.proximaRevision));
+  const recientes = vig.filter(d=>d.fechaAprobacion).sort((a,b)=>b.fechaAprobacion.localeCompare(a.fechaAprobacion)).slice(0,6);
+
+  $('v-tablero').innerHTML = `
+  <div class="titulo-seccion"><div><h2>Tablero del repositorio</h2><p>Control de la información documentada · requisito 7.5 de la ISO 21001:2018</p></div>
+    <div class="espacio"></div>${reg?'':'<span class="eti e-neutra">Acceso de consulta: documentos vigentes de distribución interna</span>'}</div>
+  <div class="cifras">
+    <div><b>${vig.length}</b><span>Vigentes</span></div>
+    <div><b>${S.docs.filter(d=>d.estado==='Obsoleto').length}</b><span>Obsoletos</span></div>
+    <div><b>${reg?enFlujo.length:'—'}</b><span>En flujo</span></div>
+    <div><b style="color:${vencidas.length?'var(--falla)':'inherit'}">${vencidas.length}</b><span>Revisión vencida</span></div>
+    <div><b>${reg?nObs:'—'}</b><span>Observ. abiertas</span></div>
+    <div><b>${reg?S.totalReg:'—'}</b><span>Registros</span></div>
+  </div>
+  <div class="rejilla g2">
+    ${reg?`<div class="caja"><h3>Mis pendientes (${pend.length})</h3><div class="lista-tareas">${pend.length? pend.map(s=>`
+      <div class="tarea" onclick="abrirSolicitud('${esc(s.id)}')">${etiEstado(s.etapa)}<div style="flex:1;min-width:0"><div class="t-tit">${esc(s.titulo)}</div>
+      <div class="sub"><span class="mono">${esc(s.codigo)}</span> · ${esc(s.tipo)} · ${esc(s.id)}</div></div></div>`).join('') : '<div class="vacio">No tienes tareas pendientes.</div>'}</div></div>`:''}
+    <div class="caja"><h3>Alertas de revisión · próximos 60 días</h3>${alertas.length?`<div class="lista-tareas">${alertas.slice(0,8).map(d=>`
+      <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><div style="flex:1;min-width:0"><div class="t-tit">${esc(d.titulo)}</div><div class="sub"><span class="mono">${esc(d.codigo)}</span> · ${esc(d.responsable||d.unidad||'')}</div></div>${etiRevision(d)}</div>`).join('')}</div>`:'<div class="vacio">Ningún documento vence en los próximos 60 días.</div>'}</div>
+    <div class="caja"><h3>Vigentes por macroproceso</h3><div class="barras">${barras('macroproceso', macros)}</div></div>
+    <div class="caja"><h3>Vigentes por tipo de documento</h3><div class="barras">${barras('tipo', S.cat.tipos.map(t=>t.nombre))}</div></div>
+    <div class="caja" style="grid-column:1/-1"><h3>Aprobados recientemente</h3>${recientes.length?`<div class="lista-tareas">${recientes.map(d=>`
+      <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><span class="cod" style="width:130px">${esc(d.codigo)}</span><div style="flex:1" class="t-tit">${esc(d.titulo)}</div><span class="sub mono">v${esc(d.version)} · ${fechaCorta(d.fechaAprobacion)}</span></div>`).join('')}</div>`:'<div class="vacio">Aún no hay documentos registrados.</div>'}</div>
+  </div>`;
+}
+
+/* -------------------------------------------------------- lista maestra */
+function docsFiltrados(){
+  const q = F.q.toLowerCase();
+  return S.docs.filter(d => (!F.tipo||d.tipo===F.tipo) && (!F.macro||d.macroproceso===F.macro) && (!F.proceso||d.proceso===F.proceso)
+    && (!F.programa||d.programa===F.programa) && (!F.estado||d.estado===F.estado)
+    && (!q || [d.codigo,d.titulo,d.palabras,d.responsable,d.unidad].join(' ').toLowerCase().includes(q)))
+    .sort((a,b)=>a.codigo.localeCompare(b.codigo));
+}
+function vMaestra(){
+  const p = S.perfil.puede;
+  const macros = [...new Set(S.cat.procesos.map(x=>x.grupo))];
+  $('v-maestra').innerHTML = `
+  <div class="titulo-seccion"><div><h2>Lista maestra de documentos</h2><p>Documentos controlados del SGOE con su versión, estado y revisión programada</p></div><div class="espacio"></div>
+    <button class="btn n" onclick="exportarCSV()">Exportar CSV</button>
+    ${p.registrarExistente?'<button class="btn g" onclick="formDocumento(\'existente\')">Registrar documento ya aprobado</button>':''}
+    ${p.solicitar?'<button class="btn" onclick="formDocumento(\'Creación\')">+ Solicitar nuevo documento</button>':''}
+  </div>
+  <div class="barra-filtros">
+    <input type="text" class="buscar" id="fQ" placeholder="Buscar por código, título, palabra clave o responsable" value="${esc(F.q)}">
+    <select id="fTipo">${opciones(S.cat.tipos.map(t=>t.nombre),F.tipo,'Todos los tipos')}</select>
+    <select id="fMacro">${opciones(macros,F.macro,'Todos los macroprocesos')}</select>
+    <select id="fProceso">${opciones(S.cat.procesos.filter(x=>!F.macro||x.grupo===F.macro).map(x=>({v:x.codigo,t:x.nombre})),F.proceso,'Todos los procesos')}</select>
+    <select id="fPrograma">${opciones(S.cat.programas.map(x=>x.nombre),F.programa,'Todos los programas')}</select>
+    <select id="fEstado">${opciones(S.perfil.registrado?['Vigente','Obsoleto']:['Vigente'],F.estado,'Todos los estados')}</select>
+  </div>
+  <div class="tabla-envoltura"><table><thead><tr><th>Código</th><th>Documento</th><th>Tipo</th><th>Proceso</th><th>Versión</th><th>Estado</th><th>Próx. revisión</th><th></th></tr></thead><tbody id="tbMaestra"></tbody></table></div>
+  <div class="sub" id="pieMaestra" style="margin-top:8px"></div>`;
+  const re = () => { pintarMaestra(); };
+  $('fQ').oninput = e => { F.q=e.target.value; re(); };
+  [['fTipo','tipo'],['fProceso','proceso'],['fPrograma','programa'],['fEstado','estado']].forEach(([id,k]) => $(id).onchange = e => { F[k]=e.target.value; re(); });
+  $('fMacro').onchange = e => { F.macro=e.target.value; F.proceso=''; vMaestra(); };
+  pintarMaestra();
+}
+function pintarMaestra(){
+  const lista = docsFiltrados();
+  $('tbMaestra').innerHTML = lista.length ? lista.map(d => `
+    <tr class="clic" onclick="abrirDocumento('${esc(d.codigo)}')">
+      <td class="cod">${esc(d.codigo)}</td>
+      <td><div style="font-weight:500">${esc(d.titulo)}</div><div class="sub">${esc(d.unidad||d.responsable||'')}${d.programa?' · '+esc(d.programa):''}
+        ${d.distribucion==='Restringida'?' <span class="eti e-restringida">Restringida</span>':''}${d.origen==='Externo'?' <span class="eti e-neutra">Externo</span>':''}</div></td>
+      <td>${esc(d.tipo)}</td><td><div>${esc(procNombre(d.proceso))}</div><div class="sub">${esc(d.macroproceso||'')}</div></td>
+      <td class="mono">v${esc(d.version)}</td>
+      <td>${etiEstado(d.estado)}${d.solicitudEnCurso?'<div style="margin-top:3px"><span class="eti e-flujo">En actualización</span></div>':''}${S.obsAbiertas[d.codigo]?`<div class="sub" style="margin-top:3px">${S.obsAbiertas[d.codigo]} observ. abierta(s)</div>`:''}</td>
+      <td>${etiRevision(d)}</td>
+      <td><button class="btn g sm" onclick="event.stopPropagation();abrirDocumento('${esc(d.codigo)}')">Ver</button></td>
+    </tr>`).join('') : '<tr><td colspan="8" class="vacio">No hay documentos con esos filtros.</td></tr>';
+  $('pieMaestra').textContent = `Mostrando ${lista.length} de ${S.docs.length} documentos · consultado el ${fechaCorta(S.hoy)} por ${S.perfil.nombre}`;
+}
+function exportarCSV(){
+  const cols = [['codigo','Código'],['titulo','Título'],['tipo','Tipo'],['macroproceso','Macroproceso'],['proceso','Proceso'],['programa','Programa'],['unidad','Unidad responsable'],['responsable','Responsable'],['version','Versión'],['estado','Estado'],['fechaAprobacion','Fecha de aprobación'],['documentoAprobacion','Documento de aprobación'],['proximaRevision','Próxima revisión'],['distribucion','Distribución'],['origen','Origen']];
+  const filas = [cols.map(c=>c[1])].concat(docsFiltrados().map(d=>cols.map(c=>d[c[0]]||'')));
+  const csv = '\ufeff' + filas.map(f=>f.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `Lista_maestra_RIID_${S.hoy}.csv`; a.click();
+}
+
+/* ---------------------------------------------------- ficha del documento */
+async function abrirDocumento(codigo, pestana){
+  try{
+    const d = await api('/documento', { codigo });
+    S.ficha = d;
+    pintarFicha(pestana || 'ficha');
+  }catch(e){ aviso(e.message, true); }
+}
+function cerrarModal(){ $('modales').innerHTML=''; }
+function modal(html, ancho){ $('modales').innerHTML = `<div class="velo" onclick="if(event.target===this)cerrarModal()"><div class="modal ${ancho?'ancho':''}">${html}</div></div>`; }
+
+function pintarFicha(pestana){
+  const {documento:d, versiones, observaciones, solicitudes} = S.ficha;
+  const p = S.perfil.puede, obsoleto = d.estado !== 'Vigente';
+  const puedeGestionar = p.solicitar && d.estado==='Vigente' && !d.solicitudEnCurso && (p.todosLosProcesos || S.perfil.procesos.some(x=>x.toLowerCase()===d.proceso.toLowerCase()));
+  const previa = vistaPrevia(d.enlace);
+  const reg = S.perfil.registrado;
+  const tabs = [['ficha','Ficha'],['versiones',`Versiones (${versiones.length})`]].concat(reg?[['observaciones',`Observaciones (${observaciones.length})`],['flujo',`Solicitudes (${solicitudes.length})`]]:[]);
+
+  let cuerpo = '';
+  if (pestana==='ficha') cuerpo = `
+    <div class="solo-impresion"><b>COPIA NO CONTROLADA.</b> Impresa el ${fechaCorta(S.hoy)} por ${esc(S.perfil.nombre)}. Verifique la vigencia en el Repositorio Institucional de Información Documentada antes de usarla.</div>
+    ${d.solicitudEnCurso?`<div class="aviso-caja info">Este documento tiene la solicitud <b class="mono">${esc(d.solicitudEnCurso)}</b> en curso. La versión vigente sigue siendo la oficial hasta su aprobación.</div>`:''}
+    <dl class="meta">
+      <dt>Código</dt><dd class="cod">${esc(d.codigo)}</dd>
+      <dt>Versión vigente</dt><dd class="mono">v${esc(d.version)}</dd>
+      <dt>Estado</dt><dd>${etiEstado(d.estado)}${d.fechaBaja?` <span class="sub">desde ${fechaCorta(d.fechaBaja)}</span>`:''}</dd>
+      <dt>Tipo</dt><dd>${esc(d.tipo)} · ${esc(d.origen)}</dd>
+      <dt>Proceso</dt><dd>${esc(procNombre(d.proceso))} <span class="sub">(${esc(d.macroproceso)})</span></dd>
+      <dt>Programa</dt><dd>${esc(d.programa||'—')}</dd>
+      <dt>Unidad responsable</dt><dd>${esc(d.unidad||'—')}</dd>
+      <dt>Responsable</dt><dd>${esc(d.responsable||'—')}${d.correoResponsable?` <span class="sub">${esc(d.correoResponsable)}</span>`:''}</dd>
+      <dt>Objetivo y alcance</dt><dd>${esc(d.objetivo||'—')}</dd>
+      <dt>Cláusulas ISO 21001</dt><dd>${esc(d.clausulas||'—')}</dd>
+      <dt>Aprobación</dt><dd>${fechaCorta(d.fechaAprobacion)} · ${esc(d.documentoAprobacion||'—')}</dd>
+      <dt>Revisión</dt><dd>cada ${esc(d.frecuencia||'—')} meses · próxima ${etiRevision(d)}</dd>
+      <dt>Distribución</dt><dd>${esc(d.distribucion)}</dd>
+      <dt>Palabras clave</dt><dd>${esc(d.palabras||'—')}</dd>
+      ${reg?`<dt>Registro</dt><dd class="sub">${esc(d.registradoPor)} · ${fechaCorta(d.fechaRegistro)} · actualizado ${fechaCorta(d.actualizado)}</dd>`:''}
+    </dl>`;
+  if (pestana==='versiones') cuerpo = versiones.length ? `<div class="linea-tiempo">${versiones.map(v=>`
+    <div class="hito ${v.estado==='Vigente'?'vigente':''}"><div class="h-cab"><b class="mono">v${esc(v.version)}</b> ${etiEstado(v.estado==='Obsoleta'?'Obsoleto':v.estado)} <span class="sub">${fechaCorta(v.fecha)} · ${esc(v.tipoCambio)}</span></div>
+    <div class="h-txt">${esc(v.descripcion)}</div>
+    <div class="sub">Elaboró: ${esc(v.elaborado||'—')} · Revisó: ${esc(v.revisado||'—')} · Aprobó: ${esc(v.aprobado||'—')} · ${esc(v.documentoAprobacion||'')}${v.solicitud?` · <span class="mono">${esc(v.solicitud)}</span>`:''}
+    ${v.enlace?` · <a href="${esc(v.enlace)}" target="_blank" rel="noopener">archivo</a>`:''}</div></div>`).join('')}</div>` : '<div class="vacio">Sin historial de versiones.</div>';
+  if (pestana==='observaciones') cuerpo = `
+    ${p.observar?`<div class="caja" style="margin-bottom:12px;padding:12px">
+      <div class="campos"><div class="campo"><label>Tipo</label><select id="obsTipo">${opciones(TIPOS_OBS,'Observación')}</select></div><div></div>
+      <div class="campo completo"><label>Detalle</label><textarea id="obsTexto" placeholder="Describe la observación, hallazgo o recomendación sobre este documento"></textarea></div></div>
+      <div style="text-align:right;margin-top:8px"><button class="btn sm" onclick="guardarObservacion('${esc(d.codigo)}')">Registrar</button></div></div>`:''}
+    ${observaciones.length ? observaciones.map(o=>`<div class="nota"><div class="n-cab"><span class="eti ${o.tipo==='No conformidad'?'e-rechazada':o.tipo==='Conformidad'?'e-vigente':'e-observada'}">${esc(o.tipo)}</span>
+      ${o.estado==='Atendida'?'<span class="eti e-vigente">Atendida</span>':'<span class="eti e-neutra">Abierta</span>'}<span>${esc(o.autor)} · ${fechaCorta(o.fecha)}</span><span class="mono">${esc(o.id)}</span></div>
+      <div class="n-txt">${esc(o.texto)}</div>
+      ${o.respuesta?`<div class="n-resp"><b>${esc(o.atendido)}</b> · ${fechaCorta(o.fechaAtencion)}<br>${esc(o.respuesta)}</div>`:''}
+      ${o.estado!=='Atendida' && (S.perfil.control || d.correoResponsable===S.perfil.correo || puedeGestionarProc(d))?`<div style="margin-top:6px"><button class="btn g sm" onclick="atenderObservacion('${esc(o.id)}','${esc(d.codigo)}')">Registrar atención</button></div>`:''}
+    </div>`).join('') : '<div class="vacio">Sin observaciones registradas.</div>'}`;
+  if (pestana==='flujo') cuerpo = solicitudes.length ? `<table><thead><tr><th>Solicitud</th><th>Tipo</th><th>Etapa</th><th>Fecha</th></tr></thead><tbody>${solicitudes.map(s=>`
+    <tr class="clic" onclick="abrirSolicitud('${esc(s.id)}')"><td class="cod">${esc(s.id)}</td><td>${esc(s.tipo)}${s.versionPropuesta?' · v'+esc(s.versionPropuesta):''}</td><td>${etiEstado(s.etapa)}</td><td class="sub">${fechaCorta(s.fecha)}</td></tr>`).join('')}</tbody></table>` : '<div class="vacio">Sin solicitudes.</div>';
+
+  modal(`
+    <div class="modal-cab"><div style="flex:1;min-width:0"><div class="sub"><span class="cod">${esc(d.codigo)}</span> · v${esc(d.version)} · ${esc(d.tipo)}</div><h2>${esc(d.titulo)}</h2></div>
+      <button class="cerrar no-imprimir" onclick="cerrarModal()">×</button></div>
+    <div class="ficha">
+      <div class="visor">
+        <div class="visor-banda ${obsoleto?'obsoleto':''}"><span>${obsoleto?'Documento obsoleto · solo referencia':'Copia controlada · vigente'}</span><span class="espacio"></span><span class="mono" style="text-transform:none;letter-spacing:0;font-weight:500">${esc(d.codigo)} v${esc(d.version)} · ${fechaCorta(S.hoy)}</span></div>
+        <div class="visor-marco">${previa?`<iframe src="${esc(previa)}" allow="autoplay" loading="lazy"></iframe><div class="marca-agua ${obsoleto?'obsoleto':''}">${obsoleto?'<span>OBSOLETO</span>':''}</div>`:'<div class="sin-archivo">Este documento aún no tiene archivo enlazado.<br>Control documental debe registrar el enlace de Drive.</div>'}</div>
+      </div>
+      <div class="panel">
+        <div class="subpestanas no-imprimir">${tabs.map(([k,t])=>`<button class="${k===pestana?'activa':''}" onclick="pintarFicha('${k}')">${t}</button>`).join('')}</div>
+        <div class="panel-cuerpo">${cuerpo}</div>
+      </div>
+    </div>
+    <div class="modal-pie">
+      <span class="sub" style="margin-right:auto;align-self:center">Toda copia impresa o descargada es copia no controlada.</span>
+      ${d.enlace?`<a class="btn n" href="${esc(d.enlace)}" target="_blank" rel="noopener">Abrir en Drive</a>`:''}
+      ${d.enlaceEditable && reg?`<a class="btn n" href="${esc(d.enlaceEditable)}" target="_blank" rel="noopener">Formato editable</a>`:''}
+      <button class="btn n" onclick="pintarFicha('ficha');setTimeout(()=>window.print(),150)">Imprimir ficha</button>
+      ${puedeGestionar?`<button class="btn g" onclick="formDocumento('Anulación','${esc(d.codigo)}')">Solicitar anulación</button>
+      <button class="btn" onclick="formDocumento('Modificación','${esc(d.codigo)}')">Solicitar modificación</button>`:''}
+    </div>`, true);
+}
+function puedeGestionarProc(d){ return S.perfil.puede.solicitar && (S.perfil.puede.todosLosProcesos || S.perfil.procesos.some(x=>x.toLowerCase()===d.proceso.toLowerCase())); }
+
+async function guardarObservacion(codigo){
+  const texto = $('obsTexto').value.trim();
+  if (!texto) return aviso('Escribe el detalle', true);
+  try{ await api('/observacion', { codigo, tipo:$('obsTipo').value, texto }); aviso('Observación registrada');
+    await recargar(); abrirDocumento(codigo, 'observaciones'); }catch(e){ aviso(e.message, true); }
+}
+async function atenderObservacion(id, codigo){
+  const respuesta = prompt('¿Cómo se atendió esta observación?');
+  if (!respuesta) return;
+  try{ await api('/observacion-atender', { id, respuesta }); aviso('Atención registrada'); await recargar(); abrirDocumento(codigo,'observaciones'); }catch(e){ aviso(e.message, true); }
+}
+
+/* ------------------------------------------ formularios de solicitud/alta */
+function camposDocumento(v, conCambios){
+  const marca = k => conCambios && conCambios[k]!==undefined && String(conCambios[k]) !== String(v[k]??'') ? ' cambio' : '';
+  const procesos = S.cat.procesos.filter(x => S.perfil.puede.todosLosProcesos || S.perfil.procesos.some(p=>p.toLowerCase()===x.codigo.toLowerCase()));
+  const cl = (v.clausulas||'').split(';').map(x=>x.trim());
+  return `<div class="campos">
+    <div class="campo completo"><label class="req">Título del documento</label><input type="text" id="dTitulo" value="${esc(v.titulo)}"></div>
+    <div class="campo"><label class="req">Tipo de documento</label><select id="dTipo" onchange="previoCodigo()">${opciones(S.cat.tipos.map(t=>({v:t.nombre,t:`${t.nombre} (${t.codigo})`})),v.tipo,'Seleccione')}</select></div>
+    <div class="campo"><label class="req">Proceso</label><select id="dProceso" onchange="previoCodigo()">${opciones(procesos.map(p=>({v:p.codigo,t:`${p.nombre} · ${p.grupo}`})),v.proceso,'Seleccione')}</select></div>
+    <div class="campo"><label>Programa</label><select id="dPrograma">${opciones(S.cat.programas.map(x=>x.nombre),v.programa,'Seleccione')}</select></div>
+    <div class="campo"><label>Unidad responsable</label><input type="text" id="dUnidad" value="${esc(v.unidad)}" placeholder="Ej. Comisión de Calidad FI"></div>
+    <div class="campo"><label>Responsable del documento</label><input type="text" id="dResponsable" value="${esc(v.responsable)}"></div>
+    <div class="campo"><label>Correo del responsable</label><input type="email" id="dCorreoResp" value="${esc(v.correoResponsable)}" placeholder="nombre@urp.edu.pe"></div>
+    <div class="campo completo"><label>Objetivo y alcance</label><textarea id="dObjetivo">${esc(v.objetivo)}</textarea></div>
+    <div class="campo completo"><label>Cláusulas ISO 21001 relacionadas</label><div class="chips" id="dClausulas">${CLAUSULAS.map(c=>`<label><input type="checkbox" value="${esc(c)}" ${cl.includes(c)?'checked':''}>${esc(c)}</label>`).join('')}</div></div>
+    <div class="campo"><label>Origen</label><select id="dOrigen">${opciones(['Interno','Externo'],v.origen||'Interno')}</select></div>
+    <div class="campo"><label>Distribución</label><select id="dDistribucion">${opciones(['Pública interna','Restringida'],v.distribucion||'Pública interna')}</select><div class="ayuda">Pública interna: visible para toda cuenta @urp.edu.pe.</div></div>
+    <div class="campo"><label class="req">Frecuencia de revisión (meses)</label><input type="number" id="dFrecuencia" min="1" max="60" value="${esc(v.frecuencia||'24')}"></div>
+    <div class="campo"><label>Palabras clave</label><input type="text" id="dPalabras" value="${esc(v.palabras)}"></div>
+    <div class="campo completo"><label>Enlace al formato editable (Drive)</label><input type="url" id="dEditable" value="${esc(v.enlaceEditable)}" placeholder="https://docs.google.com/..."></div>
+  </div>`;
+}
+function leerCamposDocumento(){
+  return { titulo:$('dTitulo').value.trim(), tipo:$('dTipo').value, proceso:$('dProceso').value, programa:$('dPrograma').value,
+    unidad:$('dUnidad').value.trim(), responsable:$('dResponsable').value.trim(), correoResponsable:$('dCorreoResp').value.trim().toLowerCase(),
+    objetivo:$('dObjetivo').value.trim(), clausulas:[...document.querySelectorAll('#dClausulas input:checked')].map(i=>i.value).join('; '),
+    origen:$('dOrigen').value, distribucion:$('dDistribucion').value, frecuencia:$('dFrecuencia').value, palabras:$('dPalabras').value.trim(),
+    enlaceEditable:$('dEditable').value.trim() };
+}
+function previoCodigo(){
+  const el = $('codPrevio'); if (!el) return;
+  const t = S.cat.tipos.find(x=>x.nombre===$('dTipo').value), pr = $('dProceso').value;
+  if (!t || !pr){ el.textContent = 'Elige tipo y proceso'; return; }
+  const base = `${S.prefijo}-${t.codigo}-${pr}-`;
+  const usados = S.docs.map(d=>d.codigo).concat(S.sols.map(s=>s.codigo)).filter(c=>c.startsWith(base)).map(c=>parseInt(c.slice(base.length))||0);
+  el.textContent = base + String(Math.max(0,...usados)+1).padStart(3,'0');
+}
+function selectorFlujo(){
+  const c = S.cand, yo = S.perfil.correo;
+  const rev = c.revisores.filter(x=>x.correo!==yo), apr = c.aprobadores.filter(x=>x.correo!==yo);
+  return `<div class="campos" style="margin-top:12px">
+    <div class="campo"><label class="req">Revisor</label><select id="fRevisor">${opciones(rev.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
+    <div class="campo"><label class="req">Aprobador</label><select id="fAprobador">${opciones(apr.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
+    ${!rev.length||!apr.length?'<div class="completo aviso-caja">No hay revisores o aprobadores registrados en la tabla RIID Usuarios.</div>':''}
+  </div>`;
+}
+
+function formDocumento(modo, codigo){
+  const doc = codigo ? S.docs.find(d=>d.codigo===codigo) : null;
+  let html = '', titulo = '';
+  if (modo==='Creación'){
+    titulo = 'Solicitar creación de documento';
+    html = `<div class="codigo-previo"><span class="sub">Código que se reservará</span><b id="codPrevio">Elige tipo y proceso</b><span class="sub">(se confirma al registrar)</span></div>
+      ${camposDocumento({})}
+      <div class="campos" style="margin-top:12px"><div class="campo completo"><label class="req">Enlace del borrador en Drive</label><input type="url" id="fBorrador" placeholder="https://drive.google.com/file/d/..."><div class="ayuda">Comparte el archivo con el dominio urp.edu.pe (lector) para que se vea en el visor.</div></div>
+      <div class="campo completo"><label class="req">Justificación de la creación</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
+  } else if (modo==='Modificación'){
+    titulo = `Solicitar modificación · ${doc.codigo}`;
+    html = `<div class="aviso-caja info">Versión vigente <b class="mono">v${esc(doc.version)}</b>. Ajusta solo lo que cambia; la versión vigente seguirá disponible hasta la aprobación.</div>
+      <div class="campos" style="margin-bottom:12px"><div class="campo"><label class="req">Tipo de cambio</label><select id="fCambio">${opciones([{v:'Mayor',t:'Mayor (cambia contenido o requisitos)'},{v:'Menor',t:'Menor (forma, redacción, datos)'}],'Mayor')}</select></div></div>
+      ${camposDocumento(doc)}
+      <div class="campos" style="margin-top:12px"><div class="campo completo"><label class="req">Enlace del borrador actualizado</label><input type="url" id="fBorrador"></div>
+      <div class="campo completo"><label class="req">Descripción y justificación del cambio</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
+  } else if (modo==='Anulación'){
+    titulo = `Solicitar anulación · ${doc.codigo}`;
+    html = `<div class="aviso-caja">Al aprobarse, <b>${esc(doc.titulo)}</b> pasará a obsoleto y quedará solo como referencia histórica.</div>
+      <div class="campos"><div class="campo completo"><label class="req">Justificación</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
+  } else {
+    titulo = 'Registrar documento ya aprobado';
+    html = `<div class="aviso-caja info">Para la carga inicial de documentos aprobados antes del repositorio (Política de calidad, Alcance del SGOE, guías, etc.). Queda vigente sin pasar por el flujo y se registra en la bitácora.</div>
+      <div class="campos" style="margin-bottom:12px">
+        <div class="campo"><label>Código existente</label><input type="text" id="eCodigo" class="mono" placeholder="Vacío = generar automáticamente"><div class="ayuda">Si el documento ya tiene código oficial, respétalo.</div></div>
+        <div class="campo"><label class="req">Versión</label><input type="text" id="eVersion" value="1.0"></div>
+        <div class="campo"><label class="req">Fecha de aprobación</label><input type="date" id="eFecha"></div>
+        <div class="campo"><label>Documento de aprobación</label><input type="text" id="eDocAprob" placeholder="Ej. Resolución de Decanato N.° ..."></div>
+        <div class="campo"><label>Elaboró</label><input type="text" id="eElaboro"></div>
+        <div class="campo"><label>Revisó</label><input type="text" id="eReviso"></div>
+        <div class="campo"><label>Aprobó</label><input type="text" id="eAprobo"></div>
+        <div class="campo"><label>Enlace del documento aprobado (PDF en Drive)</label><input type="url" id="eEnlace"></div>
+      </div>${camposDocumento({})}`;
+  }
+  modal(`<div class="modal-cab"><h2 style="flex:1">${esc(titulo)}</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
+    <div class="modal-cuerpo">${html}</div>
+    <div class="modal-pie"><button class="btn n" onclick="${codigo?`abrirDocumento('${esc(codigo)}')`:'cerrarModal()'}">Cancelar</button>
+    <button class="btn" onclick="enviarDocumento('${modo}','${esc(codigo||'')}')">${modo==='existente'?'Registrar como vigente':'Iniciar flujo de aprobación'}</button></div>`);
+}
+
+async function enviarDocumento(modo, codigo){
+  try{
+    if (modo==='existente'){
+      const datos = Object.assign(leerCamposDocumento(), { codigo:$('eCodigo').value.trim(), version:$('eVersion').value.trim(),
+        fechaAprobacion:$('eFecha').value, documentoAprobacion:$('eDocAprob').value.trim(), elaborado:$('eElaboro').value.trim(),
+        revisado:$('eReviso').value.trim(), aprobado:$('eAprobo').value.trim(), enlace:$('eEnlace').value.trim() });
+      const r = await api('/documento-existente', { datos });
+      aviso('Registrado como vigente: ' + r.codigo); cerrarModal(); await recargar(); mostrar('maestra'); return;
+    }
+    const cuerpo = { tipo:modo, codigo, justificacion:$('fJust').value.trim(), correoRevisor:$('fRevisor').value, correoAprobador:$('fAprobador').value };
+    if (modo!=='Anulación'){
+      cuerpo.datos = leerCamposDocumento(); cuerpo.enlaceBorrador = $('fBorrador').value.trim();
+      if (modo==='Modificación') cuerpo.tipoCambio = $('fCambio').value;
+    }
+    const r = await api('/solicitud', cuerpo);
+    aviso(`Solicitud ${r.id} registrada · ${r.codigo}`); cerrarModal(); await recargar(); mostrar('flujo');
+  }catch(e){ aviso(e.message, true); }
+}
+
+/* ------------------------------------------------------ flujo documental */
+let pestanaFlujo = 'pendientes';
+function vFlujo(){
+  const c = S.perfil.correo;
+  const grupos = { pendientes: pendientes(), mias: S.sols.filter(s=>s.correoSolicitante===c) };
+  if (S.perfil.control) grupos.todas = S.sols;
+  if (!grupos[pestanaFlujo]) pestanaFlujo = 'pendientes';
+  const lista = grupos[pestanaFlujo].slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  $('v-flujo').innerHTML = `
+  <div class="titulo-seccion"><div><h2>Flujo documental</h2><p>Elaboración → revisión → aprobación. Quien solicita no revisa ni aprueba su propia solicitud.</p></div></div>
+  <div class="subpestanas" style="background:var(--papel);border:1px solid var(--linea);border-bottom:0;border-radius:10px 10px 0 0">
+    <button class="${pestanaFlujo==='pendientes'?'activa':''}" onclick="pestanaFlujo='pendientes';vFlujo()">Mis pendientes (${grupos.pendientes.length})</button>
+    <button class="${pestanaFlujo==='mias'?'activa':''}" onclick="pestanaFlujo='mias';vFlujo()">Mis solicitudes (${grupos.mias.length})</button>
+    ${grupos.todas?`<button class="${pestanaFlujo==='todas'?'activa':''}" onclick="pestanaFlujo='todas';vFlujo()">Todas (${grupos.todas.length})</button>`:''}
+  </div>
+  <div class="tabla-envoltura" style="border-radius:0 0 10px 10px"><table><thead><tr><th>Solicitud</th><th>Documento</th><th>Tipo</th><th>Etapa</th><th>Le toca a</th><th>Registrada</th><th>Días</th></tr></thead><tbody>
+  ${lista.length ? lista.map(s=>{
+    const ult = (s.historial[s.historial.length-1]||{}).fecha || s.fecha;
+    const abierta = ['En revisión','En aprobación','Observada'].includes(s.etapa);
+    return `<tr class="clic" onclick="abrirSolicitud('${esc(s.id)}')"><td class="cod">${esc(s.id)}</td>
+      <td><div style="font-weight:500">${esc(s.titulo)}</div><div class="sub mono">${esc(s.codigo)}</div></td>
+      <td>${esc(s.tipo)}${s.versionPropuesta?` <span class="sub mono">→ v${esc(s.versionPropuesta)}</span>`:''}</td>
+      <td>${etiEstado(s.etapa)}</td><td>${abierta?esc(aQuienLeToca(s)):'—'}</td><td class="sub">${fechaCorta(s.fecha.slice(0,10))}</td>
+      <td class="mono">${abierta?diasEntre(ult.slice(0,10), S.hoy):''}</td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">Nada por aquí.</td></tr>'}
+  </tbody></table></div>`;
+}
+
+function abrirSolicitud(id){
+  const s = S.sols.find(x=>x.id===id);
+  if (!s) return aviso('Solicitud no disponible', true);
+  const c = S.perfil.correo, doc = S.docs.find(d=>d.codigo===s.codigo);
+  const etiquetas = {titulo:'Título',tipo:'Tipo',proceso:'Proceso',programa:'Programa',unidad:'Unidad responsable',responsable:'Responsable',correoResponsable:'Correo responsable',objetivo:'Objetivo y alcance',clausulas:'Cláusulas ISO 21001',origen:'Origen',distribucion:'Distribución',frecuencia:'Frecuencia (meses)',palabras:'Palabras clave',enlaceEditable:'Formato editable'};
+  const datos = s.datos || {};
+  const filas = s.tipo==='Anulación' ? '' : Object.keys(etiquetas).filter(k=>datos[k]!==undefined && datos[k]!=='').map(k => {
+    const antes = doc ? String(doc[k]??'') : '', cambio = s.tipo==='Modificación' && antes !== String(datos[k]);
+    return `<dt>${etiquetas[k]}</dt><dd class="${cambio?'cambio':''}">${esc(k==='proceso'?procNombre(datos[k]):datos[k])}${cambio?`<div class="sub">antes: ${esc(k==='proceso'?procNombre(antes):antes)||'—'}</div>`:''}</dd>`; }).join('');
+
+  let acciones = '';
+  if (s.etapa==='En revisión' && s.correoRevisor===c) acciones = `
+    <div class="campo"><label>Comentario de revisión</label><textarea id="aCom" placeholder="Obligatorio si observas"></textarea></div>
+    <div class="modal-pie" style="padding:10px 0 0;border:0"><button class="btn ambar" onclick="accion('${esc(s.id)}','observar')">Observar</button><button class="btn" onclick="accion('${esc(s.id)}','conforme')">Revisión conforme</button></div>`;
+  else if (s.etapa==='En aprobación' && s.correoAprobador===c) acciones = `
+    <div class="campos">
+      <div class="campo"><label class="req">Documento de aprobación</label><input type="text" id="aDoc" placeholder="Resolución, acta u oficio N.°"></div>
+      <div class="campo"><label>Fecha de aprobación</label><input type="date" id="aFecha" value="${S.hoy}"></div>
+      ${s.tipo!=='Anulación'?`<div class="campo completo"><label>Enlace final del documento aprobado</label><input type="url" id="aEnlace" placeholder="Vacío = se usa el borrador revisado"></div>`:''}
+      <div class="campo completo"><label>Comentario</label><textarea id="aCom" placeholder="Obligatorio si observas o rechazas"></textarea></div>
+    </div>
+    <div class="modal-pie" style="padding:10px 0 0;border:0"><button class="btn rojo" onclick="accion('${esc(s.id)}','rechazar')">Rechazar</button><button class="btn ambar" onclick="accion('${esc(s.id)}','observar')">Observar</button><button class="btn" onclick="accion('${esc(s.id)}','aprobar')">${s.tipo==='Anulación'?'Aprobar anulación':'Aprobar y publicar'}</button></div>`;
+  else if (s.etapa==='Observada' && s.correoSolicitante===c) acciones = `
+    <div class="campos">${s.tipo!=='Anulación'?`<div class="campo completo"><label>Enlace del borrador corregido</label><input type="url" id="aBorrador" value="${esc(s.enlaceBorrador)}"></div>`:''}
+      <div class="campo completo"><label>¿Qué subsanaste?</label><textarea id="aCom"></textarea></div></div>
+    <div class="modal-pie" style="padding:10px 0 0;border:0"><button class="btn n" onclick="accion('${esc(s.id)}','desistir')">Desistir</button><button class="btn" onclick="reenviar('${esc(s.id)}')">Reenviar a revisión</button></div>`;
+  else if (['En revisión','En aprobación'].includes(s.etapa) && s.correoSolicitante===c) acciones = `
+    <div class="modal-pie" style="padding:10px 0 0;border:0"><span class="sub" style="margin-right:auto">Le toca a ${esc(aQuienLeToca(s))}.</span><button class="btn n" onclick="accion('${esc(s.id)}','desistir')">Desistir</button></div>`;
+
+  const previa = vistaPrevia(s.enlaceBorrador);
+  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub"><span class="cod">${esc(s.id)}</span> · ${esc(s.tipo)} · ${etiEstado(s.etapa)}</div>
+    <h2><span class="mono">${esc(s.codigo)}</span> — ${esc(s.titulo)}${s.versionPropuesta?` <span class="sub mono">v${esc(s.versionPropuesta)}</span>`:''}</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
+    <div class="ficha">
+      <div class="visor"><div class="visor-banda" style="background:var(--azul)"><span>Borrador en flujo · no es copia controlada</span></div>
+        <div class="visor-marco">${previa?`<iframe src="${esc(previa)}" loading="lazy"></iframe>`:'<div class="sin-archivo">'+(s.tipo==='Anulación'?'Solicitud de anulación: sin borrador.':'Sin enlace de borrador.')+'</div>'}</div></div>
+      <div class="panel"><div class="panel-cuerpo">
+        <dl class="meta"><dt>Solicitante</dt><dd>${esc(s.solicitante)}</dd><dt>Revisor</dt><dd>${esc(s.revisor)}</dd><dt>Aprobador</dt><dd>${esc(s.aprobador)}</dd>
+        ${s.tipoCambio?`<dt>Tipo de cambio</dt><dd>${esc(s.tipoCambio)}</dd>`:''}<dt>Justificación</dt><dd>${esc(s.justificacion)}</dd>${filas}
+        ${s.enlaceBorrador?`<dt>Borrador</dt><dd><a href="${esc(s.enlaceBorrador)}" target="_blank" rel="noopener">abrir en Drive</a></dd>`:''}</dl>
+        <h3 style="font-size:13px;margin:16px 0 8px">Historial</h3>
+        <div class="linea-tiempo">${s.historial.map(h=>`<div class="hito"><div class="h-cab"><b>${esc(h.accion)}</b> <span class="sub">${esc(h.nombre)} · ${fechaCorta(h.fecha)}</span></div>${h.comentario?`<div class="h-txt">${esc(h.comentario)}</div>`:''}</div>`).join('')}</div>
+        ${acciones?`<div style="border-top:1px solid var(--linea);margin-top:12px;padding-top:12px">${acciones}</div>`:''}
+      </div></div>
+    </div>`, true);
+}
+
+async function accion(id, acc){
+  const com = $('aCom') ? $('aCom').value.trim() : '';
+  const cuerpo = { id, accion:acc, comentario:com };
+  if (acc==='aprobar') cuerpo.aprobacion = { documentoAprobacion:$('aDoc').value.trim(), fecha:$('aFecha').value, enlaceFinal:$('aEnlace')?$('aEnlace').value.trim():'' };
+  if (acc==='desistir' && !confirm('¿Desistir de esta solicitud? No se puede deshacer.')) return;
+  if (acc==='rechazar' && !confirm('¿Rechazar y cerrar esta solicitud?')) return;
+  try{ await api('/solicitud-accion', cuerpo);
+    aviso({conforme:'Revisión conforme registrada',observar:'Observación enviada al solicitante',aprobar:'Aprobado: la lista maestra se actualizó',rechazar:'Solicitud rechazada',desistir:'Solicitud cerrada'}[acc]);
+    cerrarModal(); await recargar(); mostrar(S.vista);
+  }catch(e){ aviso(e.message, true); }
+}
+async function reenviar(id){
+  try{ await api('/solicitud-reenviar', { id, comentario:$('aCom').value.trim(), enlaceBorrador:$('aBorrador')?$('aBorrador').value.trim():'' });
+    aviso('Reenviada a revisión'); cerrarModal(); await recargar(); mostrar(S.vista); }catch(e){ aviso(e.message, true); }
+}
+
+/* ---------------------------------------------------- registros/evidencias */
+async function vRegistros(force){
+  if (!S.registros || force){
+    $('v-registros').innerHTML = '<div class="vacio">Cargando registros…</div>';
+    try{ S.registros = (await api('/registros')).registros; }catch(e){ $('v-registros').innerHTML = `<div class="vacio">${esc(e.message)}</div>`; return; }
+  }
+  const formatos = [...new Set(S.registros.map(r=>r.formato))].sort();
+  $('v-registros').innerHTML = `
+  <div class="titulo-seccion"><div><h2>Registros y evidencias</h2><p>Información documentada conservada · retención y disposición final (7.5.3)</p></div><div class="espacio"></div>
+    ${S.perfil.puede.registrar?'<button class="btn" onclick="formRegistro()">+ Registrar evidencia</button>':''}</div>
+  <div class="barra-filtros">
+    <input type="text" class="buscar" id="rQ" placeholder="Buscar en descripción, código o responsable" value="${esc(FR.q)}">
+    <select id="rFormato">${opciones(formatos,FR.formato,'Todos los formatos')}</select>
+    <select id="rPrograma">${opciones(S.cat.programas.map(x=>x.nombre),FR.programa,'Todos los programas')}</select>
+    <select id="rPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),FR.periodo,'Todos los periodos')}</select>
+  </div>
+  <div class="tabla-envoltura"><table><thead><tr><th>Registro</th><th>Formato</th><th>Programa · periodo</th><th>Descripción</th><th>Conservar hasta</th><th>Registró</th><th></th></tr></thead><tbody id="tbReg"></tbody></table></div>`;
+  $('rQ').oninput = e => { FR.q=e.target.value; pintarRegistros(); };
+  [['rFormato','formato'],['rPrograma','programa'],['rPeriodo','periodo']].forEach(([i,k]) => $(i).onchange = e => { FR[k]=e.target.value; pintarRegistros(); });
+  pintarRegistros();
+}
+function pintarRegistros(){
+  const q = FR.q.toLowerCase();
+  const lista = S.registros.filter(r => (!FR.formato||r.formato===FR.formato) && (!FR.programa||r.programa===FR.programa) && (!FR.periodo||r.periodo===FR.periodo)
+    && (!q || [r.id,r.codigoFormato,r.descripcion,r.registradoPor].join(' ').toLowerCase().includes(q)));
+  $('tbReg').innerHTML = lista.length ? lista.map(r => {
+    const vencido = r.conservarHasta && r.conservarHasta < S.hoy;
+    return `<tr><td class="cod">${esc(r.id)}</td><td><div>${esc(r.formato)}</div><div class="sub mono">${esc(r.codigoFormato)}</div></td>
+    <td>${esc(r.programa)}<div class="sub">${esc(r.periodo)}</div></td><td style="max-width:340px">${esc(r.descripcion)}</td>
+    <td>${vencido?`<span class="eti e-vencida">${fechaCorta(r.conservarHasta)}</span>`:`<span class="mono sub">${fechaCorta(r.conservarHasta)}</span>`}<div class="sub">${esc(r.disposicion)}</div></td>
+    <td class="sub">${esc(r.registradoPor)}<br>${fechaCorta(r.fecha)}</td>
+    <td><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a></td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">Sin registros con esos filtros.</td></tr>';
+}
+function formRegistro(){
+  const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
+  modal(`<div class="modal-cab"><h2 style="flex:1">Registrar evidencia</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
+  <div class="modal-cuerpo"><div class="campos">
+    <div class="campo completo"><label class="req">Formato asociado</label><select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (sin formato controlado)</option></select></div>
+    <div class="campo completo oculto" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro"></div>
+    <div class="campo"><label class="req">Programa</label><select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),'','Seleccione')}</select></div>
+    <div class="campo"><label class="req">Periodo</label><select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),'','Seleccione')}</select></div>
+    <div class="campo completo"><label class="req">Descripción</label><textarea id="gDesc" placeholder="Qué contiene la evidencia"></textarea></div>
+    <div class="campo completo"><label class="req">Enlace de la evidencia (Drive)</label><input type="url" id="gEnlace" placeholder="https://drive.google.com/..."></div>
+    <div class="campo"><label>Retención (años)</label><input type="number" id="gRet" min="1" max="50" value="5"></div>
+    <div class="campo"><label>Disposición final</label><select id="gDisp">${opciones(DISPOSICION,'Evaluar al vencer')}</select></div>
+  </div></div>
+  <div class="modal-pie"><button class="btn n" onclick="cerrarModal()">Cancelar</button><button class="btn" onclick="guardarRegistro()">Guardar evidencia</button></div>`);
+  $('gFormato').onchange = e => $('gOtroCampo').classList.toggle('oculto', e.target.value!=='__otro');
+}
+async function guardarRegistro(){
+  const cod = $('gFormato').value, doc = S.docs.find(d=>d.codigo===cod);
+  const cuerpo = { codigoFormato: doc?cod:'', formato: doc?doc.titulo:(cod==='__otro'?$('gOtro').value.trim():''), proceso: doc?doc.proceso:'',
+    programa:$('gPrograma').value, periodo:$('gPeriodo').value, descripcion:$('gDesc').value.trim(), enlace:$('gEnlace').value.trim(),
+    retencion:$('gRet').value, disposicion:$('gDisp').value };
+  try{ const r = await api('/registro', cuerpo); aviso('Evidencia registrada: '+r.id); cerrarModal(); S.totalReg++; vRegistros(true); }catch(e){ aviso(e.message, true); }
+}
+
+/* --------------------------------------------------------- administración */
+async function vAdmin(){
+  $('v-admin').innerHTML = '<div class="vacio">Cargando…</div>';
+  let d;
+  try{ d = await api('/bitacora'); }catch(e){ $('v-admin').innerHTML = `<div class="vacio">${esc(e.message)}</div>`; return; }
+  $('v-admin').innerHTML = `
+  <div class="titulo-seccion"><div><h2>Administración</h2><p>Usuarios, catálogos y trazabilidad. Usuarios y catálogos se editan directamente en QuintaDB (tablas RIID Usuarios y RIID Catálogos).</p></div><div class="espacio"></div>
+    ${S.perfil.puede.diagnostico?'<button class="btn g" onclick="diagnostico(false)">Diagnóstico de tablas</button>':''}</div>
+  <div id="diag"></div>
+  <div class="rejilla g2" style="margin-bottom:14px">
+    <div class="caja"><h3>Usuarios con rol (${d.usuarios.length})</h3><div class="tabla-envoltura" style="max-height:300px;overflow:auto"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Procesos</th></tr></thead><tbody>
+      ${d.usuarios.map(u=>`<tr><td>${esc(u.nombre)}<div class="sub">${esc(u.correo)}</div></td><td>${esc(u.rol)}${u.estado!=='Vigente'?' <span class="eti e-neutra">'+esc(u.estado)+'</span>':''}</td><td class="sub">${esc(u.procesos||'—')}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="caja"><h3>Catálogos vigentes</h3><div class="sub" style="line-height:1.8">
+      <b>Tipos:</b> ${S.cat.tipos.map(t=>`${esc(t.nombre)} <span class="mono">${esc(t.codigo)}</span>`).join(' · ')}<br>
+      <b>Procesos:</b> ${S.cat.procesos.map(t=>`${esc(t.nombre)} <span class="mono">${esc(t.codigo)}</span>`).join(' · ')}<br>
+      <b>Programas:</b> ${S.cat.programas.map(t=>esc(t.nombre)).join(' · ')}<br>
+      <b>Periodos:</b> ${S.cat.periodos.map(t=>esc(t.nombre)).join(' · ')}<br>
+      <b>Esquema de código:</b> <span class="mono">${esc(S.prefijo)}-TIPO-PROCESO-NNN</span></div></div>
+  </div>
+  <div class="caja"><h3>Bitácora (últimos ${d.bitacora.length} eventos)</h3><div class="tabla-envoltura" style="max-height:420px;overflow:auto"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Código</th><th>Detalle</th></tr></thead><tbody>
+    ${d.bitacora.length?d.bitacora.map(b=>`<tr><td class="mono sub">${fechaCorta(b.fecha)}</td><td>${esc(b.nombre)}</td><td>${esc(b.accion)}</td><td class="cod">${esc(b.codigo)}</td><td class="sub">${esc(b.detalle)}</td></tr>`).join(''):'<tr><td colspan="5" class="vacio">Sin eventos.</td></tr>'}</tbody></table></div></div>`;
+}
+async function diagnostico(limpiar){
+  try{
+    const d = await api('/diagnostico', { limpiar });
+    $('diag').innerHTML = `<div class="caja" style="margin-bottom:14px"><h3>Diagnóstico de tablas QuintaDB</h3><table><thead><tr><th>Tabla</th><th>ID</th><th>Filas</th><th>Estado</th></tr></thead><tbody>
+      ${d.tablas.map(t=>`<tr><td>${esc(t.tabla)}</td><td class="mono sub">${esc(t.entity)}</td><td class="mono">${t.filas??'—'}</td>
+      <td>${t.error?`<span class="eti e-rechazada">${esc(t.error)}</span>`:t.ok?'<span class="eti e-vigente">Columnas completas</span>':`<span class="eti e-observada">Faltan: ${esc(t.faltan.join(', '))}</span>`}</td></tr>`).join('')}</tbody></table>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><span class="sub" style="flex:1">Notificaciones por correo: ${d.notificaciones?'activas':'desactivadas'}. Si renombraste columnas en QuintaDB, vuelve a leer el mapa.</span>
+      <button class="btn n sm" onclick="diagnostico(true)">Volver a leer columnas</button></div></div>`;
+  }catch(e){ aviso(e.message, true); }
+}
+
+/* --------------------------------------------------------------- arranque */
+document.addEventListener('keydown', e => { if (e.key==='Escape') cerrarModal(); });
+(function(){
+  const c = sessionStorage.getItem('riid_cred');
+  if (c){ S.cred = c; entrar(); }
+  iniciarGoogle();
+})();
+</script>
+</body>
+</html>
