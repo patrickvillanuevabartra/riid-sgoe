@@ -178,6 +178,35 @@ dl.meta dd{margin:0;word-break:break-word}
 .toast{background:var(--tinta);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;max-width:380px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 .toast.error{background:var(--falla)}
 
+/* bombitas de ayuda */
+.ayuda{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--linea);color:var(--tinta-media);font:600 10px/1 'IBM Plex Sans',sans-serif;cursor:help;position:relative;vertical-align:middle;margin-left:5px}
+.ayuda:hover{background:var(--brand);color:#fff}
+.ayuda::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);background:var(--brand-oscuro);color:#fff;padding:9px 11px;border-radius:7px;width:265px;font:400 12px/1.45 'IBM Plex Sans',sans-serif;text-transform:none;letter-spacing:0;text-align:left;box-shadow:0 8px 20px rgba(0,0,0,.22);opacity:0;visibility:hidden;transition:opacity .12s;z-index:120;pointer-events:none}
+.ayuda::before{content:'';position:absolute;bottom:135%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--brand-oscuro);opacity:0;visibility:hidden;z-index:120}
+.ayuda:hover::after,.ayuda:hover::before{opacity:1;visibility:visible}
+.ayuda.abajo::after{bottom:auto;top:150%}
+.ayuda.abajo::before{bottom:auto;top:135%;border-top-color:transparent;border-bottom-color:var(--brand-oscuro)}
+
+/* tira del flujo */
+.flujo{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin-bottom:14px;border:1px solid var(--linea);border-radius:10px;background:var(--papel);overflow:hidden}
+.flujo .paso{flex:1;min-width:150px;padding:10px 12px 10px 22px;position:relative;border-right:1px solid var(--linea)}
+.flujo .paso:last-child{border-right:0}
+.flujo .paso:not(:first-child)::before{content:'';position:absolute;left:-1px;top:50%;width:14px;height:14px;background:var(--papel);border-top:1px solid var(--linea);border-right:1px solid var(--linea);transform:translateY(-50%) rotate(45deg);z-index:2}
+.flujo .paso b{display:block;font-size:12.5px}
+.flujo .paso span{font-size:11.5px;color:var(--tinta-media);line-height:1.35;display:block;margin-top:2px}
+.flujo .paso .quien{display:inline-block;margin-top:4px;font-size:11px;color:var(--brand-oscuro);background:var(--brand-suave);border-radius:9px;padding:1px 7px}
+.flujo .paso.activo{background:var(--brand-suave)}
+.flujo .paso.activo b{color:var(--brand-oscuro)}
+.flujo .paso.activo:not(:first-child)::before{background:var(--brand-suave)}
+
+.guia h3{font-size:14px;margin:18px 0 6px}
+.guia h3:first-child{margin-top:0}
+.guia p,.guia li{font-size:13px;color:var(--tinta);margin:4px 0}
+.guia ul{margin:4px 0;padding-left:18px}
+.guia .fuente{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:12.5px;margin:6px 0}
+.guia .fuente dt{color:var(--tinta-media)}
+.guia .fuente dd{margin:0}
+
 .solo-impresion{display:none}
 @media print{
   html{zoom:1}
@@ -209,6 +238,7 @@ dl.meta dd{margin:0;word-break:break-word}
     <div class="marca"><b>Repositorio de Información Documentada</b><span>SGOE ISO 21001 · Facultad de Ingeniería URP</span></div>
     <div class="espacio"></div>
     <div class="usuario"><b id="uNombre"></b><span id="uRol"></span></div>
+    <button class="btn g sm" onclick="guiaRapida()">¿Cómo funciona?</button>
     <button class="btn n sm" onclick="salir()">Salir</button>
   </header>
   <nav class="pestanas" id="nav">
@@ -250,6 +280,62 @@ const opciones = (lista, sel, vacio) => (vacio!==undefined?`<option value="">${e
   const v = typeof o === 'string' ? o : o.v, t = typeof o === 'string' ? o : o.t;
   return `<option value="${esc(v)}"${v===sel?' selected':''}>${esc(t)}</option>`; }).join('');
 const diasEntre = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+
+/* Desplegable de procesos agrupado por tipo de macroproceso (inventario) */
+function opcionesProcesos(lista, sel){
+  const grupos = {};
+  lista.forEach(p => { (grupos[p.tipo || p.grupo || 'Procesos'] ||= []).push(p); });
+  return '<option value="">Seleccione</option>' + Object.keys(grupos).map(g =>
+    `<option disabled>── ${esc(g)} ──</option>` + grupos[g].map(p => {
+      const extra = p.grupo && p.grupo !== p.nombre ? ` (${p.grupo})` : '';
+      return `<option value="${esc(p.codigo)}"${p.codigo===sel?' selected':''}>${esc(p.codigo)} · ${esc(p.nombre)}${esc(extra)}</option>`;
+    }).join('')).join('');
+}
+const tip = (t, abajo) => `<span class="ayuda${abajo?' abajo':''}" data-tip="${esc(t)}">?</span>`;
+
+const PASOS = [
+  ['Elaboración','El responsable del proceso registra la solicitud con el borrador en Drive y elige quién revisa y quién aprueba.','Responsable de proceso'],
+  ['Revisión','El revisor comprueba forma y contenido. Puede dar conformidad u observar para que se subsane.','Revisor'],
+  ['Aprobación','El aprobador firma: registra la resolución o acta y el enlace final. También puede observar o rechazar.','Aprobador'],
+  ['Vigente','El documento entra a la lista maestra, la versión anterior pasa a obsoleta y se programa su próxima revisión.','Todos lo consultan']
+];
+function tiraFlujo(activo){
+  return `<div class="flujo">${PASOS.map((p,i)=>`<div class="paso ${i===activo?'activo':''}">
+    <b>${i+1}. ${esc(p[0])}</b><span>${esc(p[1])}</span><span class="quien">${esc(p[2])}</span></div>`).join('')}</div>`;
+}
+
+function guiaRapida(){
+  const c = S.cat, p = S.perfil;
+  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub">Guía rápida</div><h2>Cómo funciona el repositorio</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
+  <div class="modal-cuerpo guia">
+    ${tiraFlujo(-1)}
+    <h3>Qué guarda el repositorio</h3>
+    <p><b>Documentos</b> (información documentada que se mantiene): políticas, guías, procedimientos, formatos. Viven en la lista maestra con código, versión y estado.
+    <b>Registros</b> (información documentada que se conserva): las evidencias de que un formato se usó, con su plazo de retención.</p>
+    <h3>Cómo se crea o cambia un documento</h3>
+    <ul><li>Un documento nuevo nace en <b>Lista maestra → Solicitar nuevo documento</b>.</li>
+    <li>Para cambiarlo o darlo de baja, se abre su ficha y se usa <b>Solicitar modificación</b> o <b>Solicitar anulación</b>.</li>
+    <li>Mientras la solicitud está en curso, la versión vigente sigue siendo la oficial: nadie se queda sin documento.</li>
+    <li>Quien solicita no puede revisarse ni aprobarse a sí mismo, y revisor y aprobador deben ser personas distintas.</li>
+    <li>El código se asigna solo, con el formato <span class="mono">${esc(S.prefijo)}-TIPO-PROCESO-NNN</span>.</li></ul>
+    <h3>De dónde salen los desplegables</h3>
+    <dl class="fuente">
+      <dt>Tipo de documento</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Tipo de documento» (${c.tipos.length} en uso).</dd>
+      <dt>Proceso</dt><dd>Se lee del <b>Inventario de Procesos de la Matriz de Indicadores</b> (campo «Ruta completa»), para no duplicar el mapa de procesos (${c.procesos.length} disponibles).</dd>
+      <dt>Programa</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Programa» (${c.programas.length}).</dd>
+      <dt>Periodo</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Periodo» (${c.periodos.length}), usado en los registros.</dd>
+      <dt>Revisor</dt><dd>Tabla <b>RIID Usuarios</b>, personas con rol «Revisor» o «Controlador documental» y estado Vigente.</dd>
+      <dt>Aprobador</dt><dd>Tabla <b>RIID Usuarios</b>, personas con rol «Aprobador» y estado Vigente.</dd>
+    </dl>
+    <p class="sub">Para que alguien aparezca en un desplegable basta con darle su fila en RIID Usuarios; no hay que tocar el aplicativo.</p>
+    <h3>Tu acceso</h3>
+    <p>Entras como <b>${esc(p.roles.join(' · '))}</b>. ${p.puede.solicitar?'Puedes iniciar solicitudes en tus procesos.':'Puedes consultar los documentos vigentes.'}
+    ${p.puede.registrar?' Puedes registrar evidencias.':''} ${p.control?' Tienes control documental sobre todos los procesos.':''}</p>
+    <h3>Copias controladas</h3>
+    <p>La única copia válida es la que se ve aquí. Todo lo que se imprima o descargue es <b>copia no controlada</b>: hay que volver al repositorio para confirmar la versión.</p>
+  </div>
+  <div class="modal-pie"><button class="btn" onclick="cerrarModal()">Entendido</button></div>`);
+}
 
 function aviso(msg, error){ const d=document.createElement('div'); d.className='toast'+(error?' error':''); d.textContent=msg; $('avisos').appendChild(d); setTimeout(()=>d.remove(), error?7000:3500); }
 function cargando(on){ $('carga').classList.toggle('oculto', !on); }
@@ -363,6 +449,7 @@ function vTablero(){
   $('v-tablero').innerHTML = `
   <div class="titulo-seccion"><div><h2>Tablero del repositorio</h2><p>Control de la información documentada · requisito 7.5 de la ISO 21001:2018</p></div>
     <div class="espacio"></div>${reg?'':'<span class="eti e-neutra">Acceso de consulta: documentos vigentes de distribución interna</span>'}</div>
+  ${reg?tiraFlujo(-1):''}
   <div class="cifras">
     <div><b>${vig.length}</b><span>Vigentes</span></div>
     <div><b>${S.docs.filter(d=>d.estado==='Obsoleto').length}</b><span>Obsoletos</span></div>
@@ -396,7 +483,7 @@ function vMaestra(){
   const p = S.perfil.puede;
   const macros = [...new Set(S.cat.procesos.map(x=>x.grupo))];
   $('v-maestra').innerHTML = `
-  <div class="titulo-seccion"><div><h2>Lista maestra de documentos</h2><p>Documentos controlados del SGOE con su versión, estado y revisión programada</p></div><div class="espacio"></div>
+  <div class="titulo-seccion"><div><h2>Lista maestra de documentos${tip('Es el inventario oficial de la información documentada del SGOE. Cada fila es un documento controlado: su código, la versión vigente y cuándo toca revisarlo.', true)}</h2><p>Documentos controlados del SGOE con su versión, estado y revisión programada</p></div><div class="espacio"></div>
     <button class="btn n" onclick="exportarCSV()">Exportar CSV</button>
     ${p.registrarExistente?'<button class="btn g" onclick="formDocumento(\'existente\')">Registrar documento ya aprobado</button>':''}
     ${p.solicitar?'<button class="btn" onclick="formDocumento(\'Creación\')">+ Solicitar nuevo documento</button>':''}
@@ -541,20 +628,20 @@ function camposDocumento(v, conCambios){
   const procesos = S.cat.procesos.filter(x => S.perfil.puede.todosLosProcesos || S.perfil.procesos.some(p=>p.toLowerCase()===x.codigo.toLowerCase()));
   const cl = (v.clausulas||'').split(';').map(x=>x.trim());
   return `<div class="campos">
-    <div class="campo completo"><label class="req">Título del documento</label><input type="text" id="dTitulo" value="${esc(v.titulo)}"></div>
-    <div class="campo"><label class="req">Tipo de documento</label><select id="dTipo" onchange="previoCodigo()">${opciones(S.cat.tipos.map(t=>({v:t.nombre,t:`${t.nombre} (${t.codigo})`})),v.tipo,'Seleccione')}</select></div>
-    <div class="campo"><label class="req">Proceso</label><select id="dProceso" onchange="previoCodigo()">${opciones(procesos.map(p=>({v:p.codigo,t:`${p.nombre} · ${p.grupo}`})),v.proceso,'Seleccione')}</select></div>
-    <div class="campo"><label>Programa</label><select id="dPrograma">${opciones(S.cat.programas.map(x=>x.nombre),v.programa,'Seleccione')}</select></div>
-    <div class="campo"><label>Unidad responsable</label><input type="text" id="dUnidad" value="${esc(v.unidad)}" placeholder="Ej. Comisión de Calidad FI"></div>
-    <div class="campo"><label>Responsable del documento</label><input type="text" id="dResponsable" value="${esc(v.responsable)}"></div>
+    <div class="campo completo"><label class="req">Título del documento${tip('Nombre oficial, sin el código: «Guía de docentes». El aplicativo rechaza títulos repetidos entre documentos vigentes.')}</label><input type="text" id="dTitulo" value="${esc(v.titulo)}"></div>
+    <div class="campo"><label class="req">Tipo de documento${tip('Sale de la tabla RIID Catálogos (Categoría = Tipo de documento). Sus tres letras forman la segunda parte del código.')}</label><select id="dTipo" onchange="previoCodigo()">${opciones(S.cat.tipos.map(t=>({v:t.nombre,t:`${t.nombre} (${t.codigo})`})),v.tipo,'Seleccione')}</select></div>
+    <div class="campo"><label class="req">Proceso${tip('Se lee del Inventario de Procesos de la Matriz de Indicadores, agrupado por tipo de macroproceso. Si falta un proceso, se agrega allá y aparece aquí.')}</label><select id="dProceso" onchange="previoCodigo()">${opcionesProcesos(procesos,v.proceso)}</select></div>
+    <div class="campo"><label>Programa${tip('Escuela profesional a la que aplica. «Facultad (transversal)» si rige para todas. Sale de RIID Catálogos.')}</label><select id="dPrograma">${opciones(S.cat.programas.map(x=>x.nombre),v.programa,'Seleccione')}</select></div>
+    <div class="campo"><label>Unidad responsable${tip('Órgano que responde por el documento: decanato, comisión, coordinación.')}</label><input type="text" id="dUnidad" value="${esc(v.unidad)}" placeholder="Ej. Comisión de Calidad FI"></div>
+    <div class="campo"><label>Responsable del documento${tip('Persona a la que se avisa cuando se acerca la revisión o cuando alguien registra una observación.')}</label><input type="text" id="dResponsable" value="${esc(v.responsable)}"></div>
     <div class="campo"><label>Correo del responsable</label><input type="email" id="dCorreoResp" value="${esc(v.correoResponsable)}" placeholder="nombre@urp.edu.pe"></div>
     <div class="campo completo"><label>Objetivo y alcance</label><textarea id="dObjetivo">${esc(v.objetivo)}</textarea></div>
-    <div class="campo completo"><label>Cláusulas ISO 21001 relacionadas</label><div class="chips" id="dClausulas">${CLAUSULAS.map(c=>`<label><input type="checkbox" value="${esc(c)}" ${cl.includes(c)?'checked':''}>${esc(c)}</label>`).join('')}</div></div>
-    <div class="campo"><label>Origen</label><select id="dOrigen">${opciones(['Interno','Externo'],v.origen||'Interno')}</select></div>
+    <div class="campo completo"><label>Cláusulas ISO 21001 relacionadas${tip('Marca los requisitos de la norma que este documento ayuda a cumplir. Sirve para la auditoría: permite mostrar qué documento respalda cada cláusula.')}</label><div class="chips" id="dClausulas">${CLAUSULAS.map(c=>`<label><input type="checkbox" value="${esc(c)}" ${cl.includes(c)?'checked':''}>${esc(c)}</label>`).join('')}</div></div>
+    <div class="campo"><label>Origen${tip('Interno: elaborado en la Facultad. Externo: norma, ley o requisito de otra entidad que el SGOE debe controlar igual.')}</label><select id="dOrigen">${opciones(['Interno','Externo'],v.origen||'Interno')}</select></div>
     <div class="campo"><label>Distribución</label><select id="dDistribucion">${opciones(['Pública interna','Restringida'],v.distribucion||'Pública interna')}</select><div class="ayuda">Pública interna: visible para toda cuenta @urp.edu.pe.</div></div>
-    <div class="campo"><label class="req">Frecuencia de revisión (meses)</label><input type="number" id="dFrecuencia" min="1" max="60" value="${esc(v.frecuencia||'24')}"></div>
-    <div class="campo"><label>Palabras clave</label><input type="text" id="dPalabras" value="${esc(v.palabras)}"></div>
-    <div class="campo completo"><label>Enlace al formato editable (Drive)</label><input type="url" id="dEditable" value="${esc(v.enlaceEditable)}" placeholder="https://docs.google.com/..."></div>
+    <div class="campo"><label class="req">Frecuencia de revisión (meses)${tip('Cada cuánto toca revisar el documento. Con la fecha de aprobación el sistema calcula la próxima revisión y avisa 60 días antes.')}</label><input type="number" id="dFrecuencia" min="1" max="60" value="${esc(v.frecuencia||'24')}"></div>
+    <div class="campo"><label>Palabras clave${tip('Términos por los que alguien buscaría este documento en la lista maestra.')}</label><input type="text" id="dPalabras" value="${esc(v.palabras)}"></div>
+    <div class="campo completo"><label>Enlace al formato editable (Drive)${tip('Opcional: el Word o Google Doc para trabajar futuras versiones. Solo lo ven los usuarios con rol.')}</label><input type="url" id="dEditable" value="${esc(v.enlaceEditable)}" placeholder="https://docs.google.com/..."></div>
   </div>`;
 }
 function leerCamposDocumento(){
@@ -566,9 +653,9 @@ function leerCamposDocumento(){
 }
 function previoCodigo(){
   const el = $('codPrevio'); if (!el) return;
-  const t = S.cat.tipos.find(x=>x.nombre===$('dTipo').value), pr = $('dProceso').value;
-  if (!t || !pr){ el.textContent = 'Elige tipo y proceso'; return; }
-  const base = `${S.prefijo}-${t.codigo}-${pr}-`;
+  const t = S.cat.tipos.find(x=>x.nombre===$('dTipo').value), p = S.cat.procesos.find(x=>x.codigo===$('dProceso').value);
+  if (!t || !p){ el.textContent = 'Elige tipo y proceso'; return; }
+  const base = `${S.prefijo}-${t.codigo}-${p.raiz||p.codigo}-`;
   const usados = S.docs.map(d=>d.codigo).concat(S.sols.map(s=>s.codigo)).filter(c=>c.startsWith(base)).map(c=>parseInt(c.slice(base.length))||0);
   el.textContent = base + String(Math.max(0,...usados)+1).padStart(3,'0');
 }
@@ -576,9 +663,10 @@ function selectorFlujo(){
   const c = S.cand, yo = S.perfil.correo;
   const rev = c.revisores.filter(x=>x.correo!==yo), apr = c.aprobadores.filter(x=>x.correo!==yo);
   return `<div class="campos" style="margin-top:12px">
-    <div class="campo"><label class="req">Revisor</label><select id="fRevisor">${opciones(rev.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
-    <div class="campo"><label class="req">Aprobador</label><select id="fAprobador">${opciones(apr.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
-    ${!rev.length||!apr.length?'<div class="completo aviso-caja">No hay revisores o aprobadores registrados en la tabla RIID Usuarios.</div>':''}
+    <div class="campo"><label class="req">Revisor${tip('Lista de la tabla RIID Usuarios: personas con rol Revisor o Controlador documental. Revisará forma y contenido antes de la aprobación.')}</label><select id="fRevisor">${opciones(rev.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
+    <div class="campo"><label class="req">Aprobador${tip('Lista de la tabla RIID Usuarios: personas con rol Aprobador. Es quien deja el documento vigente y registra la resolución o acta.')}</label><select id="fAprobador">${opciones(apr.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
+    ${!rev.length||!apr.length?'<div class="completo aviso-caja">No hay revisores o aprobadores disponibles. Se cargan desde la tabla <b>RIID Usuarios</b>: agrega ahí una fila con Rol «Revisor» o «Aprobador» y Estado «Vigente».</div>':''}
+    <div class="completo aviso-caja info">Al registrar, la solicitud pasa a <b>revisión</b> y el revisor recibe un correo. Tú la sigues desde «Flujo documental».</div>
   </div>`;
 }
 
@@ -587,20 +675,20 @@ function formDocumento(modo, codigo){
   let html = '', titulo = '';
   if (modo==='Creación'){
     titulo = 'Solicitar creación de documento';
-    html = `<div class="codigo-previo"><span class="sub">Código que se reservará</span><b id="codPrevio">Elige tipo y proceso</b><span class="sub">(se confirma al registrar)</span></div>
+    html = tiraFlujo(0) + `<div class="codigo-previo"><span class="sub">Código que se reservará</span><b id="codPrevio">Elige tipo y proceso</b><span class="sub">(se confirma al registrar)</span></div>
       ${camposDocumento({})}
       <div class="campos" style="margin-top:12px"><div class="campo completo"><label class="req">Enlace del borrador en Drive</label><input type="url" id="fBorrador" placeholder="https://drive.google.com/file/d/..."><div class="ayuda">Comparte el archivo con el dominio urp.edu.pe (lector) para que se vea en el visor.</div></div>
       <div class="campo completo"><label class="req">Justificación de la creación</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
   } else if (modo==='Modificación'){
     titulo = `Solicitar modificación · ${doc.codigo}`;
-    html = `<div class="aviso-caja info">Versión vigente <b class="mono">v${esc(doc.version)}</b>. Ajusta solo lo que cambia; la versión vigente seguirá disponible hasta la aprobación.</div>
+    html = tiraFlujo(0) + `<div class="aviso-caja info">Versión vigente <b class="mono">v${esc(doc.version)}</b>. Ajusta solo lo que cambia; la versión vigente seguirá disponible hasta la aprobación.</div>
       <div class="campos" style="margin-bottom:12px"><div class="campo"><label class="req">Tipo de cambio</label><select id="fCambio">${opciones([{v:'Mayor',t:'Mayor (cambia contenido o requisitos)'},{v:'Menor',t:'Menor (forma, redacción, datos)'}],'Mayor')}</select></div></div>
       ${camposDocumento(doc)}
       <div class="campos" style="margin-top:12px"><div class="campo completo"><label class="req">Enlace del borrador actualizado</label><input type="url" id="fBorrador"></div>
       <div class="campo completo"><label class="req">Descripción y justificación del cambio</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
   } else if (modo==='Anulación'){
     titulo = `Solicitar anulación · ${doc.codigo}`;
-    html = `<div class="aviso-caja">Al aprobarse, <b>${esc(doc.titulo)}</b> pasará a obsoleto y quedará solo como referencia histórica.</div>
+    html = tiraFlujo(0) + `<div class="aviso-caja">Al aprobarse, <b>${esc(doc.titulo)}</b> pasará a obsoleto y quedará solo como referencia histórica.</div>
       <div class="campos"><div class="campo completo"><label class="req">Justificación</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
   } else {
     titulo = 'Registrar documento ya aprobado';
@@ -650,7 +738,9 @@ function vFlujo(){
   if (!grupos[pestanaFlujo]) pestanaFlujo = 'pendientes';
   const lista = grupos[pestanaFlujo].slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
   $('v-flujo').innerHTML = `
-  <div class="titulo-seccion"><div><h2>Flujo documental</h2><p>Elaboración → revisión → aprobación. Quien solicita no revisa ni aprueba su propia solicitud.</p></div></div>
+  <div class="titulo-seccion"><div><h2>Flujo documental</h2><p>Cada solicitud recorre estas cuatro etapas. Entra a una solicitud para ver los botones de la etapa que te toca.</p></div>
+    <div class="espacio"></div><button class="btn g" onclick="guiaRapida()">Ver la guía</button></div>
+  ${tiraFlujo(-1)}
   <div class="subpestanas" style="background:var(--papel);border:1px solid var(--linea);border-bottom:0;border-radius:10px 10px 0 0">
     <button class="${pestanaFlujo==='pendientes'?'activa':''}" onclick="pestanaFlujo='pendientes';vFlujo()">Mis pendientes (${grupos.pendientes.length})</button>
     <button class="${pestanaFlujo==='mias'?'activa':''}" onclick="pestanaFlujo='mias';vFlujo()">Mis solicitudes (${grupos.mias.length})</button>
@@ -738,7 +828,7 @@ async function vRegistros(force){
   }
   const formatos = [...new Set(S.registros.map(r=>r.formato))].sort();
   $('v-registros').innerHTML = `
-  <div class="titulo-seccion"><div><h2>Registros y evidencias</h2><p>Información documentada conservada · retención y disposición final (7.5.3)</p></div><div class="espacio"></div>
+  <div class="titulo-seccion"><div><h2>Registros y evidencias${tip('Aquí se deja constancia de que un formato se usó: actas, listas de asistencia, informes. No pasan por el flujo de aprobación; se registran y se conservan el plazo indicado.', true)}</h2><p>Información documentada conservada · retención y disposición final (7.5.3)</p></div><div class="espacio"></div>
     ${S.perfil.puede.registrar?'<button class="btn" onclick="formRegistro()">+ Registrar evidencia</button>':''}</div>
   <div class="barra-filtros">
     <input type="text" class="buscar" id="rQ" placeholder="Buscar en descripción, código o responsable" value="${esc(FR.q)}">
@@ -767,14 +857,14 @@ function formRegistro(){
   const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
   modal(`<div class="modal-cab"><h2 style="flex:1">Registrar evidencia</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
   <div class="modal-cuerpo"><div class="campos">
-    <div class="campo completo"><label class="req">Formato asociado</label><select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (sin formato controlado)</option></select></div>
+    <div class="campo completo"><label class="req">Formato asociado${tip('Formatos y matrices vigentes de la lista maestra. Elige «Otro registro» si la evidencia no responde a un formato controlado.')}</label><select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (sin formato controlado)</option></select></div>
     <div class="campo completo oculto" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro"></div>
     <div class="campo"><label class="req">Programa</label><select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),'','Seleccione')}</select></div>
     <div class="campo"><label class="req">Periodo</label><select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),'','Seleccione')}</select></div>
     <div class="campo completo"><label class="req">Descripción</label><textarea id="gDesc" placeholder="Qué contiene la evidencia"></textarea></div>
-    <div class="campo completo"><label class="req">Enlace de la evidencia (Drive)</label><input type="url" id="gEnlace" placeholder="https://drive.google.com/..."></div>
-    <div class="campo"><label>Retención (años)</label><input type="number" id="gRet" min="1" max="50" value="5"></div>
-    <div class="campo"><label>Disposición final</label><select id="gDisp">${opciones(DISPOSICION,'Evaluar al vencer')}</select></div>
+    <div class="campo completo"><label class="req">Enlace de la evidencia (Drive)${tip('Comparte el archivo o la carpeta con el dominio urp.edu.pe antes de pegar el enlace, para que el resto pueda abrirlo.')}</label><input type="url" id="gEnlace" placeholder="https://drive.google.com/..."></div>
+    <div class="campo"><label>Retención (años)${tip('Cuánto tiempo debe conservarse la evidencia. El sistema calcula la fecha límite y la marca en rojo al vencer.')}</label><input type="number" id="gRet" min="1" max="50" value="5"></div>
+    <div class="campo"><label>Disposición final${tip('Qué hacer cuando venza la retención: eliminar, transferir al archivo central o conservar de forma permanente.')}</label><select id="gDisp">${opciones(DISPOSICION,'Evaluar al vencer')}</select></div>
   </div></div>
   <div class="modal-pie"><button class="btn n" onclick="cerrarModal()">Cancelar</button><button class="btn" onclick="guardarRegistro()">Guardar evidencia</button></div>`);
   $('gFormato').onchange = e => $('gOtroCampo').classList.toggle('oculto', e.target.value!=='__otro');
@@ -815,6 +905,11 @@ async function diagnostico(limpiar){
     $('diag').innerHTML = `<div class="caja" style="margin-bottom:14px"><h3>Diagnóstico de tablas QuintaDB</h3><table><thead><tr><th>Tabla</th><th>ID</th><th>Filas</th><th>Estado</th></tr></thead><tbody>
       ${d.tablas.map(t=>`<tr><td>${esc(t.tabla)}</td><td class="mono sub">${esc(t.entity)}</td><td class="mono">${t.filas??'—'}</td>
       <td>${t.error?`<span class="eti e-rechazada">${esc(t.error)}</span>`:t.ok?'<span class="eti e-vigente">Columnas completas</span>':`<span class="eti e-observada">Faltan: ${esc(t.faltan.join(', '))}</span>`}</td></tr>`).join('')}</tbody></table>
+      <h3 style="font-size:13px;margin:16px 0 8px">Origen de cada desplegable</h3>
+      <table><thead><tr><th>Desplegable</th><th>Se carga desde</th><th>Elementos</th></tr></thead><tbody>
+        ${(d.fuentes||[]).map(f=>`<tr><td>${esc(f.desplegable)}</td><td class="sub">${esc(f.origen)}</td>
+        <td class="mono">${f.elementos?f.elementos:'<span class="eti e-rechazada">0</span>'}</td></tr>`).join('')}</tbody></table>
+      ${(d.muestraProcesos||[]).length?`<div class="sub" style="margin-top:8px">Procesos leídos del inventario (muestra): ${d.muestraProcesos.map(p=>`<span class="mono">${esc(p.codigo)}</span> ${esc(p.nombre)}`).join(' · ')}</div>`:''}
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><span class="sub" style="flex:1">Notificaciones por correo: ${d.notificaciones?'activas':'desactivadas'}. Si renombraste columnas en QuintaDB, vuelve a leer el mapa.</span>
       <button class="btn n sm" onclick="diagnostico(true)">Volver a leer columnas</button></div></div>`;
   }catch(e){ aviso(e.message, true); }
