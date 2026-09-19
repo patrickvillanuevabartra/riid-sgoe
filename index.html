@@ -199,10 +199,20 @@ dl.meta dd{margin:0;word-break:break-word}
 .flujo .paso.activo b{color:var(--brand-oscuro)}
 .flujo .paso.activo:not(:first-child)::before{background:var(--brand-suave)}
 
+.comose{border:1px solid var(--linea);border-left:3px solid var(--brand);background:var(--papel);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:14px}
+.comose > b{font-size:12.5px;display:block;margin-bottom:4px}
+.comose ol{margin:0;padding-left:18px}
+.comose li{font-size:12.5px;color:var(--tinta-media);margin:3px 0;line-height:1.45}
+.comose li b,.comose li strong{color:var(--tinta)}
+
 .guia h3{font-size:14px;margin:18px 0 6px}
 .guia h3:first-child{margin-top:0}
 .guia p,.guia li{font-size:13px;color:var(--tinta);margin:4px 0}
 .guia ul{margin:4px 0;padding-left:18px}
+.pasoguia{display:flex;gap:10px;margin:8px 0}
+.pasoguia .num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--brand-suave);color:var(--brand-oscuro);display:grid;place-items:center;font:600 12px/1 'IBM Plex Mono',monospace}
+.pasoguia .tit{display:block;font-size:13px;font-weight:600}
+.pasoguia p{margin:2px 0 0;font-size:12.5px;color:var(--tinta-media)}
 .guia .fuente{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:12.5px;margin:6px 0}
 .guia .fuente dt{color:var(--tinta-media)}
 .guia .fuente dd{margin:0}
@@ -294,11 +304,16 @@ function opcionesProcesos(lista, sel){
 const tip = (t, abajo) => `<span class="ayuda${abajo?' abajo':''}" data-tip="${esc(t)}">?</span>`;
 
 const PASOS = [
-  ['Elaboración','El responsable del proceso registra la solicitud con el borrador en Drive y elige quién revisa y quién aprueba.','Responsable de proceso'],
-  ['Revisión','El revisor comprueba forma y contenido. Puede dar conformidad u observar para que se subsane.','Revisor'],
-  ['Aprobación','El aprobador firma: registra la resolución o acta y el enlace final. También puede observar o rechazar.','Aprobador'],
-  ['Vigente','El documento entra a la lista maestra, la versión anterior pasa a obsoleta y se programa su próxima revisión.','Todos lo consultan']
+  ['Elaboración','Pestaña «Lista maestra» → botón «+ Solicitar nuevo documento». Si el documento ya existe, ábrelo y usa «Solicitar modificación».','Lo hace: responsable del proceso'],
+  ['Revisión','Pestaña «Flujo documental» → «Mis pendientes» → clic en la solicitud → botón «Revisión conforme» u «Observar».','Lo hace: el revisor que se eligió'],
+  ['Aprobación','Pestaña «Flujo documental» → «Mis pendientes» → clic en la solicitud → escribe la resolución o acta → «Aprobar y publicar».','Lo hace: el aprobador que se eligió'],
+  ['Vigente','El documento aparece en «Lista maestra» con su código y versión; la versión anterior pasa a obsoleta.','Lo consulta: toda la Facultad']
 ];
+/* Caja de instrucciones paso a paso que encabeza cada pestaña */
+function comoSeUsa(titulo, pasos){
+  return `<div class="comose"><b>${esc(titulo)}</b><ol>${pasos.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
+}
+
 function tiraFlujo(activo){
   return `<div class="flujo">${PASOS.map((p,i)=>`<div class="paso ${i===activo?'activo':''}">
     <b>${i+1}. ${esc(p[0])}</b><span>${esc(p[1])}</span><span class="quien">${esc(p[2])}</span></div>`).join('')}</div>`;
@@ -306,33 +321,57 @@ function tiraFlujo(activo){
 
 function guiaRapida(){
   const c = S.cat, p = S.perfil;
-  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub">Guía rápida</div><h2>Cómo funciona el repositorio</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
+  const paso = (n, t, cuerpo) => `<div class="pasoguia"><div class="num">${n}</div><div><span class="tit">${t}</span>${cuerpo}</div></div>`;
+  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub">Guía de uso</div><h2>Cómo funciona el repositorio, paso a paso</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
   <div class="modal-cuerpo guia">
-    ${tiraFlujo(-1)}
-    <h3>Qué guarda el repositorio</h3>
-    <p><b>Documentos</b> (información documentada que se mantiene): políticas, guías, procedimientos, formatos. Viven en la lista maestra con código, versión y estado.
-    <b>Registros</b> (información documentada que se conserva): las evidencias de que un formato se usó, con su plazo de retención.</p>
-    <h3>Cómo se crea o cambia un documento</h3>
-    <ul><li>Un documento nuevo nace en <b>Lista maestra → Solicitar nuevo documento</b>.</li>
-    <li>Para cambiarlo o darlo de baja, se abre su ficha y se usa <b>Solicitar modificación</b> o <b>Solicitar anulación</b>.</li>
-    <li>Mientras la solicitud está en curso, la versión vigente sigue siendo la oficial: nadie se queda sin documento.</li>
-    <li>Quien solicita no puede revisarse ni aprobarse a sí mismo, y revisor y aprobador deben ser personas distintas.</li>
-    <li>El código se asigna solo, con el formato <span class="mono">${esc(S.prefijo)}-TIPO-PROCESO-NNN</span>.</li></ul>
+    <div class="aviso-caja info">En una frase: <b>los documentos se proponen, alguien los revisa, alguien los aprueba y recién entonces quedan vigentes</b>. Todo ocurre dentro de este aplicativo; el archivo en sí vive en Google Drive.</div>
+
+    <h3>A. Quiero leer un documento (todos)</h3>
+    ${paso(1,'Entra a la pestaña «Lista maestra»','<p>Es el índice oficial de todos los documentos del SGOE.</p>')}
+    ${paso(2,'Busca o filtra','<p>Escribe el nombre en el buscador, o usa los filtros de tipo, proceso y programa.</p>')}
+    ${paso(3,'Haz clic en la fila','<p>Se abre la ficha: a la izquierda el documento para leerlo, a la derecha sus datos, versiones y observaciones. Lo que imprimas es copia no controlada.</p>')}
+
+    <h3>B. Quiero crear un documento nuevo${p.puede.solicitar?'':' (necesitas rol de responsable de proceso)'}</h3>
+    ${paso(1,'Prepara el borrador en Google Drive','<p>Sube el archivo y compártelo con el dominio <b>urp.edu.pe</b> como lector. Copia el enlace: sin eso, el revisor no podrá abrirlo.</p>')}
+    ${paso(2,'Lista maestra → botón «+ Solicitar nuevo documento»','<p>Ahí se registra la solicitud. Es el único lugar donde nacen los documentos nuevos.</p>')}
+    ${paso(3,'Llena el formulario','<p>Título, tipo, proceso, responsable, cada cuántos meses se revisa, el enlace del borrador y la justificación. El código (<span class="mono">' + esc(S.prefijo) + '-TIPO-PROCESO-NNN</span>) se asigna solo.</p>')}
+    ${paso(4,'Elige quién revisa y quién aprueba','<p>Son dos personas distintas, y ninguna puedes ser tú. Al guardar, al revisor le llega un correo.</p>')}
+    ${paso(5,'Sigue tu solicitud','<p>Pestaña <b>Flujo documental → Mis solicitudes</b>. Ahí ves en qué etapa está y quién la tiene.</p>')}
+
+    <h3>C. Me toca revisar</h3>
+    ${paso(1,'Flujo documental → Mis pendientes','<p>Ahí está lo que espera por ti. También te avisa el contador naranja de la pestaña.</p>')}
+    ${paso(2,'Abre la solicitud y lee el borrador','<p>El borrador se ve a la izquierda; a la derecha están los datos propuestos y, si es una modificación, lo que cambió respecto de la versión vigente (resaltado en amarillo).</p>')}
+    ${paso(3,'Decide','<p><b>Revisión conforme</b> la pasa al aprobador. <b>Observar</b> la devuelve al solicitante con tu comentario para que la corrija y la reenvíe.</p>')}
+
+    <h3>D. Me toca aprobar</h3>
+    ${paso(1,'Flujo documental → Mis pendientes','<p>Igual que el revisor, pero tus botones son otros.</p>')}
+    ${paso(2,'Registra el respaldo de la aprobación','<p>Escribe la resolución, acta u oficio que respalda la aprobación y, si lo tienes, el enlace del PDF final firmado.</p>')}
+    ${paso(3,'Aprueba','<p>Con <b>Aprobar y publicar</b> el documento entra a la lista maestra, la versión anterior pasa a obsoleta y se programa la próxima revisión. También puedes <b>Observar</b> o <b>Rechazar</b>.</p>')}
+
+    <h3>E. Quiero cambiar o dar de baja un documento</h3>
+    ${paso(1,'Ábrelo desde la Lista maestra','<p>Los botones están al pie de la ficha.</p>')}
+    ${paso(2,'«Solicitar modificación» o «Solicitar anulación»','<p>La modificación crea una versión nueva (mayor si cambia el contenido, menor si es de forma). La anulación deja el documento obsoleto.</p>')}
+    ${paso(3,'Mientras tanto, nadie se queda sin documento','<p>La versión vigente sigue siendo la oficial hasta que se apruebe el cambio. Verás la etiqueta «En actualización».</p>')}
+
+    <h3>F. Quiero registrar una evidencia</h3>
+    ${paso(1,'Registros y evidencias → «+ Registrar evidencia»','<p>Son las pruebas de que un formato se usó: actas, listas de asistencia, informes.</p>')}
+    ${paso(2,'Elige formato, programa y periodo, y pega el enlace de Drive','<p>Indica cuántos años debe conservarse; el sistema calcula hasta cuándo y avisa al vencer.</p>')}
+    ${paso(3,'Listo','<p>Las evidencias no pasan por revisión ni aprobación.</p>')}
+
     <h3>De dónde salen los desplegables</h3>
     <dl class="fuente">
       <dt>Tipo de documento</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Tipo de documento» (${c.tipos.length} en uso).</dd>
-      <dt>Proceso</dt><dd>Se lee del <b>Inventario de Procesos de la Matriz de Indicadores</b> (campo «Ruta completa»), para no duplicar el mapa de procesos (${c.procesos.length} disponibles).</dd>
-      <dt>Programa</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Programa» (${c.programas.length}).</dd>
-      <dt>Periodo</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Periodo» (${c.periodos.length}), usado en los registros.</dd>
-      <dt>Revisor</dt><dd>Tabla <b>RIID Usuarios</b>, personas con rol «Revisor» o «Controlador documental» y estado Vigente.</dd>
-      <dt>Aprobador</dt><dd>Tabla <b>RIID Usuarios</b>, personas con rol «Aprobador» y estado Vigente.</dd>
+      <dt>Proceso</dt><dd><b>Inventario de Procesos de la Matriz de Indicadores</b>, campo «Ruta completa». No se duplica aquí: lo que se agregue allá aparece acá (${c.procesos.length} disponibles).</dd>
+      <dt>Programa</dt><dd>Tabla <b>RIID Catálogos</b>, Categoría «Programa» (${c.programas.length}).</dd>
+      <dt>Periodo</dt><dd>Tabla <b>RIID Catálogos</b>, Categoría «Periodo» (${c.periodos.length}).</dd>
+      <dt>Revisor</dt><dd>Tabla <b>RIID Usuarios</b>, rol «Revisor» o «Controlador documental», estado Vigente.</dd>
+      <dt>Aprobador</dt><dd>Tabla <b>RIID Usuarios</b>, rol «Aprobador», estado Vigente.</dd>
     </dl>
     <p class="sub">Para que alguien aparezca en un desplegable basta con darle su fila en RIID Usuarios; no hay que tocar el aplicativo.</p>
+
     <h3>Tu acceso</h3>
-    <p>Entras como <b>${esc(p.roles.join(' · '))}</b>. ${p.puede.solicitar?'Puedes iniciar solicitudes en tus procesos.':'Puedes consultar los documentos vigentes.'}
-    ${p.puede.registrar?' Puedes registrar evidencias.':''} ${p.control?' Tienes control documental sobre todos los procesos.':''}</p>
-    <h3>Copias controladas</h3>
-    <p>La única copia válida es la que se ve aquí. Todo lo que se imprima o descargue es <b>copia no controlada</b>: hay que volver al repositorio para confirmar la versión.</p>
+    <p>Entras como <b>${esc(p.roles.join(' · '))}</b>. ${p.puede.solicitar?'Puedes iniciar solicitudes en tus procesos.':'Puedes consultar los documentos vigentes de distribución interna.'}
+    ${p.puede.registrar?'Puedes registrar evidencias.':''} ${p.control?'Tienes control documental sobre todos los procesos.':''}</p>
   </div>
   <div class="modal-pie"><button class="btn" onclick="cerrarModal()">Entendido</button></div>`);
 }
@@ -340,14 +379,62 @@ function guiaRapida(){
 function aviso(msg, error){ const d=document.createElement('div'); d.className='toast'+(error?' error':''); d.textContent=msg; $('avisos').appendChild(d); setTimeout(()=>d.remove(), error?7000:3500); }
 function cargando(on){ $('carga').classList.toggle('oculto', !on); }
 
-async function api(ruta, cuerpo){
+const pausa = ms => new Promise(r => setTimeout(r, ms));
+
+/* Renueva el token de Google sin sacar al usuario del aplicativo.
+   El token de Google dura una hora; antes esto obligaba a volver a entrar. */
+let esperaCredencial = null;
+function renovarSesion(){
+  return new Promise(resolver => {
+    if (!window.google || !google.accounts){ return resolver(false); }
+    let resuelto = false;
+    const terminar = v => { if (!resuelto){ resuelto = true; esperaCredencial = null; resolver(v); } };
+    esperaCredencial = () => terminar(true);
+    try{
+      google.accounts.id.prompt(n => {
+        const falla = (n.isNotDisplayed && n.isNotDisplayed()) || (n.isSkippedMoment && n.isSkippedMoment())
+          || (n.isDismissedMoment && n.isDismissedMoment());
+        if (falla) terminar(false);
+      });
+    }catch(e){ terminar(false); }
+    setTimeout(() => terminar(false), 9000);
+  });
+}
+
+async function api(ruta, cuerpo, intento){
+  intento = intento || 0;
   cargando(true);
   try{
-    const r = await fetch(CFG.API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({ ruta, cred:S.cred, cuerpo: cuerpo||{} }) });
-    const d = await r.json();
+    const ctrl = new AbortController();
+    const reloj = setTimeout(() => ctrl.abort(), 70000);
+    let texto;
+    try{
+      const r = await fetch(CFG.API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ ruta, cred:S.cred, cuerpo: cuerpo||{} }), signal: ctrl.signal });
+      texto = await r.text();
+    }catch(e){
+      if (e.name === 'AbortError'){
+        if (intento < 1){ await pausa(800); return api(ruta, cuerpo, intento+1); }
+        throw new Error('El servidor tardó demasiado en responder. Espera unos segundos y vuelve a intentar.');
+      }
+      if (intento < 1){ await pausa(800); return api(ruta, cuerpo, intento+1); }
+      throw new Error('No se pudo conectar con el repositorio. Revisa tu conexión y vuelve a intentar.');
+    }finally{ clearTimeout(reloj); }
+
+    let d;
+    try{ d = JSON.parse(texto); }
+    catch(e){
+      // El puente devolvió una página HTML (reinicio del Worker, tope de Google
+      // o implementación del Apps Script sin acceso público). Se reintenta una vez.
+      if (intento < 1){ await pausa(1200); return api(ruta, cuerpo, intento+1); }
+      throw new Error('El puente respondió con una página web en lugar de datos. Suele resolverse volviendo a intentar; si persiste, revisa en el Apps Script que la implementación siga publicada con acceso «cualquier usuario».');
+    }
+
     if (d.error){
-      if (/sesión venció|Sesión ausente/i.test(d.error)){ salir(true); }
+      if (/sesión venció|Sesión ausente|token/i.test(d.error)){
+        if (intento < 1 && await renovarSesion()) return api(ruta, cuerpo, intento+1);
+        salir(true);
+      }
       throw new Error(d.error);
     }
     return d;
@@ -380,14 +467,17 @@ const procNombre = c => (S.cat.procesos.find(p=>p.codigo===c)||{}).nombre || c;
 function iniciarGoogle(){
   if (!window.google || !google.accounts){ return setTimeout(iniciarGoogle, 200); }
   google.accounts.id.initialize({ client_id: CFG.CLIENT_ID, hd: CFG.DOMINIO, auto_select: true,
-    callback: r => { S.cred = r.credential; sessionStorage.setItem('riid_cred', r.credential); entrar(); } });
+    callback: r => {
+      S.cred = r.credential; sessionStorage.setItem('riid_cred', r.credential);
+      if (esperaCredencial) esperaCredencial(); else entrar();
+    } });
   google.accounts.id.renderButton($('botonGoogle'), { theme:'outline', size:'large', text:'signin_with', locale:'es' });
 }
 function salir(vencida){
   sessionStorage.removeItem('riid_cred'); S.cred='';
   if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
   $('aplicacion').classList.add('oculto'); $('pantallaAcceso').classList.remove('oculto');
-  if (vencida) $('errorAcceso').textContent = 'Tu sesión venció. Ingresa nuevamente.';
+  if (vencida) $('errorAcceso').textContent = 'Tu sesión de Google venció por inactividad. Vuelve a ingresar con el botón de arriba: no se perdió ninguna información.';
 }
 async function entrar(){
   $('errorAcceso').textContent='';
@@ -450,6 +540,16 @@ function vTablero(){
   <div class="titulo-seccion"><div><h2>Tablero del repositorio</h2><p>Control de la información documentada · requisito 7.5 de la ISO 21001:2018</p></div>
     <div class="espacio"></div>${reg?'':'<span class="eti e-neutra">Acceso de consulta: documentos vigentes de distribución interna</span>'}</div>
   ${reg?tiraFlujo(-1):''}
+  ${reg?comoSeUsa('Cómo funciona el repositorio, en cuatro pasos', [
+    'Un <b>documento nuevo</b> se pide desde <b>Lista maestra → + Solicitar nuevo documento</b>.',
+    'Un <b>cambio o una baja</b> se piden abriendo el documento en la Lista maestra y usando <b>Solicitar modificación</b> o <b>Solicitar anulación</b>.',
+    'Lo que te toca hacer a ti siempre aparece abajo en <b>Mis pendientes</b> y en la pestaña <b>Flujo documental</b>.',
+    'Las <b>evidencias</b> (actas, listas, informes) no pasan por el flujo: se cargan en <b>Registros y evidencias</b>.'
+  ]):comoSeUsa('Cómo consultar un documento', [
+    'Entra a la pestaña <b>Lista maestra</b>.',
+    'Busca por nombre o código, o usa los filtros.',
+    'Haz clic en la fila: el documento se abre y se lee dentro del repositorio.'
+  ])}
   <div class="cifras">
     <div><b>${vig.length}</b><span>Vigentes</span></div>
     <div><b>${S.docs.filter(d=>d.estado==='Obsoleto').length}</b><span>Obsoletos</span></div>
@@ -461,13 +561,13 @@ function vTablero(){
   <div class="rejilla g2">
     ${reg?`<div class="caja"><h3>Mis pendientes (${pend.length})</h3><div class="lista-tareas">${pend.length? pend.map(s=>`
       <div class="tarea" onclick="abrirSolicitud('${esc(s.id)}')">${etiEstado(s.etapa)}<div style="flex:1;min-width:0"><div class="t-tit">${esc(s.titulo)}</div>
-      <div class="sub"><span class="mono">${esc(s.codigo)}</span> · ${esc(s.tipo)} · ${esc(s.id)}</div></div></div>`).join('') : '<div class="vacio">No tienes tareas pendientes.</div>'}</div></div>`:''}
+      <div class="sub"><span class="mono">${esc(s.codigo)}</span> · ${esc(s.tipo)} · ${esc(s.id)}</div></div></div>`).join('') : '<div class="vacio">No tienes tareas pendientes.<br><span class="sub">Cuando alguien te asigne una revisión o una aprobación, aparecerá aquí y te llegará un correo.</span></div>'}</div></div>`:''}
     <div class="caja"><h3>Alertas de revisión · próximos 60 días</h3>${alertas.length?`<div class="lista-tareas">${alertas.slice(0,8).map(d=>`
       <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><div style="flex:1;min-width:0"><div class="t-tit">${esc(d.titulo)}</div><div class="sub"><span class="mono">${esc(d.codigo)}</span> · ${esc(d.responsable||d.unidad||'')}</div></div>${etiRevision(d)}</div>`).join('')}</div>`:'<div class="vacio">Ningún documento vence en los próximos 60 días.</div>'}</div>
     <div class="caja"><h3>Vigentes por macroproceso</h3><div class="barras">${barras('macroproceso', macros)}</div></div>
     <div class="caja"><h3>Vigentes por tipo de documento</h3><div class="barras">${barras('tipo', S.cat.tipos.map(t=>t.nombre))}</div></div>
     <div class="caja" style="grid-column:1/-1"><h3>Aprobados recientemente</h3>${recientes.length?`<div class="lista-tareas">${recientes.map(d=>`
-      <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><span class="cod" style="width:130px">${esc(d.codigo)}</span><div style="flex:1" class="t-tit">${esc(d.titulo)}</div><span class="sub mono">v${esc(d.version)} · ${fechaCorta(d.fechaAprobacion)}</span></div>`).join('')}</div>`:'<div class="vacio">Aún no hay documentos registrados.</div>'}</div>
+      <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><span class="cod" style="width:130px">${esc(d.codigo)}</span><div style="flex:1" class="t-tit">${esc(d.titulo)}</div><span class="sub mono">v${esc(d.version)} · ${fechaCorta(d.fechaAprobacion)}</span></div>`).join('')}</div>`:`<div class="vacio">Aún no hay documentos registrados.${S.perfil.puede.registrarExistente?'<br><span class="sub">Empieza por «Lista maestra → Registrar documento ya aprobado» con la Política de calidad, el Alcance y las guías.</span>':''}</div>`}</div>
   </div>`;
 }
 
@@ -488,6 +588,12 @@ function vMaestra(){
     ${p.registrarExistente?'<button class="btn g" onclick="formDocumento(\'existente\')">Registrar documento ya aprobado</button>':''}
     ${p.solicitar?'<button class="btn" onclick="formDocumento(\'Creación\')">+ Solicitar nuevo documento</button>':''}
   </div>
+  ${comoSeUsa('Cómo se usa esta pestaña', [
+    '<b>Para leer un documento:</b> haz clic en su fila. Se abre la ficha con el archivo, sus versiones y sus observaciones.',
+    S.perfil.puede.solicitar ? '<b>Para crear uno nuevo:</b> botón <b>+ Solicitar nuevo documento</b> (arriba a la derecha). Antes, sube el borrador a Drive y compártelo con urp.edu.pe.' : '<b>Para proponer un documento nuevo:</b> pídelo al responsable de tu proceso o a control documental.',
+    S.perfil.puede.solicitar ? '<b>Para cambiarlo o darlo de baja:</b> abre el documento y usa los botones <b>Solicitar modificación</b> o <b>Solicitar anulación</b> del pie de la ficha.' : '',
+    S.perfil.puede.registrarExistente ? '<b>Para cargar documentos ya aprobados antes del repositorio</b> (Política, Alcance, guías): botón <b>Registrar documento ya aprobado</b>. No pasan por el flujo.' : ''
+  ].filter(Boolean))}
   <div class="barra-filtros">
     <input type="text" class="buscar" id="fQ" placeholder="Buscar por código, título, palabra clave o responsable" value="${esc(F.q)}">
     <select id="fTipo">${opciones(S.cat.tipos.map(t=>t.nombre),F.tipo,'Todos los tipos')}</select>
@@ -516,7 +622,7 @@ function pintarMaestra(){
       <td>${etiEstado(d.estado)}${d.solicitudEnCurso?'<div style="margin-top:3px"><span class="eti e-flujo">En actualización</span></div>':''}${S.obsAbiertas[d.codigo]?`<div class="sub" style="margin-top:3px">${S.obsAbiertas[d.codigo]} observ. abierta(s)</div>`:''}</td>
       <td>${etiRevision(d)}</td>
       <td><button class="btn g sm" onclick="event.stopPropagation();abrirDocumento('${esc(d.codigo)}')">Ver</button></td>
-    </tr>`).join('') : '<tr><td colspan="8" class="vacio">No hay documentos con esos filtros.</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="8" class="vacio">No hay documentos con esos filtros.<br><span class="sub">Prueba con el estado «Todos los estados» o limpia el buscador.</span></td></tr>';
   $('pieMaestra').textContent = `Mostrando ${lista.length} de ${S.docs.length} documentos · consultado el ${fechaCorta(S.hoy)} por ${S.perfil.nombre}`;
 }
 function exportarCSV(){
@@ -582,7 +688,7 @@ function pintarFicha(pestana){
       <div class="n-txt">${esc(o.texto)}</div>
       ${o.respuesta?`<div class="n-resp"><b>${esc(o.atendido)}</b> · ${fechaCorta(o.fechaAtencion)}<br>${esc(o.respuesta)}</div>`:''}
       ${o.estado!=='Atendida' && (S.perfil.control || d.correoResponsable===S.perfil.correo || puedeGestionarProc(d))?`<div style="margin-top:6px"><button class="btn g sm" onclick="atenderObservacion('${esc(o.id)}','${esc(d.codigo)}')">Registrar atención</button></div>`:''}
-    </div>`).join('') : '<div class="vacio">Sin observaciones registradas.</div>'}`;
+    </div>`).join('') : '<div class="vacio">Sin observaciones registradas.<br><span class="sub">Usa el recuadro de arriba para dejar un hallazgo, una recomendación o una no conformidad sobre este documento.</span></div>'}`;
   if (pestana==='flujo') cuerpo = solicitudes.length ? `<table><thead><tr><th>Solicitud</th><th>Tipo</th><th>Etapa</th><th>Fecha</th></tr></thead><tbody>${solicitudes.map(s=>`
     <tr class="clic" onclick="abrirSolicitud('${esc(s.id)}')"><td class="cod">${esc(s.id)}</td><td>${esc(s.tipo)}${s.versionPropuesta?' · v'+esc(s.versionPropuesta):''}</td><td>${etiEstado(s.etapa)}</td><td class="sub">${fechaCorta(s.fecha)}</td></tr>`).join('')}</tbody></table>` : '<div class="vacio">Sin solicitudes.</div>';
 
@@ -741,6 +847,12 @@ function vFlujo(){
   <div class="titulo-seccion"><div><h2>Flujo documental</h2><p>Cada solicitud recorre estas cuatro etapas. Entra a una solicitud para ver los botones de la etapa que te toca.</p></div>
     <div class="espacio"></div><button class="btn g" onclick="guiaRapida()">Ver la guía</button></div>
   ${tiraFlujo(-1)}
+  ${comoSeUsa('Cómo se usa esta pestaña', [
+    '<b>Mis pendientes:</b> solicitudes que están esperando una acción tuya. Si está vacío, no tienes nada que hacer.',
+    '<b>Haz clic en la fila</b> para abrir la solicitud: verás el borrador a la izquierda y el historial a la derecha.',
+    '<b>Los botones aparecen abajo del todo</b> y cambian según la etapa: «Revisión conforme» u «Observar» si te toca revisar; «Aprobar y publicar», «Observar» o «Rechazar» si te toca aprobar; «Reenviar a revisión» si tu solicitud fue observada.',
+    'Cada vez que la solicitud avanza, la siguiente persona recibe un correo automático.'
+  ])}
   <div class="subpestanas" style="background:var(--papel);border:1px solid var(--linea);border-bottom:0;border-radius:10px 10px 0 0">
     <button class="${pestanaFlujo==='pendientes'?'activa':''}" onclick="pestanaFlujo='pendientes';vFlujo()">Mis pendientes (${grupos.pendientes.length})</button>
     <button class="${pestanaFlujo==='mias'?'activa':''}" onclick="pestanaFlujo='mias';vFlujo()">Mis solicitudes (${grupos.mias.length})</button>
@@ -754,7 +866,7 @@ function vFlujo(){
       <td><div style="font-weight:500">${esc(s.titulo)}</div><div class="sub mono">${esc(s.codigo)}</div></td>
       <td>${esc(s.tipo)}${s.versionPropuesta?` <span class="sub mono">→ v${esc(s.versionPropuesta)}</span>`:''}</td>
       <td>${etiEstado(s.etapa)}</td><td>${abierta?esc(aQuienLeToca(s)):'—'}</td><td class="sub">${fechaCorta(s.fecha.slice(0,10))}</td>
-      <td class="mono">${abierta?diasEntre(ult.slice(0,10), S.hoy):''}</td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">Nada por aquí.</td></tr>'}
+      <td class="mono">${abierta?diasEntre(ult.slice(0,10), S.hoy):''}</td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">No hay solicitudes en esta lista.<br><span class="sub">Las solicitudes nacen en «Lista maestra → + Solicitar nuevo documento».</span></td></tr>'}
   </tbody></table></div>`;
 }
 
@@ -823,13 +935,25 @@ async function reenviar(id){
 /* ---------------------------------------------------- registros/evidencias */
 async function vRegistros(force){
   if (!S.registros || force){
-    $('v-registros').innerHTML = '<div class="vacio">Cargando registros…</div>';
-    try{ S.registros = (await api('/registros')).registros; }catch(e){ $('v-registros').innerHTML = `<div class="vacio">${esc(e.message)}</div>`; return; }
+    $('v-registros').innerHTML = '<div class="caja"><h3>Registros y evidencias</h3><div class="vacio">Cargando registros…</div></div>';
+    try{ S.registros = (await api('/registros')).registros; }
+    catch(e){
+      $('v-registros').innerHTML = `<div class="caja"><h3>No se pudieron cargar los registros</h3>
+        <div class="aviso-caja">${esc(e.message)}</div>
+        <button class="btn" onclick="vRegistros(true)">Reintentar</button></div>`;
+      return;
+    }
   }
   const formatos = [...new Set(S.registros.map(r=>r.formato))].sort();
   $('v-registros').innerHTML = `
   <div class="titulo-seccion"><div><h2>Registros y evidencias${tip('Aquí se deja constancia de que un formato se usó: actas, listas de asistencia, informes. No pasan por el flujo de aprobación; se registran y se conservan el plazo indicado.', true)}</h2><p>Información documentada conservada · retención y disposición final (7.5.3)</p></div><div class="espacio"></div>
     ${S.perfil.puede.registrar?'<button class="btn" onclick="formRegistro()">+ Registrar evidencia</button>':''}</div>
+  ${comoSeUsa('Cómo se registra una evidencia', [
+    'Sube el archivo a Google Drive y <b>compártelo con el dominio urp.edu.pe</b> (como lector). Copia su enlace.',
+    'Pulsa <b>+ Registrar evidencia</b>, elige el <b>formato</b> al que corresponde, el <b>programa</b> y el <b>periodo</b>.',
+    'Describe qué contiene, pega el enlace e indica cuántos años debe conservarse. El sistema calcula la fecha límite.',
+    'Las evidencias <b>no pasan por revisión ni aprobación</b>: quedan registradas al guardar.'
+  ])}
   <div class="barra-filtros">
     <input type="text" class="buscar" id="rQ" placeholder="Buscar en descripción, código o responsable" value="${esc(FR.q)}">
     <select id="rFormato">${opciones(formatos,FR.formato,'Todos los formatos')}</select>
@@ -851,7 +975,7 @@ function pintarRegistros(){
     <td>${esc(r.programa)}<div class="sub">${esc(r.periodo)}</div></td><td style="max-width:340px">${esc(r.descripcion)}</td>
     <td>${vencido?`<span class="eti e-vencida">${fechaCorta(r.conservarHasta)}</span>`:`<span class="mono sub">${fechaCorta(r.conservarHasta)}</span>`}<div class="sub">${esc(r.disposicion)}</div></td>
     <td class="sub">${esc(r.registradoPor)}<br>${fechaCorta(r.fecha)}</td>
-    <td><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a></td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">Sin registros con esos filtros.</td></tr>';
+    <td><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a></td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">Sin registros con esos filtros.<br><span class="sub">Si es la primera vez, usa «+ Registrar evidencia» para cargar la primera.</span></td></tr>';
 }
 function formRegistro(){
   const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
@@ -879,9 +1003,11 @@ async function guardarRegistro(){
 
 /* --------------------------------------------------------- administración */
 async function vAdmin(){
-  $('v-admin').innerHTML = '<div class="vacio">Cargando…</div>';
+  $('v-admin').innerHTML = '<div class="caja"><div class="vacio">Cargando…</div></div>';
   let d;
-  try{ d = await api('/bitacora'); }catch(e){ $('v-admin').innerHTML = `<div class="vacio">${esc(e.message)}</div>`; return; }
+  try{ d = await api('/bitacora'); }
+  catch(e){ $('v-admin').innerHTML = `<div class="caja"><h3>No se pudo cargar</h3><div class="aviso-caja">${esc(e.message)}</div>
+    <button class="btn" onclick="vAdmin()">Reintentar</button></div>`; return; }
   $('v-admin').innerHTML = `
   <div class="titulo-seccion"><div><h2>Administración</h2><p>Usuarios, catálogos y trazabilidad. Usuarios y catálogos se editan directamente en QuintaDB (tablas RIID Usuarios y RIID Catálogos).</p></div><div class="espacio"></div>
     ${S.perfil.puede.diagnostico?'<button class="btn g" onclick="diagnostico(false)">Diagnóstico de tablas</button>':''}</div>
@@ -917,6 +1043,7 @@ async function diagnostico(limpiar){
 
 /* --------------------------------------------------------------- arranque */
 document.addEventListener('keydown', e => { if (e.key==='Escape') cerrarModal(); });
+setInterval(() => { if (S.cred) renovarSesion(); }, 40*60*1000);   // el token de Google dura 1 hora
 (function(){
   const c = sessionStorage.getItem('riid_cred');
   if (c){ S.cred = c; entrar(); }
