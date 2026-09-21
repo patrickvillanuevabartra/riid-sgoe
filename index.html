@@ -275,6 +275,12 @@ dl.meta dd{margin:0;word-break:break-word}
 .asis-pie{display:flex;gap:6px;align-items:flex-end;padding:9px 10px;border-top:1px solid var(--linea)}
 .asis-pie textarea{flex:1;min-height:38px;max-height:120px;resize:none;font-size:13px}
 .asis-clip{cursor:pointer;font-size:18px;padding:6px 2px}
+.asis-mic{border:0;background:none;font-size:18px;padding:6px 2px;border-radius:50%;line-height:1}
+.asis-mic.escuchando{background:var(--falla);animation:latido 1s ease-in-out infinite}
+@keyframes latido{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.55)}50%{box-shadow:0 0 0 7px rgba(192,57,43,0)}}
+.asis-voz{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:6px;font-size:15px;padding:3px 7px;margin-right:2px}
+.asis-voz.activa{background:rgba(255,255,255,.35)}
+.asis-msg.leyendo{border-left:3px solid var(--brand)}
 .asis-nota{font-size:10.5px;color:var(--tinta-tenue);padding:0 12px 8px;line-height:1.35}
 @media print{.asis-boton,.asis-panel{display:none!important}}
 
@@ -561,6 +567,7 @@ function salir(vencida){
   sessionStorage.removeItem('riid_cred'); S.cred='';
   if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
   $('aplicacion').classList.add('oculto'); $('pantallaAcceso').classList.remove('oculto');
+  try{ pararVoz(); if (dictando && ASIS_REC) ASIS_REC.stop(); }catch(e){}
   ['asisBoton','asisPanel'].forEach(id => { const el = $(id); if (el) el.remove(); });
   ASIS.mensajes = []; ASIS.imagen = null;
   if (vencida) $('errorAcceso').textContent = 'Tu sesión de Google venció por inactividad. Vuelve a ingresar con el botón de arriba: no se perdió ninguna información.';
@@ -1682,26 +1689,28 @@ function montarAsistente(){
   if ($('asisBoton') || !CFG.ASISTENTE_URL) return;
   const b = document.createElement('button');
   b.id = 'asisBoton'; b.className = 'asis-boton'; b.innerHTML = '💬 Ayuda';
-  b.onclick = () => { $('asisPanel').classList.toggle('oculto'); if (!$('asisPanel').classList.contains('oculto')) $('asisTexto').focus(); };
+  b.onclick = () => { if ($('asisPanel').classList.contains('oculto')){ $('asisPanel').classList.remove('oculto'); $('asisTexto').focus(); } else cerrarAsistente(); };
   document.body.appendChild(b);
   const p = document.createElement('div');
   p.id = 'asisPanel'; p.className = 'asis-panel oculto';
   p.innerHTML = `
     <div class="asis-cab"><div><b>Asistente del RIID</b><span>Uso del repositorio e información documentada ISO 21001</span></div>
-      <button class="cerrar" onclick="$('asisPanel').classList.add('oculto')">×</button></div>
+      <button class="asis-voz" id="asisVoz" title="Lectura en voz alta: apagada" onclick="alternarVoz()">🔇</button>
+      <button class="cerrar" onclick="cerrarAsistente()">×</button></div>
     <div class="asis-cuerpo" id="asisCuerpo">
       <div class="asis-msg asistente"><p>Hola. Puedo ayudarte a <b>usar el repositorio</b> (dónde está cada botón, qué poner en cada campo, de dónde salen las listas) y también con el <b>contenido</b>: cómo redactar un procedimiento, qué revisar antes de aprobar, cuánto conservar un registro o qué pide la cláusula 7.5.</p>
-      <p>Si algo no te sale, pégame una captura de pantalla con <b>Ctrl+V</b> o con el clip 📎.</p></div>
+      <p>Si algo no te sale, pégame una captura de pantalla con <b>Ctrl+V</b> o con el clip 📎. También puedes <b>dictar</b> tu pregunta con 🎙️ y activar la <b>lectura en voz alta</b> con el altavoz de arriba.</p></div>
       <div class="asis-sugeridas">${['¿Cómo pido un documento nuevo?','¿De dónde salen las listas desplegables?','¿Qué diferencia hay entre documento y registro?','¿Qué reviso antes de dar conformidad?']
         .map(t=>`<button onclick="preguntarAsistente(${JSON.stringify(t).replace(/"/g,'&quot;')})">${esc(t)}</button>`).join('')}</div>
     </div>
     <div class="asis-adjunto oculto" id="asisAdjunto"><img id="asisMini" alt=""><span>Captura adjunta</span><button onclick="quitarImagen()">Quitar</button></div>
     <div class="asis-pie">
       <label class="asis-clip" title="Adjuntar captura">📎<input type="file" accept="image/*" id="asisArchivo" hidden></label>
-      <textarea id="asisTexto" rows="2" placeholder="Escribe tu pregunta… (Enter envía, Shift+Enter salto de línea)"></textarea>
+      <button class="asis-mic oculto" id="asisMic" title="Dictar la pregunta" onclick="alternarDictado()">🎙️</button>
+      <textarea id="asisTexto" rows="2" placeholder="Escribe o dicta tu pregunta…" title="Enter envía · Shift+Enter hace un salto de línea"></textarea>
       <button class="btn" id="asisEnviar" onclick="enviarAsistente()">Enviar</button>
     </div>
-    <div class="asis-nota">Responde con base en el manual del RIID. Puede equivocarse: verifica lo importante en la ficha del documento o con control documental.</div>`;
+    <div class="asis-nota">Responde con base en el manual del RIID. Puede equivocarse: verifica lo importante en la ficha del documento o con control documental. El dictado y la voz los procesa tu propio navegador: el audio no se envía al asistente.</div>`;
   document.body.appendChild(p);
   $('asisTexto').addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarAsistente(); } });
   $('asisTexto').addEventListener('paste', e => {
@@ -1709,6 +1718,99 @@ function montarAsistente(){
     if (it){ e.preventDefault(); cargarImagen(it.getAsFile()); }
   });
   $('asisArchivo').onchange = e => { if (e.target.files[0]) cargarImagen(e.target.files[0]); e.target.value=''; };
+  if (window.SpeechRecognition || window.webkitSpeechRecognition) $('asisMic').classList.remove('oculto');
+  if (!('speechSynthesis' in window)) $('asisVoz').classList.add('oculto');
+}
+
+/* ---------------- dictado (voz → texto) ----------------
+   Lo hace el navegador (Chrome y Edge). Lo dictado aparece en el cuadro
+   de texto para corregirlo antes de enviar; no se envía solo. */
+let ASIS_REC = null, dictando = false;
+function avisoAsistente(t){
+  const d = pintarMensaje('asistente', `<p>${esc(t)}</p>`, 'error');
+  setTimeout(() => { if (d && d.parentElement) d.remove(); }, 9000);
+}
+function alternarDictado(){
+  if (dictando){ try{ ASIS_REC && ASIS_REC.stop(); }catch(e){} return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return avisoAsistente('Tu navegador no permite dictar. Usa Chrome o Edge.');
+  pararVoz();
+  ASIS_REC = new SR();
+  ASIS_REC.lang = 'es-PE'; ASIS_REC.interimResults = true; ASIS_REC.continuous = false;
+  const base = $('asisTexto').value.trim();
+  ASIS_REC.onstart = () => { dictando = true; $('asisMic').classList.add('escuchando'); $('asisMic').title = 'Escuchando… pulsa para detener'; };
+  ASIS_REC.onresult = ev => {
+    let txt = '';
+    for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+    $('asisTexto').value = (base ? base + ' ' : '') + txt.trim();
+  };
+  ASIS_REC.onend = () => { dictando = false; $('asisMic').classList.remove('escuchando'); $('asisMic').title = 'Dictar la pregunta'; $('asisTexto').focus(); };
+  ASIS_REC.onerror = ev => {
+    // Cada fallo tiene una causa y una solución distintas: decirlo evita que
+    // la persona crea que el dictado no funciona.
+    const M = {
+      'not-allowed':'El navegador bloqueó el micrófono. Pulsa el candado de la barra de direcciones y permite el micrófono para este sitio.',
+      'service-not-allowed':'Windows no está dejando usar el micrófono. Revisa Configuración › Privacidad › Micrófono y activa el acceso para las aplicaciones de escritorio.',
+      'no-speech':'No se escuchó nada. Acércate al micrófono y vuelve a intentarlo.',
+      'audio-capture':'No se encontró ningún micrófono conectado.',
+      'network':'El dictado necesita conexión a internet y no pudo alcanzar el servicio de voz del navegador.',
+      'aborted':''
+    };
+    const t = M[ev.error];
+    if (t === undefined) avisoAsistente('El dictado falló: ' + ev.error);
+    else if (t) avisoAsistente(t);
+  };
+  // Se pide el micrófono antes de empezar: el navegador muestra el aviso de
+  // permiso y sabemos si el equipo lo tiene disponible.
+  const arrancar = () => { try{ ASIS_REC.start(); }catch(e){ avisoAsistente('No se pudo iniciar el dictado: ' + e.message); } };
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({ audio:true })
+      .then(st => { st.getTracks().forEach(t => t.stop()); arrancar(); })
+      .catch(err => {
+        if (err && err.name === 'NotAllowedError') avisoAsistente('No se dio permiso al micrófono. Pulsa el candado de la barra de direcciones y permítelo para este sitio.');
+        else if (err && err.name === 'NotFoundError') avisoAsistente('No se detectó ningún micrófono en este equipo.');
+        else avisoAsistente('No se pudo acceder al micrófono: ' + (err && err.name || 'error'));
+      });
+  } else arrancar();
+}
+
+/* ---------------- lectura en voz alta (texto → voz) ----------------
+   Empieza apagada: en una oficina compartida cada quien decide. */
+let vozActiva = false, mensajeLeyendo = null;
+function alternarVoz(){
+  vozActiva = !vozActiva;
+  $('asisVoz').textContent = vozActiva ? '🔊' : '🔇';
+  $('asisVoz').title = 'Lectura en voz alta: ' + (vozActiva ? 'activada' : 'apagada');
+  $('asisVoz').classList.toggle('activa', vozActiva);
+  if (!vozActiva) pararVoz();
+}
+function vozEspanol(){
+  const v = speechSynthesis.getVoices();
+  return v.find(x => /es[-_]PE/i.test(x.lang)) || v.find(x => /es[-_](419|MX|US|CO|CL|AR)/i.test(x.lang)) || v.find(x => /^es/i.test(x.lang)) || null;
+}
+function textoLimpio(t){
+  return String(t).replace(/\*\*|__|_\(|\)_/g,'').replace(/^\s*#{1,4}\s*/gm,'').replace(/^\s*[-•*]\s+/gm,'').replace(/^\s*(\d+)[.)]\s+/gm,'$1. ')
+    .replace(/https?:\/\/\S+/g,'el enlace').replace(/[«»]/g,'').replace(/\s*→\s*/g,', luego ').replace(/[ \t]{2,}/g,' ').replace(/\s+\n/g,'\n');
+}
+function leerEnVoz(texto, nodo){
+  if (!vozActiva || !('speechSynthesis' in window)) return;
+  pararVoz();
+  const u = new SpeechSynthesisUtterance(textoLimpio(texto));
+  const v = vozEspanol(); if (v) u.voice = v;
+  u.lang = v ? v.lang : 'es-PE'; u.rate = 1.02;
+  mensajeLeyendo = nodo; if (nodo) nodo.classList.add('leyendo');
+  u.onend = u.onerror = () => { if (mensajeLeyendo) mensajeLeyendo.classList.remove('leyendo'); mensajeLeyendo = null; };
+  speechSynthesis.speak(u);
+}
+function pararVoz(){
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (mensajeLeyendo) mensajeLeyendo.classList.remove('leyendo'); mensajeLeyendo = null;
+}
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
+function cerrarAsistente(){
+  pararVoz();
+  if (dictando){ try{ ASIS_REC.stop(); }catch(e){} }
+  $('asisPanel').classList.add('oculto');
 }
 
 /* Reduce la captura en el navegador (máx. 1400 px, JPEG) antes de enviarla */
@@ -1744,6 +1846,8 @@ function preguntarAsistente(t){ $('asisTexto').value = t; enviarAsistente(); }
 
 async function enviarAsistente(reintento){
   if (ASIS.ocupado) return;
+  if (dictando){ try{ ASIS_REC.stop(); }catch(e){} }
+  pararVoz();
   let texto, imagen;
   if (reintento && ASIS.ultimo){ ({ texto, imagen } = ASIS.ultimo); }
   else {
@@ -1768,7 +1872,8 @@ async function enviarAsistente(reintento){
     if (d.error) throw new Error(d.error);
     espera.remove();
     ASIS.mensajes.push({ rol:'asistente', texto: d.respuesta });
-    pintarMensaje('asistente', mdSimple(d.respuesta));
+    const nodo = pintarMensaje('asistente', mdSimple(d.respuesta));
+    leerEnVoz(d.respuesta, nodo);
     ASIS.ultimo = null;
   }catch(e){
     espera.remove();
