@@ -127,7 +127,7 @@ tbody tr.clic:hover{background:#f8fbf9}
 @media(max-width:700px){.campos{grid-template-columns:1fr}}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips label{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--linea);border-radius:14px;padding:3px 10px;font-size:12.5px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--tinta);cursor:pointer}
-.chips input{margin:0}
+.chips input,.campo .chips input{margin:0;width:auto;flex:none}
 .codigo-previo{display:flex;align-items:center;gap:10px;background:var(--brand-suave);border-radius:8px;padding:9px 12px;margin-bottom:12px}
 .codigo-previo b{font-family:'IBM Plex Mono',monospace;font-size:15px}
 
@@ -205,6 +205,22 @@ dl.meta dd{margin:0;word-break:break-word}
 .comose li{font-size:12.5px;color:var(--tinta-media);margin:3px 0;line-height:1.45}
 .comose li b,.comose li strong{color:var(--tinta)}
 
+.sec-form{font-size:13px;margin:18px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--linea);color:var(--brand-oscuro)}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.subnav button{border:1px solid var(--linea);background:var(--papel);border-radius:16px;padding:5px 12px;font-size:12.5px;color:var(--tinta-media)}
+.subnav button.activa{background:var(--brand);border-color:var(--brand);color:#fff}
+.candado{font-size:10px;opacity:.7}
+.finalidad{font-size:12.5px;color:var(--tinta-media);line-height:1.5}
+.finalidad b{color:var(--tinta)}
+.nota-campo{font-size:11.5px;color:var(--tinta-media);margin-top:4px;line-height:1.45;padding-left:9px;border-left:2px solid var(--linea)}
+.nota-campo.origen{border-left-color:var(--azul);background:var(--azul-suave);padding:6px 9px;border-radius:0 5px 5px 0}
+.nota-campo b{color:var(--tinta)}
+.nota-campo .ir{font-weight:600;white-space:nowrap}
+.ficha-campos{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
+@media(max-width:700px){.ficha-campos{grid-template-columns:1fr}}
+.fc-et{font-size:11px;font-weight:600;color:var(--tinta-media);text-transform:uppercase;letter-spacing:.03em}
+.fc-val{font-size:13px;margin-top:2px;word-break:break-word}
+
 .guia h3{font-size:14px;margin:18px 0 6px}
 .guia h3:first-child{margin-top:0}
 .guia p,.guia li{font-size:13px;color:var(--tinta);margin:4px 0}
@@ -216,6 +232,37 @@ dl.meta dd{margin:0;word-break:break-word}
 .guia .fuente{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:12.5px;margin:6px 0}
 .guia .fuente dt{color:var(--tinta-media)}
 .guia .fuente dd{margin:0}
+
+/* asistente */
+.asis-boton{position:fixed;right:18px;bottom:18px;z-index:70;border:0;border-radius:22px;background:var(--brand);color:#fff;padding:10px 18px;font-weight:600;font-size:14px;box-shadow:0 6px 18px rgba(15,143,94,.35)}
+.asis-boton:hover{background:var(--brand-oscuro)}
+.asis-panel{position:fixed;right:18px;bottom:66px;z-index:75;width:390px;max-width:calc(100vw - 36px);height:min(560px, calc(100vh/1.22 - 100px));background:var(--papel);border:1px solid var(--linea);border-radius:12px;box-shadow:0 18px 44px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden}
+.asis-cab{display:flex;align-items:flex-start;gap:8px;padding:11px 14px;background:var(--brand);color:#fff}
+.asis-cab div{flex:1;line-height:1.25}
+.asis-cab b{display:block;font-size:14px}
+.asis-cab span{font-size:11px;opacity:.85}
+.asis-cab .cerrar{color:#fff}
+.asis-cuerpo{flex:1;overflow-y:auto;padding:12px;background:var(--fondo)}
+.asis-msg{max-width:88%;padding:8px 11px;border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.5;word-wrap:break-word}
+.asis-msg p{margin:0 0 6px}.asis-msg p:last-child{margin:0}
+.asis-msg ol,.asis-msg ul{margin:4px 0 6px;padding-left:18px}
+.asis-msg li{margin:2px 0}
+.asis-msg.asistente{background:var(--papel);border:1px solid var(--linea)}
+.asis-msg.usuario{background:var(--brand-suave);margin-left:auto}
+.asis-msg.error{border-color:var(--falla);background:var(--falla-suave)}
+.asis-escribiendo{color:var(--tinta-tenue);font-style:italic}
+.asis-sugeridas{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.asis-sugeridas button{text-align:left;border:1px solid var(--linea);background:var(--papel);border-radius:8px;padding:6px 10px;font-size:12.5px;color:var(--brand-oscuro)}
+.asis-sugeridas button:hover{border-color:var(--brand)}
+.asis-adjunto{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--linea);font-size:12px}
+.asis-adjunto img{height:34px;border-radius:4px;border:1px solid var(--linea)}
+.asis-adjunto span{flex:1;color:var(--tinta-media)}
+.asis-adjunto button{border:0;background:none;color:var(--falla);font-size:12px}
+.asis-pie{display:flex;gap:6px;align-items:flex-end;padding:9px 10px;border-top:1px solid var(--linea)}
+.asis-pie textarea{flex:1;min-height:38px;max-height:120px;resize:none;font-size:13px}
+.asis-clip{cursor:pointer;font-size:18px;padding:6px 2px}
+.asis-nota{font-size:10.5px;color:var(--tinta-tenue);padding:0 12px 8px;line-height:1.35}
+@media print{.asis-boton,.asis-panel{display:none!important}}
 
 .solo-impresion{display:none}
 @media print{
@@ -359,15 +406,16 @@ function guiaRapida(){
     ${paso(3,'Listo','<p>Las evidencias no pasan por revisión ni aprobación.</p>')}
 
     <h3>De dónde salen los desplegables</h3>
+    <p>Cada lista desplegable muestra opciones que alguien creó antes en otro lugar. Si una opción no aparece, hay que crearla allí:</p>
     <dl class="fuente">
-      <dt>Tipo de documento</dt><dd>Tabla <b>RIID Catálogos</b>, filas con Categoría «Tipo de documento» (${c.tipos.length} en uso).</dd>
-      <dt>Proceso</dt><dd><b>Inventario de Procesos de la Matriz de Indicadores</b>, campo «Ruta completa». No se duplica aquí: lo que se agregue allá aparece acá (${c.procesos.length} disponibles).</dd>
-      <dt>Programa</dt><dd>Tabla <b>RIID Catálogos</b>, Categoría «Programa» (${c.programas.length}).</dd>
-      <dt>Periodo</dt><dd>Tabla <b>RIID Catálogos</b>, Categoría «Periodo» (${c.periodos.length}).</dd>
-      <dt>Revisor</dt><dd>Tabla <b>RIID Usuarios</b>, rol «Revisor» o «Controlador documental», estado Vigente.</dd>
-      <dt>Aprobador</dt><dd>Tabla <b>RIID Usuarios</b>, rol «Aprobador», estado Vigente.</dd>
+      <dt>Tipo de documento</dt><dd><b>Administración → Catálogos</b> → «+ Nueva opción» con categoría «Tipo de documento». (${c.tipos.length} opciones hoy)</dd>
+      <dt>Programa</dt><dd><b>Administración → Catálogos</b> → «+ Nueva opción» con categoría «Programa». (${c.programas.length})</dd>
+      <dt>Periodo</dt><dd><b>Administración → Catálogos</b> → «+ Nueva opción» con categoría «Periodo». (${c.periodos.length})</dd>
+      <dt>Proceso</dt><dd><b>No se crea en el repositorio.</b> Se lee del <b>Inventario de Procesos de la Matriz de Indicadores</b>; se agrega allá y aparece acá. (${c.procesos.length})</dd>
+      <dt>Revisor</dt><dd><b>Administración → Usuarios y roles</b> → «+ Nuevo usuario» con rol «Revisor» (o «Controlador documental»).</dd>
+      <dt>Aprobador</dt><dd><b>Administración → Usuarios y roles</b> → «+ Nuevo usuario» con rol «Aprobador».</dd>
+      <dt>Formato (evidencias)</dt><dd>La <b>Lista maestra</b>: aparecen los documentos vigentes de tipo Formato o Matriz.</dd>
     </dl>
-    <p class="sub">Para que alguien aparezca en un desplegable basta con darle su fila en RIID Usuarios; no hay que tocar el aplicativo.</p>
 
     <h3>Tu acceso</h3>
     <p>Entras como <b>${esc(p.roles.join(' · '))}</b>. ${p.puede.solicitar?'Puedes iniciar solicitudes en tus procesos.':'Puedes consultar los documentos vigentes de distribución interna.'}
@@ -477,6 +525,8 @@ function salir(vencida){
   sessionStorage.removeItem('riid_cred'); S.cred='';
   if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
   $('aplicacion').classList.add('oculto'); $('pantallaAcceso').classList.remove('oculto');
+  ['asisBoton','asisPanel'].forEach(id => { const el = $(id); if (el) el.remove(); });
+  ASIS.mensajes = []; ASIS.imagen = null;
   if (vencida) $('errorAcceso').textContent = 'Tu sesión de Google venció por inactividad. Vuelve a ingresar con el botón de arriba: no se perdió ninguna información.';
 }
 async function entrar(){
@@ -492,6 +542,7 @@ async function entrar(){
       b.classList.toggle('oculto', !ok);
     });
     mostrar(S.vista);
+    montarAsistente();
   }catch(e){ $('errorAcceso').textContent = e.message; }
 }
 async function recargar(){
@@ -680,8 +731,10 @@ function pintarFicha(pestana){
     ${v.enlace?` · <a href="${esc(v.enlace)}" target="_blank" rel="noopener">archivo</a>`:''}</div></div>`).join('')}</div>` : '<div class="vacio">Sin historial de versiones.</div>';
   if (pestana==='observaciones') cuerpo = `
     ${p.observar?`<div class="caja" style="margin-bottom:12px;padding:12px">
-      <div class="campos"><div class="campo"><label>Tipo</label><select id="obsTipo">${opciones(TIPOS_OBS,'Observación')}</select></div><div></div>
-      <div class="campo completo"><label>Detalle</label><textarea id="obsTexto" placeholder="Describe la observación, hallazgo o recomendación sobre este documento"></textarea></div></div>
+      <div class="campos"><div class="campo completo"><label>Tipo</label><select id="obsTipo">${opciones(TIPOS_OBS,'Observación')}</select>
+        <div class="nota-campo"><b>Observación:</b> algo que conviene revisar. <b>Recomendación:</b> una sugerencia concreta. <b>Oportunidad de mejora:</b> algo que funciona pero podría hacerse mejor. <b>No conformidad:</b> el documento incumple un requisito (de la norma o institucional). <b>Conformidad:</b> se verificó y está correcto; queda cerrada de inmediato.</div></div>
+      <div class="campo completo"><label>Detalle</label><textarea id="obsTexto" placeholder="Qué encontraste, dónde y por qué importa"></textarea>
+        <div class="nota-campo">Di qué encontraste, en qué parte del documento y por qué importa. El responsable del documento recibe un correo.</div></div></div>
       <div style="text-align:right;margin-top:8px"><button class="btn sm" onclick="guardarObservacion('${esc(d.codigo)}')">Registrar</button></div></div>`:''}
     ${observaciones.length ? observaciones.map(o=>`<div class="nota"><div class="n-cab"><span class="eti ${o.tipo==='No conformidad'?'e-rechazada':o.tipo==='Conformidad'?'e-vigente':'e-observada'}">${esc(o.tipo)}</span>
       ${o.estado==='Atendida'?'<span class="eti e-vigente">Atendida</span>':'<span class="eti e-neutra">Abierta</span>'}<span>${esc(o.autor)} · ${fechaCorta(o.fecha)}</span><span class="mono">${esc(o.id)}</span></div>
@@ -728,26 +781,46 @@ async function atenderObservacion(id, codigo){
   try{ await api('/observacion-atender', { id, respuesta }); aviso('Atención registrada'); await recargar(); abrirDocumento(codigo,'observaciones'); }catch(e){ aviso(e.message, true); }
 }
 
-/* ------------------------------------------ formularios de solicitud/alta */
-function camposDocumento(v, conCambios){
-  const marca = k => conCambios && conCambios[k]!==undefined && String(conCambios[k]) !== String(v[k]??'') ? ' cambio' : '';
-  const procesos = S.cat.procesos.filter(x => S.perfil.puede.todosLosProcesos || S.perfil.procesos.some(p=>p.toLowerCase()===x.codigo.toLowerCase()));
+/* ------------------------------------------ formularios de solicitud/alta
+   Cada campo lleva una nota visible: qué es, qué poner y, en las listas,
+   de dónde salen sus opciones. */
+const campoF = (etiqueta, control, notaHtml, o = {}) =>
+  `<div class="campo${o.completo?' completo':''}"><label${o.req?' class="req"':''}>${etiqueta}</label>${control}${notaHtml||''}</div>`;
+const notaF = html => `<div class="nota-campo">${html}</div>`;
+
+function camposDocumento(v){
+  const procesos = S.cat.procesos.filter(x => S.perfil.puede.todosLosProcesos ||
+    S.perfil.procesos.some(p => x.codigo.toUpperCase().replace(/\./g,'').startsWith(p.toUpperCase().replace(/[\s.]/g,''))));
   const cl = (v.clausulas||'').split(';').map(x=>x.trim());
   return `<div class="campos">
-    <div class="campo completo"><label class="req">Título del documento${tip('Nombre oficial, sin el código: «Guía de docentes». El aplicativo rechaza títulos repetidos entre documentos vigentes.')}</label><input type="text" id="dTitulo" value="${esc(v.titulo)}"></div>
-    <div class="campo"><label class="req">Tipo de documento${tip('Sale de la tabla RIID Catálogos (Categoría = Tipo de documento). Sus tres letras forman la segunda parte del código.')}</label><select id="dTipo" onchange="previoCodigo()">${opciones(S.cat.tipos.map(t=>({v:t.nombre,t:`${t.nombre} (${t.codigo})`})),v.tipo,'Seleccione')}</select></div>
-    <div class="campo"><label class="req">Proceso${tip('Se lee del Inventario de Procesos de la Matriz de Indicadores, agrupado por tipo de macroproceso. Si falta un proceso, se agrega allá y aparece aquí.')}</label><select id="dProceso" onchange="previoCodigo()">${opcionesProcesos(procesos,v.proceso)}</select></div>
-    <div class="campo"><label>Programa${tip('Escuela profesional a la que aplica. «Facultad (transversal)» si rige para todas. Sale de RIID Catálogos.')}</label><select id="dPrograma">${opciones(S.cat.programas.map(x=>x.nombre),v.programa,'Seleccione')}</select></div>
-    <div class="campo"><label>Unidad responsable${tip('Órgano que responde por el documento: decanato, comisión, coordinación.')}</label><input type="text" id="dUnidad" value="${esc(v.unidad)}" placeholder="Ej. Comisión de Calidad FI"></div>
-    <div class="campo"><label>Responsable del documento${tip('Persona a la que se avisa cuando se acerca la revisión o cuando alguien registra una observación.')}</label><input type="text" id="dResponsable" value="${esc(v.responsable)}"></div>
-    <div class="campo"><label>Correo del responsable</label><input type="email" id="dCorreoResp" value="${esc(v.correoResponsable)}" placeholder="nombre@urp.edu.pe"></div>
-    <div class="campo completo"><label>Objetivo y alcance</label><textarea id="dObjetivo">${esc(v.objetivo)}</textarea></div>
-    <div class="campo completo"><label>Cláusulas ISO 21001 relacionadas${tip('Marca los requisitos de la norma que este documento ayuda a cumplir. Sirve para la auditoría: permite mostrar qué documento respalda cada cláusula.')}</label><div class="chips" id="dClausulas">${CLAUSULAS.map(c=>`<label><input type="checkbox" value="${esc(c)}" ${cl.includes(c)?'checked':''}>${esc(c)}</label>`).join('')}</div></div>
-    <div class="campo"><label>Origen${tip('Interno: elaborado en la Facultad. Externo: norma, ley o requisito de otra entidad que el SGOE debe controlar igual.')}</label><select id="dOrigen">${opciones(['Interno','Externo'],v.origen||'Interno')}</select></div>
-    <div class="campo"><label>Distribución</label><select id="dDistribucion">${opciones(['Pública interna','Restringida'],v.distribucion||'Pública interna')}</select><div class="ayuda">Pública interna: visible para toda cuenta @urp.edu.pe.</div></div>
-    <div class="campo"><label class="req">Frecuencia de revisión (meses)${tip('Cada cuánto toca revisar el documento. Con la fecha de aprobación el sistema calcula la próxima revisión y avisa 60 días antes.')}</label><input type="number" id="dFrecuencia" min="1" max="60" value="${esc(v.frecuencia||'24')}"></div>
-    <div class="campo"><label>Palabras clave${tip('Términos por los que alguien buscaría este documento en la lista maestra.')}</label><input type="text" id="dPalabras" value="${esc(v.palabras)}"></div>
-    <div class="campo completo"><label>Enlace al formato editable (Drive)${tip('Opcional: el Word o Google Doc para trabajar futuras versiones. Solo lo ven los usuarios con rol.')}</label><input type="url" id="dEditable" value="${esc(v.enlaceEditable)}" placeholder="https://docs.google.com/..."></div>
+    ${campoF('Título del documento', `<input type="text" id="dTitulo" value="${esc(v.titulo)}" placeholder="Ej. Guía de docentes">`,
+      notaF('Nombre oficial, <b>sin el código</b>. Escríbelo como aparecerá en la carátula. No puede repetir el título de otro documento vigente.'), {req:true, completo:true})}
+    ${campoF('Tipo de documento', `<select id="dTipo" onchange="previoCodigo()">${opciones(S.cat.tipos.map(t=>({v:t.nombre,t:`${t.nombre} (${t.codigo})`})),v.tipo,'Seleccione')}</select>`,
+      origenLista('Tipo de documento'), {req:true})}
+    ${campoF('Proceso', `<select id="dProceso" onchange="previoCodigo()">${opcionesProcesos(procesos,v.proceso)}</select>`,
+      origenLista('Proceso') + (!S.perfil.puede.todosLosProcesos ? notaF('Solo ves los procesos que tienes asignados como responsable.') : ''), {req:true})}
+    ${campoF('Programa', `<select id="dPrograma">${opciones(S.cat.programas.map(x=>x.nombre),v.programa,'Seleccione')}</select>`,
+      origenLista('Programa'))}
+    ${campoF('Unidad responsable', `<input type="text" id="dUnidad" value="${esc(v.unidad)}" placeholder="Ej. Comisión de Calidad FI">`,
+      notaF('Órgano que responde por el documento: decanato, comisión, coordinación o dirección de escuela.'))}
+    ${campoF('Responsable del documento', `<input type="text" id="dResponsable" value="${esc(v.responsable)}" placeholder="Apellidos, Nombres">`,
+      notaF('Persona que responde por el contenido. Es quien recibe los avisos cuando alguien observa el documento o se acerca su revisión.'))}
+    ${campoF('Correo del responsable', `<input type="email" id="dCorreoResp" value="${esc(v.correoResponsable)}" placeholder="nombre.apellido@urp.edu.pe">`,
+      notaF('A este correo llegan los avisos automáticos.'))}
+    ${campoF('Objetivo y alcance', `<textarea id="dObjetivo" placeholder="Para qué sirve el documento y a quién se aplica">${esc(v.objetivo)}</textarea>`,
+      notaF('Dos o tres líneas: <b>para qué</b> existe el documento y <b>a quién o a qué</b> se aplica. Ej.: «Orientar a los docentes sobre sus responsabilidades en el SGOE; aplica a todos los docentes de la Facultad».'), {completo:true})}
+    ${campoF('Cláusulas ISO 21001 relacionadas', `<div class="chips" id="dClausulas">${CLAUSULAS.map(c=>`<label><input type="checkbox" value="${esc(c)}" ${cl.includes(c)?'checked':''}>${esc(c)}</label>`).join('')}</div>`,
+      notaF('Marca los capítulos de la norma que este documento ayuda a cumplir. Ej.: la Política de calidad responde a <b>5 Liderazgo</b>; un procedimiento de control de documentos, a <b>7.5 Información documentada</b>. Sirve para mostrar en una auditoría qué documento respalda cada requisito.'), {completo:true})}
+    ${campoF('Origen', `<select id="dOrigen">${opciones(['Interno','Externo'],v.origen||'Interno')}</select>`,
+      notaF('<b>Interno:</b> lo elaboró la Facultad. <b>Externo:</b> viene de otra entidad (ley universitaria, reglamento de la universidad, norma ISO) y el SGOE también debe controlar qué versión se usa.'))}
+    ${campoF('Distribución', `<select id="dDistribucion">${opciones(['Pública interna','Restringida'],v.distribucion||'Pública interna')}</select>`,
+      notaF('<b>Pública interna:</b> lo puede leer cualquier persona con cuenta @urp.edu.pe (docentes, administrativos). <b>Restringida:</b> solo quienes tienen un rol en el repositorio.'))}
+    ${campoF('Frecuencia de revisión (meses)', `<input type="number" id="dFrecuencia" min="1" max="60" value="${esc(v.frecuencia||'24')}">`,
+      notaF('Cada cuántos meses se debe revisar aunque nadie pida cambios. Lo usual: <b>12</b> para documentos que cambian seguido, <b>24</b> para políticas y guías. El sistema avisa 60 días antes.'), {req:true})}
+    ${campoF('Palabras clave', `<input type="text" id="dPalabras" value="${esc(v.palabras)}" placeholder="docentes, sílabo, portafolio">`,
+      notaF('Términos por los que alguien buscaría este documento, separados por comas.'))}
+    ${campoF('Enlace al archivo editable (Drive)', `<input type="url" id="dEditable" value="${esc(v.enlaceEditable)}" placeholder="https://docs.google.com/document/d/...">`,
+      notaF('Opcional. El Word o Google Doc con el que se trabajarán las próximas versiones. Solo lo ven los usuarios con rol.'), {completo:true})}
   </div>`;
 }
 function leerCamposDocumento(){
@@ -768,50 +841,62 @@ function previoCodigo(){
 function selectorFlujo(){
   const c = S.cand, yo = S.perfil.correo;
   const rev = c.revisores.filter(x=>x.correo!==yo), apr = c.aprobadores.filter(x=>x.correo!==yo);
-  return `<div class="campos" style="margin-top:12px">
-    <div class="campo"><label class="req">Revisor${tip('Lista de la tabla RIID Usuarios: personas con rol Revisor o Controlador documental. Revisará forma y contenido antes de la aprobación.')}</label><select id="fRevisor">${opciones(rev.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
-    <div class="campo"><label class="req">Aprobador${tip('Lista de la tabla RIID Usuarios: personas con rol Aprobador. Es quien deja el documento vigente y registra la resolución o acta.')}</label><select id="fAprobador">${opciones(apr.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select></div>
-    ${!rev.length||!apr.length?'<div class="completo aviso-caja">No hay revisores o aprobadores disponibles. Se cargan desde la tabla <b>RIID Usuarios</b>: agrega ahí una fila con Rol «Revisor» o «Aprobador» y Estado «Vigente».</div>':''}
-    <div class="completo aviso-caja info">Al registrar, la solicitud pasa a <b>revisión</b> y el revisor recibe un correo. Tú la sigues desde «Flujo documental».</div>
+  return `<h3 class="sec-form">¿Quién revisa y quién aprueba?</h3><div class="campos">
+    ${campoF('Revisor', `<select id="fRevisor">${opciones(rev.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select>`, origenLista('Revisor'), {req:true})}
+    ${campoF('Aprobador', `<select id="fAprobador">${opciones(apr.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select>`, origenLista('Aprobador'), {req:true})}
+    ${!rev.length||!apr.length?'<div class="completo aviso-caja"><b>Una de las listas está vacía.</b> Todavía nadie tiene ese rol. Un administrador debe entrar a <b>Administración → Usuarios y roles</b> y agregar a la persona con rol «Revisor» o «Aprobador».</div>':''}
+    <div class="completo aviso-caja info"><b>¿Qué pasa al pulsar «Iniciar flujo de aprobación»?</b> La solicitud pasa a revisión y al revisor le llega un correo. Tú la sigues desde <b>Flujo documental → Mis solicitudes</b>. Si te la observan, te llegará un correo para que la corrijas.</div>
   </div>`;
 }
+const campoBorrador = (etiqueta) => campoF(etiqueta, `<input type="url" id="fBorrador" placeholder="https://drive.google.com/file/d/...">`,
+  notaF('<b>Cómo obtenerlo:</b> sube el archivo a Google Drive → clic derecho → <b>Compartir</b> → en «Acceso general» elige <b>Universidad Ricardo Palma</b> (lector) → <b>Copiar enlace</b> y pégalo aquí. Si no lo compartes, el revisor verá la pantalla en blanco.'), {req:true, completo:true});
 
 function formDocumento(modo, codigo){
   const doc = codigo ? S.docs.find(d=>d.codigo===codigo) : null;
-  let html = '', titulo = '';
+  let html = '', titulo = '', finalidad = '';
   if (modo==='Creación'){
     titulo = 'Solicitar creación de documento';
-    html = tiraFlujo(0) + `<div class="codigo-previo"><span class="sub">Código que se reservará</span><b id="codPrevio">Elige tipo y proceso</b><span class="sub">(se confirma al registrar)</span></div>
-      ${camposDocumento({})}
-      <div class="campos" style="margin-top:12px"><div class="campo completo"><label class="req">Enlace del borrador en Drive</label><input type="url" id="fBorrador" placeholder="https://drive.google.com/file/d/..."><div class="ayuda">Comparte el archivo con el dominio urp.edu.pe (lector) para que se vea en el visor.</div></div>
-      <div class="campo completo"><label class="req">Justificación de la creación</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
+    finalidad = 'Con este formulario <b>propones un documento nuevo</b>. No queda vigente al guardar: primero lo revisa una persona y luego lo aprueba otra. Llena la ficha, pega el enlace del borrador y elige revisor y aprobador.';
+    html = `<div class="codigo-previo"><span class="sub">Código que se reservará</span><b id="codPrevio">Elige tipo y proceso</b><span class="sub">(lo asigna el sistema a partir del tipo y del proceso)</span></div>
+      <h3 class="sec-form">Ficha del documento</h3>${camposDocumento({})}
+      <h3 class="sec-form">Borrador y justificación</h3><div class="campos">${campoBorrador('Enlace del borrador en Drive')}
+      ${campoF('Justificación de la creación', `<textarea id="fJust" placeholder="Por qué se necesita este documento"></textarea>`,
+        notaF('Explica por qué se necesita: qué vacío cubre, qué requisito atiende o qué lo motivó (una auditoría, un acuerdo, un cambio normativo). El revisor lo leerá primero.'), {req:true, completo:true})}</div>
+      ${selectorFlujo()}`;
   } else if (modo==='Modificación'){
     titulo = `Solicitar modificación · ${doc.codigo}`;
-    html = tiraFlujo(0) + `<div class="aviso-caja info">Versión vigente <b class="mono">v${esc(doc.version)}</b>. Ajusta solo lo que cambia; la versión vigente seguirá disponible hasta la aprobación.</div>
-      <div class="campos" style="margin-bottom:12px"><div class="campo"><label class="req">Tipo de cambio</label><select id="fCambio">${opciones([{v:'Mayor',t:'Mayor (cambia contenido o requisitos)'},{v:'Menor',t:'Menor (forma, redacción, datos)'}],'Mayor')}</select></div></div>
-      ${camposDocumento(doc)}
-      <div class="campos" style="margin-top:12px"><div class="campo completo"><label class="req">Enlace del borrador actualizado</label><input type="url" id="fBorrador"></div>
-      <div class="campo completo"><label class="req">Descripción y justificación del cambio</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
+    finalidad = `Con este formulario <b>propones una versión nueva</b> de «${esc(doc.titulo)}». La versión vigente (<span class="mono">v${esc(doc.version)}</span>) sigue siendo la oficial hasta que se apruebe el cambio. Cambia solo los datos que correspondan: los que modifiques se resaltarán para el revisor.`;
+    html = `<div class="campos">${campoF('Tipo de cambio', `<select id="fCambio">${opciones([{v:'Mayor',t:'Mayor — cambia el contenido o los requisitos'},{v:'Menor',t:'Menor — solo forma, redacción o datos'}],'Mayor')}</select>`,
+        notaF(`<b>Mayor:</b> cambian reglas, pasos, responsabilidades o requisitos; la versión pasa a <b>${(Math.floor(parseFloat(doc.version)||1)+1).toFixed(1)}</b>. <b>Menor:</b> se corrige redacción, ortografía, un nombre o un dato; pasa a <b>${(Math.round(((parseFloat(doc.version)||1)+0.1)*10)/10).toFixed(1)}</b>.`), {req:true})}</div>
+      <h3 class="sec-form">Ficha del documento</h3>${camposDocumento(doc)}
+      <h3 class="sec-form">Borrador y justificación</h3><div class="campos">${campoBorrador('Enlace del borrador actualizado')}
+      ${campoF('Descripción y justificación del cambio', `<textarea id="fJust" placeholder="Qué cambia y por qué"></textarea>`,
+        notaF('Di <b>qué cambia</b> (secciones, pasos, responsables) y <b>por qué</b>. Este texto queda en el historial de versiones del documento.'), {req:true, completo:true})}</div>
+      ${selectorFlujo()}`;
   } else if (modo==='Anulación'){
     titulo = `Solicitar anulación · ${doc.codigo}`;
-    html = tiraFlujo(0) + `<div class="aviso-caja">Al aprobarse, <b>${esc(doc.titulo)}</b> pasará a obsoleto y quedará solo como referencia histórica.</div>
-      <div class="campos"><div class="campo completo"><label class="req">Justificación</label><textarea id="fJust"></textarea></div></div>${selectorFlujo()}`;
+    finalidad = `Con este formulario pides <b>dar de baja</b> «${esc(doc.titulo)}». Al aprobarse pasará a <b>obsoleto</b>: dejará de ser oficial, pero se conservará como referencia histórica con todas sus versiones.`;
+    html = `<div class="campos">${campoF('Justificación', `<textarea id="fJust" placeholder="Por qué ya no se necesita"></textarea>`,
+        notaF('Explica por qué ya no se necesita: lo reemplaza otro documento (indica cuál), cambió la norma, o el proceso dejó de existir.'), {req:true, completo:true})}</div>
+      ${selectorFlujo()}`;
   } else {
     titulo = 'Registrar documento ya aprobado';
-    html = `<div class="aviso-caja info">Para la carga inicial de documentos aprobados antes del repositorio (Política de calidad, Alcance del SGOE, guías, etc.). Queda vigente sin pasar por el flujo y se registra en la bitácora.</div>
-      <div class="campos" style="margin-bottom:12px">
-        <div class="campo"><label>Código existente</label><input type="text" id="eCodigo" class="mono" placeholder="Vacío = generar automáticamente"><div class="ayuda">Si el documento ya tiene código oficial, respétalo.</div></div>
-        <div class="campo"><label class="req">Versión</label><input type="text" id="eVersion" value="1.0"></div>
-        <div class="campo"><label class="req">Fecha de aprobación</label><input type="date" id="eFecha"></div>
-        <div class="campo"><label>Documento de aprobación</label><input type="text" id="eDocAprob" placeholder="Ej. Resolución de Decanato N.° ..."></div>
-        <div class="campo"><label>Elaboró</label><input type="text" id="eElaboro"></div>
-        <div class="campo"><label>Revisó</label><input type="text" id="eReviso"></div>
-        <div class="campo"><label>Aprobó</label><input type="text" id="eAprobo"></div>
-        <div class="campo"><label>Enlace del documento aprobado (PDF en Drive)</label><input type="url" id="eEnlace"></div>
-      </div>${camposDocumento({})}`;
+    finalidad = 'Sirve para la <b>carga inicial</b>: documentos aprobados <b>antes</b> de que existiera el repositorio (Política de calidad, Alcance del SGOE, Guía de coordinadores, Guía de docentes). Quedan vigentes de inmediato, sin pasar por revisión ni aprobación, porque ya fueron aprobados. La acción queda en la bitácora. Para documentos nuevos usa «+ Solicitar nuevo documento».';
+    html = `<h3 class="sec-form">Datos de la aprobación que ya existe</h3><div class="campos">
+        ${campoF('Código existente', `<input type="text" id="eCodigo" class="mono" placeholder="Vacío = lo genera el sistema">`,
+          notaF('Si el documento ya tiene un código oficial impreso, escríbelo tal cual para respetarlo. Si no tiene, déjalo vacío y el sistema lo asigna.'))}
+        ${campoF('Versión', `<input type="text" id="eVersion" value="1.0">`, notaF('La versión que figura en el documento aprobado. Si no figura ninguna, deja 1.0.'), {req:true})}
+        ${campoF('Fecha de aprobación', `<input type="date" id="eFecha">`, notaF('La fecha de la resolución o acta. Con ella y la frecuencia se calcula la próxima revisión.'), {req:true})}
+        ${campoF('Documento de aprobación', `<input type="text" id="eDocAprob" placeholder="Ej. Resolución de Decanato N.° 123-2026">`, notaF('Número de la resolución, acta u oficio que lo aprobó.'))}
+        ${campoF('Elaboró', `<input type="text" id="eElaboro">`, notaF('Quién lo redactó, si se sabe.'))}
+        ${campoF('Revisó', `<input type="text" id="eReviso">`, notaF('Quién lo revisó, si se sabe.'))}
+        ${campoF('Aprobó', `<input type="text" id="eAprobo">`, notaF('Autoridad que lo aprobó.'))}
+        ${campoF('Enlace del documento aprobado', `<input type="url" id="eEnlace" placeholder="https://drive.google.com/file/d/...">`,
+          notaF('El PDF firmado en Drive, compartido con la Universidad Ricardo Palma como lector. Es lo que se mostrará en el visor.'), {completo:true})}
+      </div><h3 class="sec-form">Ficha del documento</h3>${camposDocumento({})}`;
   }
   modal(`<div class="modal-cab"><h2 style="flex:1">${esc(titulo)}</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
-    <div class="modal-cuerpo">${html}</div>
+    <div class="modal-cuerpo">${modo!=='existente'?tiraFlujo(0):''}<div class="comose"><b>Para qué sirve este formulario</b><div class="finalidad">${finalidad}</div></div>${html}</div>
     <div class="modal-pie"><button class="btn n" onclick="${codigo?`abrirDocumento('${esc(codigo)}')`:'cerrarModal()'}">Cancelar</button>
     <button class="btn" onclick="enviarDocumento('${modo}','${esc(codigo||'')}')">${modo==='existente'?'Registrar como vigente':'Iniciar flujo de aprobación'}</button></div>`);
 }
@@ -882,19 +967,29 @@ function abrirSolicitud(id){
 
   let acciones = '';
   if (s.etapa==='En revisión' && s.correoRevisor===c) acciones = `
-    <div class="campo"><label>Comentario de revisión</label><textarea id="aCom" placeholder="Obligatorio si observas"></textarea></div>
+    <div class="comose"><b>Te toca revisar</b><div class="finalidad">Lee el borrador de la izquierda y la ficha propuesta. Comprueba que el contenido sea correcto, que la redacción sea clara y que los datos (responsable, proceso, frecuencia) tengan sentido. <b>Revisión conforme</b> lo pasa al aprobador. <b>Observar</b> lo devuelve al solicitante con tu comentario.</div></div>
+    <div class="campo"><label>Comentario de revisión</label><textarea id="aCom" placeholder="Obligatorio si observas"></textarea>
+      <div class="nota-campo">Si observas, di <b>qué</b> corregir y <b>dónde</b> (sección, página, campo). El solicitante lo recibirá por correo.</div></div>
     <div class="modal-pie" style="padding:10px 0 0;border:0"><button class="btn ambar" onclick="accion('${esc(s.id)}','observar')">Observar</button><button class="btn" onclick="accion('${esc(s.id)}','conforme')">Revisión conforme</button></div>`;
   else if (s.etapa==='En aprobación' && s.correoAprobador===c) acciones = `
+    <div class="comose"><b>Te toca aprobar</b><div class="finalidad">El revisor ya dio conformidad. Si estás de acuerdo, registra el documento que respalda la aprobación y pulsa <b>${s.tipo==='Anulación'?'Aprobar anulación':'Aprobar y publicar'}</b>: ${s.tipo==='Anulación'?'el documento pasará a obsoleto.':'el documento entrará a la Lista maestra como vigente y la versión anterior pasará a obsoleta.'} <b>Observar</b> lo devuelve al solicitante; <b>Rechazar</b> cierra el trámite definitivamente.</div></div>
     <div class="campos">
-      <div class="campo"><label class="req">Documento de aprobación</label><input type="text" id="aDoc" placeholder="Resolución, acta u oficio N.°"></div>
-      <div class="campo"><label>Fecha de aprobación</label><input type="date" id="aFecha" value="${S.hoy}"></div>
-      ${s.tipo!=='Anulación'?`<div class="campo completo"><label>Enlace final del documento aprobado</label><input type="url" id="aEnlace" placeholder="Vacío = se usa el borrador revisado"></div>`:''}
-      <div class="campo completo"><label>Comentario</label><textarea id="aCom" placeholder="Obligatorio si observas o rechazas"></textarea></div>
+      <div class="campo"><label class="req">Documento de aprobación</label><input type="text" id="aDoc" placeholder="Resolución de Decanato N.° 123-2026">
+        <div class="nota-campo">Número de la resolución, acta u oficio que aprueba. Queda en el historial de versiones como respaldo.</div></div>
+      <div class="campo"><label>Fecha de aprobación</label><input type="date" id="aFecha" value="${S.hoy}">
+        <div class="nota-campo">La fecha del documento de aprobación. Desde ella se cuenta la próxima revisión.</div></div>
+      ${s.tipo!=='Anulación'?`<div class="campo completo"><label>Enlace final del documento aprobado</label><input type="url" id="aEnlace" placeholder="https://drive.google.com/file/d/...">
+        <div class="nota-campo">Si tienes el PDF firmado, pega aquí su enlace (compartido con la universidad). Si lo dejas vacío, queda como oficial el borrador revisado.</div></div>`:''}
+      <div class="campo completo"><label>Comentario</label><textarea id="aCom" placeholder="Obligatorio si observas o rechazas"></textarea>
+        <div class="nota-campo">Si observas o rechazas, explica el motivo: el solicitante lo recibirá por correo.</div></div>
     </div>
     <div class="modal-pie" style="padding:10px 0 0;border:0"><button class="btn rojo" onclick="accion('${esc(s.id)}','rechazar')">Rechazar</button><button class="btn ambar" onclick="accion('${esc(s.id)}','observar')">Observar</button><button class="btn" onclick="accion('${esc(s.id)}','aprobar')">${s.tipo==='Anulación'?'Aprobar anulación':'Aprobar y publicar'}</button></div>`;
   else if (s.etapa==='Observada' && s.correoSolicitante===c) acciones = `
-    <div class="campos">${s.tipo!=='Anulación'?`<div class="campo completo"><label>Enlace del borrador corregido</label><input type="url" id="aBorrador" value="${esc(s.enlaceBorrador)}"></div>`:''}
-      <div class="campo completo"><label>¿Qué subsanaste?</label><textarea id="aCom"></textarea></div></div>
+    <div class="comose"><b>Tu solicitud fue observada</b><div class="finalidad">Lee la observación en el historial de arriba, corrige el borrador en Drive y pulsa <b>Reenviar a revisión</b>. Si ya no quieres seguir, pulsa <b>Desistir</b> y el trámite se cierra.</div></div>
+    <div class="campos">${s.tipo!=='Anulación'?`<div class="campo completo"><label>Enlace del borrador corregido</label><input type="url" id="aBorrador" value="${esc(s.enlaceBorrador)}">
+      <div class="nota-campo">Si corregiste el mismo archivo de Drive, el enlace no cambia: déjalo como está.</div></div>`:''}
+      <div class="campo completo"><label>¿Qué subsanaste?</label><textarea id="aCom"></textarea>
+      <div class="nota-campo">Resume qué corregiste para que el revisor no tenga que buscarlo.</div></div></div>
     <div class="modal-pie" style="padding:10px 0 0;border:0"><button class="btn n" onclick="accion('${esc(s.id)}','desistir')">Desistir</button><button class="btn" onclick="reenviar('${esc(s.id)}')">Reenviar a revisión</button></div>`;
   else if (['En revisión','En aprobación'].includes(s.etapa) && s.correoSolicitante===c) acciones = `
     <div class="modal-pie" style="padding:10px 0 0;border:0"><span class="sub" style="margin-right:auto">Le toca a ${esc(aQuienLeToca(s))}.</span><button class="btn n" onclick="accion('${esc(s.id)}','desistir')">Desistir</button></div>`;
@@ -980,15 +1075,23 @@ function pintarRegistros(){
 function formRegistro(){
   const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
   modal(`<div class="modal-cab"><h2 style="flex:1">Registrar evidencia</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
-  <div class="modal-cuerpo"><div class="campos">
-    <div class="campo completo"><label class="req">Formato asociado${tip('Formatos y matrices vigentes de la lista maestra. Elige «Otro registro» si la evidencia no responde a un formato controlado.')}</label><select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (sin formato controlado)</option></select></div>
-    <div class="campo completo oculto" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro"></div>
-    <div class="campo"><label class="req">Programa</label><select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),'','Seleccione')}</select></div>
-    <div class="campo"><label class="req">Periodo</label><select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),'','Seleccione')}</select></div>
-    <div class="campo completo"><label class="req">Descripción</label><textarea id="gDesc" placeholder="Qué contiene la evidencia"></textarea></div>
-    <div class="campo completo"><label class="req">Enlace de la evidencia (Drive)${tip('Comparte el archivo o la carpeta con el dominio urp.edu.pe antes de pegar el enlace, para que el resto pueda abrirlo.')}</label><input type="url" id="gEnlace" placeholder="https://drive.google.com/..."></div>
-    <div class="campo"><label>Retención (años)${tip('Cuánto tiempo debe conservarse la evidencia. El sistema calcula la fecha límite y la marca en rojo al vencer.')}</label><input type="number" id="gRet" min="1" max="50" value="5"></div>
-    <div class="campo"><label>Disposición final${tip('Qué hacer cuando venza la retención: eliminar, transferir al archivo central o conservar de forma permanente.')}</label><select id="gDisp">${opciones(DISPOSICION,'Evaluar al vencer')}</select></div>
+  <div class="modal-cuerpo">
+    <div class="comose"><b>Para qué sirve este formulario</b><div class="finalidad">Deja constancia de que una actividad se hizo: un acta, una lista de asistencia, un informe, un formato llenado. En la norma esto se llama <b>información documentada que se conserva</b>. A diferencia de los documentos, las evidencias <b>no pasan por revisión ni aprobación</b>: quedan registradas al guardar y se conservan el tiempo que indiques.</div></div>
+    <div class="campos">
+    ${campoF('Formato asociado', `<select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (no responde a un formato controlado)</option></select>`,
+      origenLista('Formato'), {req:true, completo:true})}
+    <div class="campo completo oculto" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro" placeholder="Ej. Acta de reunión de la Comisión de Calidad">
+      ${notaF('Nombre claro de lo que se está registrando.')}</div>
+    ${campoF('Programa', `<select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),'','Seleccione')}</select>`, origenLista('Programa'), {req:true})}
+    ${campoF('Periodo', `<select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),'','Seleccione')}</select>`, origenLista('Periodo'), {req:true})}
+    ${campoF('Descripción', `<textarea id="gDesc" placeholder="Qué contiene la evidencia"></textarea>`,
+      notaF('Qué contiene y de qué actividad es. Ej.: «Lista de asistencia a la capacitación en sílabos del 12/09, 34 docentes».'), {req:true, completo:true})}
+    ${campoF('Enlace de la evidencia (Drive)', `<input type="url" id="gEnlace" placeholder="https://drive.google.com/...">`,
+      notaF('Sube el archivo o la carpeta a Drive → <b>Compartir</b> → acceso para <b>Universidad Ricardo Palma</b> como lector → <b>Copiar enlace</b>.'), {req:true, completo:true})}
+    ${campoF('Retención (años)', `<input type="number" id="gRet" min="1" max="50" value="5">`,
+      notaF('Cuántos años debe guardarse. Si no hay una regla institucional, <b>5 años</b> es una práctica común (cubre un ciclo de acreditación). El sistema calcula la fecha límite.'))}
+    ${campoF('Disposición final', `<select id="gDisp">${opciones(DISPOSICION,'Evaluar al vencer')}</select>`,
+      notaF('Qué hacer cuando venza el plazo: <b>Eliminar</b>, <b>Transferir a archivo central</b>, <b>Conservación permanente</b> o <b>Evaluar al vencer</b> si aún no se sabe.'))}
   </div></div>
   <div class="modal-pie"><button class="btn n" onclick="cerrarModal()">Cancelar</button><button class="btn" onclick="guardarRegistro()">Guardar evidencia</button></div>`);
   $('gFormato').onchange = e => $('gOtroCampo').classList.toggle('oculto', e.target.value!=='__otro');
@@ -1001,44 +1104,520 @@ async function guardarRegistro(){
   try{ const r = await api('/registro', cuerpo); aviso('Evidencia registrada: '+r.id); cerrarModal(); S.totalReg++; vRegistros(true); }catch(e){ aviso(e.message, true); }
 }
 
-/* --------------------------------------------------------- administración */
-async function vAdmin(){
-  $('v-admin').innerHTML = '<div class="caja"><div class="vacio">Cargando…</div></div>';
-  let d;
-  try{ d = await api('/bitacora'); }
-  catch(e){ $('v-admin').innerHTML = `<div class="caja"><h3>No se pudo cargar</h3><div class="aviso-caja">${esc(e.message)}</div>
-    <button class="btn" onclick="vAdmin()">Reintentar</button></div>`; return; }
-  $('v-admin').innerHTML = `
-  <div class="titulo-seccion"><div><h2>Administración</h2><p>Usuarios, catálogos y trazabilidad. Usuarios y catálogos se editan directamente en QuintaDB (tablas RIID Usuarios y RIID Catálogos).</p></div><div class="espacio"></div>
-    ${S.perfil.puede.diagnostico?'<button class="btn g" onclick="diagnostico(false)">Diagnóstico de tablas</button>':''}</div>
-  <div id="diag"></div>
-  <div class="rejilla g2" style="margin-bottom:14px">
-    <div class="caja"><h3>Usuarios con rol (${d.usuarios.length})</h3><div class="tabla-envoltura" style="max-height:300px;overflow:auto"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Procesos</th></tr></thead><tbody>
-      ${d.usuarios.map(u=>`<tr><td>${esc(u.nombre)}<div class="sub">${esc(u.correo)}</div></td><td>${esc(u.rol)}${u.estado!=='Vigente'?' <span class="eti e-neutra">'+esc(u.estado)+'</span>':''}</td><td class="sub">${esc(u.procesos||'—')}</td></tr>`).join('')}</tbody></table></div></div>
-    <div class="caja"><h3>Catálogos vigentes</h3><div class="sub" style="line-height:1.8">
-      <b>Tipos:</b> ${S.cat.tipos.map(t=>`${esc(t.nombre)} <span class="mono">${esc(t.codigo)}</span>`).join(' · ')}<br>
-      <b>Procesos:</b> ${S.cat.procesos.map(t=>`${esc(t.nombre)} <span class="mono">${esc(t.codigo)}</span>`).join(' · ')}<br>
-      <b>Programas:</b> ${S.cat.programas.map(t=>esc(t.nombre)).join(' · ')}<br>
-      <b>Periodos:</b> ${S.cat.periodos.map(t=>esc(t.nombre)).join(' · ')}<br>
-      <b>Esquema de código:</b> <span class="mono">${esc(S.prefijo)}-TIPO-PROCESO-NNN</span></div></div>
-  </div>
-  <div class="caja"><h3>Bitácora (últimos ${d.bitacora.length} eventos)</h3><div class="tabla-envoltura" style="max-height:420px;overflow:auto"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Código</th><th>Detalle</th></tr></thead><tbody>
-    ${d.bitacora.length?d.bitacora.map(b=>`<tr><td class="mono sub">${fechaCorta(b.fecha)}</td><td>${esc(b.nombre)}</td><td>${esc(b.accion)}</td><td class="cod">${esc(b.codigo)}</td><td class="sub">${esc(b.detalle)}</td></tr>`).join(''):'<tr><td colspan="5" class="vacio">Sin eventos.</td></tr>'}</tbody></table></div></div>`;
+/* ------------------------------------------------------ administración
+   Las tablas del RIID viven en QuintaDB, pero se completan desde aquí.
+   DICC explica cada campo; FICHAS define qué se edita y cómo. */
+
+const DICC = {
+  documentos: {
+    'Código':'Identificador único que asigna el sistema: FI - tipo - macroproceso - correlativo (FI-GUI-M01-003). No cambia aunque salgan versiones nuevas.',
+    'Título':'Nombre oficial del documento, sin el código.',
+    'Tipo':'Clase de documento: política, guía, procedimiento, formato, etc. Sus letras forman la segunda parte del código.',
+    'Proceso':'Proceso del inventario de la Matriz de Indicadores al que pertenece el documento.',
+    'Macroproceso':'Macroproceso (nivel 0) del proceso elegido. Lo completa el sistema.',
+    'Programa':'Escuela profesional a la que aplica, o «Facultad (transversal)» si rige para todas.',
+    'Unidad responsable':'Órgano que responde por el documento: decanato, comisión, coordinación, dirección de escuela.',
+    'Responsable':'Persona que responde por el contenido. Recibe los avisos de observaciones y de revisión.',
+    'Correo responsable':'Correo al que llegan los avisos automáticos sobre este documento.',
+    'Objetivo y alcance':'Para qué existe el documento y a quién o a qué actividades se aplica.',
+    'Cláusulas ISO 21001':'Requisitos de la norma que este documento ayuda a cumplir. Sirve para demostrar el cumplimiento en una auditoría.',
+    'Origen':'Interno: elaborado en la Facultad. Externo: ley, reglamento o norma de otra entidad que el SGOE también debe controlar.',
+    'Distribución':'Pública interna: lo lee cualquier cuenta @urp.edu.pe. Restringida: solo quienes tienen un rol en el repositorio.',
+    'Versión vigente':'Número de la versión oficial actual. Sube en 1 (2.0) si cambia el contenido y en 0.1 (1.1) si solo cambia la forma.',
+    'Estado':'Vigente: es el documento oficial. Obsoleto: se dio de baja y queda solo como referencia histórica.',
+    'Fecha de aprobación':'Fecha en que se aprobó la versión vigente.',
+    'Documento de aprobación':'Resolución, acta u oficio que respalda la aprobación de la versión vigente.',
+    'Frecuencia de revisión (meses)':'Cada cuántos meses debe revisarse el documento aunque nadie pida cambios.',
+    'Próxima revisión':'Fecha que calcula el sistema: fecha de aprobación + frecuencia. Avisa 60 días antes.',
+    'Enlace documento':'Enlace de Google Drive al archivo oficial (de preferencia PDF). Es lo que se ve en el visor.',
+    'Enlace editable':'Enlace al archivo de trabajo (Word o Google Docs) para preparar futuras versiones.',
+    'Palabras clave':'Términos por los que alguien buscaría el documento.',
+    'Solicitud en curso':'Número de la solicitud de cambio en trámite (SOL-…). Vacío si no hay ninguna.',
+    'Fecha de baja':'Fecha en que el documento pasó a obsoleto.',
+    'Registrado por':'Quién registró el documento en el repositorio.',
+    'Fecha de registro':'Cuándo se registró en el repositorio.',
+    'Última actualización':'Último cambio de cualquier dato de la fila.'
+  },
+  versiones: {
+    'ID versión':'Código del documento más su versión (FI-GUI-M01-003-v2.0).',
+    'Código':'Documento al que pertenece esta versión.',
+    'Versión':'Número de versión.',
+    'Tipo de cambio':'Creación, Mayor (cambió el contenido), Menor (cambió la forma) o Carga inicial (documento aprobado antes del repositorio).',
+    'Descripción del cambio':'Qué cambió y por qué, tal como lo justificó el solicitante.',
+    'Elaborado por':'Quién propuso la versión.',
+    'Revisado por':'Quién dio conformidad en la revisión.',
+    'Aprobado por':'Quién aprobó la versión.',
+    'Fecha de aprobación':'Fecha de aprobación de esta versión.',
+    'Documento de aprobación':'Resolución, acta u oficio de esta versión.',
+    'Enlace documento':'Archivo de esta versión en particular.',
+    'Estado versión':'Vigente (la oficial) u Obsoleta (reemplazada por una posterior).',
+    'ID solicitud':'Solicitud que originó la versión. Vacío en la carga inicial.'
+  },
+  solicitudes: {
+    'ID solicitud':'Número del trámite: SOL-año-correlativo.',
+    'Tipo solicitud':'Creación, Modificación o Anulación.',
+    'Código':'Documento sobre el que trata. En una creación, el código reservado.',
+    'Título':'Título del documento propuesto.',
+    'Versión propuesta':'Versión que tendrá el documento si se aprueba.',
+    'Tipo de cambio':'Mayor o Menor (solo en modificaciones).',
+    'Justificación':'Por qué se pide la creación, el cambio o la baja.',
+    'Datos propuestos':'Dato técnico: la ficha propuesta del documento, en formato JSON.',
+    'Enlace borrador':'Archivo en Drive que se revisa y aprueba.',
+    'Solicitante':'Quién inició el trámite.',
+    'Correo solicitante':'Correo del solicitante.',
+    'Fecha solicitud':'Cuándo se inició.',
+    'Revisor':'Persona elegida para revisar.',
+    'Correo revisor':'Correo del revisor.',
+    'Aprobador':'Persona elegida para aprobar.',
+    'Correo aprobador':'Correo del aprobador.',
+    'Etapa':'En revisión, En aprobación, Observada, Aprobada, Rechazada o Desistida.',
+    'Historial':'Dato técnico: cada paso del trámite con fecha, persona y comentario.',
+    'Fecha de cierre':'Cuándo terminó el trámite (aprobado, rechazado o desistido).'
+  },
+  registros: {
+    'ID registro':'Número de la evidencia: REG-año-correlativo.',
+    'Código formato':'Código del formato de la lista maestra al que responde la evidencia. Vacío si es «otro registro».',
+    'Nombre formato':'Nombre del formato o del registro.',
+    'Proceso':'Proceso del formato.',
+    'Programa':'Escuela profesional a la que corresponde la evidencia.',
+    'Periodo':'Periodo académico de la evidencia.',
+    'Descripción':'Qué contiene la evidencia.',
+    'Enlace evidencia':'Archivo o carpeta de Drive con la evidencia.',
+    'Retención (años)':'Cuántos años debe conservarse.',
+    'Conservar hasta':'Fecha límite que calcula el sistema: fecha de registro + retención.',
+    'Disposición final':'Qué hacer al vencer la retención: eliminar, transferir al archivo central o conservar de forma permanente.',
+    'Registrado por':'Quién cargó la evidencia.',
+    'Correo':'Correo de quien la cargó.',
+    'Fecha de registro':'Cuándo se cargó.'
+  },
+  observaciones: {
+    'ID observación':'Número de la observación: OBS-año-correlativo.',
+    'Código':'Documento observado.',
+    'Tipo':'Observación, Recomendación, Oportunidad de mejora, No conformidad o Conformidad.',
+    'Texto':'Detalle del hallazgo.',
+    'Autor':'Quién lo registró.',
+    'Correo autor':'Correo de quien lo registró.',
+    'Fecha':'Cuándo se registró.',
+    'Estado':'Abierta (pendiente) o Atendida.',
+    'Respuesta':'Cómo se atendió.',
+    'Atendido por':'Quién la atendió.',
+    'Fecha de atención':'Cuándo se atendió.'
+  },
+  usuarios: {
+    'Correo':'Correo institucional @urp.edu.pe con el que la persona entra con Google.',
+    'Nombre':'Apellidos y nombres, como aparecerán en las listas de revisor y aprobador.',
+    'Rol':'Qué puede hacer la persona en el repositorio.',
+    'Procesos':'Solo para responsables de proceso: los procesos que puede gestionar.',
+    'Estado':'Vigente o Inactivo. Inactivo le quita el rol sin borrar su historial.'
+  },
+  catalogos: {
+    'Categoría':'A qué lista desplegable pertenece la opción.',
+    'Código':'Abreviatura única dentro de su categoría.',
+    'Nombre':'Texto que se ve en la lista.',
+    'Grupo':'Solo para la categoría Proceso: su macroproceso.',
+    'Orden':'Posición en la lista (1 aparece primero).',
+    'Estado':'Vigente (aparece en la lista) o Inactivo (oculto).'
+  },
+  bitacora: {
+    'Fecha y hora':'Momento exacto de la acción.',
+    'Correo':'Cuenta que realizó la acción.',
+    'Nombre':'Nombre de quien la realizó.',
+    'Acción':'Qué se hizo: solicitud, revisión, aprobación, edición, registro, etc.',
+    'Código':'Documento o registro afectado.',
+    'Detalle':'Datos adicionales; en las ediciones, el valor anterior y el nuevo de cada campo.'
+  }
+};
+
+const DESC_ROLES = {
+  'Administrador':'Todo, incluida la gestión de usuarios y roles.',
+  'Controlador documental':'Gestiona documentos de todos los procesos, carga documentos ya aprobados, corrige datos y catálogos. Aparece en la lista de revisores.',
+  'Aprobador':'Aparece en la lista de aprobadores. Aprueba, observa o rechaza las solicitudes que se le asignan.',
+  'Revisor':'Aparece en la lista de revisores. Da conformidad u observa las solicitudes que se le asignan.',
+  'Responsable de proceso':'Pide la creación, modificación o baja de los documentos de sus procesos y registra evidencias.',
+  'Registrador':'Solo registra evidencias (actas, listas, informes).'
+};
+
+const FICHAS = {
+  catalogos: {
+    titulo:'Catálogos — opciones de las listas desplegables',
+    finalidad:'Aquí nacen las opciones de tres listas del repositorio: <b>Tipo de documento</b>, <b>Programa</b> y <b>Periodo</b>. Cada fila es una opción. Si agregas una fila con categoría «Programa», esa opción aparece de inmediato en la lista «Programa» de todos los formularios. <br><b>La lista de procesos no se crea aquí:</b> se lee del Inventario de Procesos de la Matriz de Indicadores. La categoría «Proceso» solo se usa como respaldo si ese inventario no responde.',
+    mostrar:['Categoría','Código','Nombre','Grupo','Orden','Estado'],
+    nombreFila:'opción',
+    campos:{
+      'Categoría':{ tipo:'lista', opciones:['Tipo de documento','Programa','Periodo','Proceso'], req:true,
+        nota:'¿En qué lista aparecerá? <b>Tipo de documento</b> → campo «Tipo» al crear un documento. <b>Programa</b> → campo «Programa» de documentos y evidencias. <b>Periodo</b> → campo «Periodo» de las evidencias. <b>Proceso</b> → solo respaldo del inventario.' },
+      'Código':{ tipo:'texto', req:true,
+        nota:'Abreviatura corta y única en su categoría. En <b>Tipo de documento</b> usa 2 a 4 letras: esas letras van dentro del código de cada documento (GUI → FI-GUI-M01-003), así que no conviene cambiarlas después. En <b>Periodo</b> escribe el periodo tal cual (2026-II).' },
+      'Nombre':{ tipo:'texto', req:true, nota:'Lo que la gente verá en la lista: «Guía», «Ingeniería Civil», «2026-II».' },
+      'Grupo':{ tipo:'texto', nota:'Solo para la categoría <b>Proceso</b>: el macroproceso al que pertenece. En las demás categorías déjalo vacío.' },
+      'Orden':{ tipo:'numero', nota:'Posición en la lista: 1 aparece primero. Si lo dejas vacío, va al final.' },
+      'Estado':{ tipo:'lista', opciones:['Vigente','Inactivo'], defecto:'Vigente',
+        nota:'<b>Inactivo</b> oculta la opción de las listas sin borrarla. Los documentos que ya la usan no se alteran.' }
+    }
+  },
+  usuarios: {
+    titulo:'Usuarios y roles',
+    finalidad:'Define <b>quién puede hacer qué</b>. Cualquier persona con cuenta @urp.edu.pe entra al repositorio como <b>lector</b> sin estar aquí. Esta tabla solo se usa para dar permisos adicionales. <br><b>De aquí salen las listas «Revisor» y «Aprobador»</b> de los formularios: aparece como revisor quien tenga rol Revisor o Controlador documental, y como aprobador quien tenga rol Aprobador. Si una persona tiene dos roles, lleva dos filas.',
+    mostrar:['Nombre','Correo','Rol','Procesos','Estado'],
+    nombreFila:'usuario',
+    campos:{
+      'Correo':{ tipo:'correo', req:true, nota:'Correo institucional exacto con el que la persona entra con Google (nombre.apellido@urp.edu.pe). Si no coincide letra por letra, el rol no se le aplicará.' },
+      'Nombre':{ tipo:'texto', req:true, nota:'Apellidos y nombres, como aparecerán en las listas de revisor y aprobador y en el historial de las solicitudes.' },
+      'Rol':{ tipo:'lista', opciones:Object.keys(DESC_ROLES), req:true, nota:'rol' },
+      'Procesos':{ tipo:'procesos', nota:'Solo importa para <b>Responsable de proceso</b>: marca los macroprocesos que podrá gestionar. Quien gestiona M01 gestiona también sus procesos internos (M01.07). Marca «Todos» si puede gestionar cualquiera.' },
+      'Estado':{ tipo:'lista', opciones:['Vigente','Inactivo'], defecto:'Vigente', nota:'<b>Inactivo</b> le quita el rol sin borrar su historial. No puedes dejar sin ningún administrador vigente al repositorio.' }
+    }
+  },
+  documentos: {
+    titulo:'Documentos — correcciones',
+    finalidad:'Sirve para corregir <b>datos administrativos</b> de un documento sin crear una versión nueva: un enlace roto, el cambio de responsable, una resolución mal escrita. <br><b>No lo uses si cambia el contenido</b> del documento: para eso está «Solicitar modificación», que pasa por revisión y aprobación. El título, el tipo, el proceso y la versión no se corrigen aquí por la misma razón. Cada corrección queda en la bitácora con el valor anterior y el nuevo.',
+    mostrar:['Código','Título','Versión vigente','Estado','Responsable','Próxima revisión'],
+    soloVer:['Código','Título','Tipo','Proceso','Versión vigente','Estado','Fecha de aprobación'],
+    nombreFila:'documento',
+    campos:{
+      'Programa':{ tipo:'catalogo', categoria:'programas', nota:'origen:Programa' },
+      'Unidad responsable':{ tipo:'texto' },
+      'Responsable':{ tipo:'texto' },
+      'Correo responsable':{ tipo:'correo' },
+      'Objetivo y alcance':{ tipo:'area' },
+      'Cláusulas ISO 21001':{ tipo:'texto', nota:'Separadas por punto y coma: «5 Liderazgo; 7.5 Información documentada».' },
+      'Distribución':{ tipo:'lista', opciones:['Pública interna','Restringida'] },
+      'Frecuencia de revisión (meses)':{ tipo:'numero', nota:'Al cambiarla, el sistema recalcula la próxima revisión desde la fecha de aprobación.' },
+      'Documento de aprobación':{ tipo:'texto' },
+      'Enlace documento':{ tipo:'url', nota:'Archivo oficial en Drive, compartido con urp.edu.pe como lector. Si el visor sale en blanco, casi siempre es porque el archivo no está compartido.' },
+      'Enlace editable':{ tipo:'url' },
+      'Palabras clave':{ tipo:'texto' }
+    }
+  },
+  registros: {
+    titulo:'Registros — correcciones',
+    finalidad:'Corrige datos de una evidencia ya cargada: un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. Cada corrección queda en la bitácora.',
+    mostrar:['ID registro','Nombre formato','Programa','Periodo','Conservar hasta','Registrado por'],
+    soloVer:['ID registro','Código formato','Nombre formato','Registrado por','Fecha de registro'],
+    nombreFila:'registro',
+    campos:{
+      'Programa':{ tipo:'catalogo', categoria:'programas', nota:'origen:Programa' },
+      'Periodo':{ tipo:'catalogo', categoria:'periodos', nota:'origen:Periodo' },
+      'Descripción':{ tipo:'area' },
+      'Enlace evidencia':{ tipo:'url' },
+      'Retención (años)':{ tipo:'numero', nota:'Al cambiarla, el sistema recalcula «Conservar hasta» desde la fecha de registro.' },
+      'Disposición final':{ tipo:'lista', opciones:DISPOSICION }
+    }
+  },
+  versiones: {
+    titulo:'Versiones — consulta',
+    finalidad:'El historial de todas las versiones aprobadas de cada documento. Se escribe solo cuando se aprueba una solicitud o se carga un documento ya aprobado. <b>Es de solo lectura</b> porque es la prueba de qué versión estuvo vigente y cuándo; corregirla a mano rompería la trazabilidad que pide la norma.',
+    mostrar:['ID versión','Versión','Tipo de cambio','Aprobado por','Fecha de aprobación','Estado versión']
+  },
+  solicitudes: {
+    titulo:'Solicitudes — consulta',
+    finalidad:'Todos los trámites de creación, modificación y anulación, con su etapa y su historial. <b>Es de solo lectura:</b> las solicitudes avanzan únicamente con los botones del flujo documental, para que cada paso quede firmado por quien lo dio.',
+    mostrar:['ID solicitud','Tipo solicitud','Código','Título','Etapa','Fecha solicitud']
+  },
+  observaciones: {
+    titulo:'Observaciones — consulta',
+    finalidad:'Hallazgos, recomendaciones y no conformidades registrados sobre los documentos. Se registran y se atienden desde la ficha de cada documento (pestaña «Observaciones»). Aquí se ven todas juntas, por ejemplo para preparar una auditoría.',
+    mostrar:['ID observación','Código','Tipo','Estado','Autor','Fecha']
+  },
+  bitacora: {
+    titulo:'Bitácora — consulta',
+    finalidad:'Registro automático de cada acción hecha en el repositorio: quién, cuándo y qué. <b>Nadie la puede editar</b>, ni siquiera el administrador: es la evidencia de control que se muestra en una auditoría. Se ven los últimos 600 eventos.',
+    mostrar:['Fecha y hora','Nombre','Acción','Código','Detalle']
+  }
+};
+
+/* Texto explicativo del origen de cada lista desplegable. Se usa en los
+   formularios, en las fichas de administración y en la guía. */
+function origenLista(cual){
+  const gestionar = (t, cat) => S.perfil.control
+    ? ` <a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('${t}','${cat||''}')">Gestionar esta lista →</a>` : '';
+  const txt = {
+    'Tipo de documento': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Catálogos</b>, filas con categoría «Tipo de documento». <b>¿Para qué sirve?</b> Clasifica el documento y aporta las letras del código: si eliges Guía (GUI), el código será FI-GUI-…${gestionar('catalogos','Tipo de documento')}`,
+    'Proceso': `<b>¿De dónde sale esta lista?</b> No se crea en el repositorio: se lee en vivo del <b>Inventario de Procesos de la Matriz de Indicadores</b>, para que ambos aplicativos usen exactamente los mismos procesos. Si falta un proceso, se agrega en la Matriz de Indicadores → Inventario y aparece aquí al recargar. <b>¿Para qué sirve?</b> Indica a qué proceso pertenece el documento; las letras de su macroproceso van en el código (M01 en FI-GUI-M01-003).`,
+    'Programa': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Catálogos</b>, filas con categoría «Programa». <b>¿Para qué sirve?</b> Indica a qué escuela aplica. Elige «Facultad (transversal)» si aplica a todas.${gestionar('catalogos','Programa')}`,
+    'Periodo': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Catálogos</b>, filas con categoría «Periodo». <b>¿Para qué sirve?</b> Ubica la evidencia en el tiempo para poder buscarla después.${gestionar('catalogos','Periodo')}`,
+    'Revisor': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Usuarios y roles</b>: aparecen las personas con rol «Revisor» o «Controlador documental» en estado Vigente. Si quien necesitas no aparece, un administrador debe darle ese rol. <b>¿Qué hará?</b> Leer tu borrador y darle conformidad u observarlo. No puedes elegirte a ti.${S.perfil.admin?` <a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('usuarios')">Asignar roles →</a>`:''}`,
+    'Aprobador': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Usuarios y roles</b>: aparecen las personas con rol «Aprobador» en estado Vigente. <b>¿Qué hará?</b> Aprobar el documento registrando la resolución o acta; también puede observarlo o rechazarlo. Debe ser una persona distinta del revisor y de ti.${S.perfil.admin?` <a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('usuarios')">Asignar roles →</a>`:''}`,
+    'Formato': `<b>¿De dónde sale esta lista?</b> De la <b>Lista maestra</b>: documentos vigentes de tipo Formato o Matriz. Si el formato que usaste no aparece, primero debe registrarse como documento. Si la evidencia no responde a ningún formato, elige «Otro registro».`
+  }[cual];
+  return `<div class="nota-campo origen">${txt}</div>`;
 }
+
+let pestanaAdmin = 'catalogos', filtroAdmin = { q:'', categoria:'' };
+S.adm = {};
+
+function abrirAdmin(t, categoria){
+  pestanaAdmin = t; filtroAdmin = { q:'', categoria: categoria || '' };
+  mostrar('admin');
+}
+
+async function vAdmin(){
+  const tabs = [['catalogos','Catálogos'],['usuarios','Usuarios y roles'],['documentos','Documentos'],['registros','Registros'],
+    ['versiones','Versiones'],['solicitudes','Solicitudes'],['observaciones','Observaciones'],['bitacora','Bitácora']]
+    .concat(S.perfil.puede.diagnostico ? [['diagnostico','Diagnóstico']] : []);
+  $('v-admin').innerHTML = `
+  <div class="titulo-seccion"><div><h2>Administración</h2><p>Las tablas del repositorio viven en QuintaDB, pero se completan desde aquí. Cada pestaña explica para qué sirve su tabla.</p></div></div>
+  <div class="subnav">${tabs.map(([k,t])=>`<button class="${k===pestanaAdmin?'activa':''}" onclick="pestanaAdmin='${k}';filtroAdmin={q:'',categoria:''};vAdmin()">${t}${['versiones','solicitudes','observaciones','bitacora'].includes(k)?' <span class="candado" title="Solo consulta">🔒</span>':''}</button>`).join('')}</div>
+  <div id="admCuerpo"><div class="caja"><div class="vacio">Cargando…</div></div></div>`;
+  if (pestanaAdmin === 'diagnostico') return diagnostico(false);
+  try{
+    const d = await api('/admin-tabla', { tabla: pestanaAdmin });
+    S.adm[pestanaAdmin] = d;
+    pintarAdmin();
+  }catch(e){
+    $('admCuerpo').innerHTML = `<div class="caja"><h3>No se pudo cargar la tabla</h3><div class="aviso-caja">${esc(e.message)}</div>
+      <button class="btn" onclick="vAdmin()">Reintentar</button></div>`;
+  }
+}
+
+function pintarAdmin(){
+  const t = pestanaAdmin, d = S.adm[t], f = FICHAS[t], ed = d.editable;
+  const puedeEditar = ed && ed.permitido;
+  const q = filtroAdmin.q.toLowerCase();
+  let filas = d.filas.filter(r => (!filtroAdmin.categoria || r['Categoría'] === filtroAdmin.categoria)
+    && (!q || f.mostrar.some(c => String(r[c]||'').toLowerCase().includes(q))));
+  if (t === 'catalogos') filas.sort((a,b)=> a['Categoría'].localeCompare(b['Categoría']) || (parseFloat(a['Orden'])||999)-(parseFloat(b['Orden'])||999));
+  $('admCuerpo').innerHTML = `
+  <div class="comose"><b>${esc(f.titulo)}</b><div class="finalidad">${f.finalidad}</div>
+    ${ed && !ed.permitido ? '<div class="sub" style="margin-top:6px">Puedes consultar esta tabla, pero solo un administrador puede editarla.</div>' : ''}</div>
+  ${t==='catalogos' ? `<div class="aviso-caja info">¿Buscas la lista de <b>procesos</b>? No se edita aquí: se administra en la <b>Matriz de Indicadores → Inventario de Procesos</b> y el repositorio la lee de allá automáticamente.</div>` : ''}
+  <div class="barra-filtros">
+    <input type="text" class="buscar" id="admQ" placeholder="Buscar en esta tabla" value="${esc(filtroAdmin.q)}">
+    ${t==='catalogos' ? `<select id="admCat">${opciones(['Tipo de documento','Programa','Periodo','Proceso'], filtroAdmin.categoria, 'Todas las categorías')}</select>` : ''}
+    <span class="espacio"></span>
+    ${puedeEditar && ed.alta ? `<button class="btn" onclick="formAdmin('${t}')">+ ${f.nombreFila==='usuario'?'Nuevo':'Nueva'} ${esc(f.nombreFila)}</button>` : ''}
+  </div>
+  <div class="tabla-envoltura"><table><thead><tr>${f.mostrar.map(c=>`<th>${esc(c)}</th>`).join('')}<th></th></tr></thead><tbody>
+  ${filas.length ? filas.map(r => `<tr class="clic" onclick="${puedeEditar?`formAdmin('${t}','${esc(r.recordId)}')`:`verFilaAdmin('${t}','${esc(r.recordId)}')`}">
+    ${f.mostrar.map(c => { const v = r[c] || '';
+      if (c==='Estado' || c==='Etapa' || c==='Estado versión') return `<td>${etiEstado(v==='Obsoleta'?'Obsoleto':v==='Inactivo'?'Desistida':v)}</td>`;
+      if (/^(Código|ID )/.test(c) || c==='Versión') return `<td class="cod">${esc(v)}</td>`;
+      if (c==='Detalle') return `<td class="sub" style="max-width:420px">${esc(v)}</td>`;
+      if (/Fecha|Conservar|Próxima/.test(c)) return `<td class="sub mono">${fechaCorta(v)}</td>`;
+      return `<td>${esc(v)}</td>`; }).join('')}
+    <td><button class="btn g sm" onclick="event.stopPropagation();${puedeEditar?`formAdmin('${t}','${esc(r.recordId)}')`:`verFilaAdmin('${t}','${esc(r.recordId)}')`}">${puedeEditar?'Editar':'Ver'}</button></td></tr>`).join('')
+    : `<tr><td colspan="${f.mostrar.length+1}" class="vacio">No hay filas${q||filtroAdmin.categoria?' con ese filtro':''}.${puedeEditar&&ed.alta?'<br><span class="sub">Usa el botón «+ Nueva» para crear la primera.</span>':''}</td></tr>`}
+  </tbody></table></div>
+  <div class="sub" style="margin-top:8px">${filas.length} de ${d.filas.length} filas · tabla QuintaDB «RIID ${esc(t.charAt(0).toUpperCase()+t.slice(1))}»</div>`;
+  $('admQ').oninput = e => { filtroAdmin.q = e.target.value; const pos = e.target.selectionStart; pintarAdmin(); $('admQ').focus(); $('admQ').setSelectionRange(pos,pos); };
+  if ($('admCat')) $('admCat').onchange = e => { filtroAdmin.categoria = e.target.value; pintarAdmin(); };
+}
+
+/* Ficha de solo lectura: cada campo con su explicación */
+function verFilaAdmin(t, recordId){
+  const r = S.adm[t].filas.find(x => x.recordId === recordId), f = FICHAS[t];
+  const valor = (c, v) => {
+    if (c === 'Historial'){ const h = (()=>{ try{ return JSON.parse(v||'[]'); }catch(e){ return []; } })();
+      return h.length ? h.map(x=>`<div>${fechaCorta(x.fecha)} · <b>${esc(x.accion)}</b> · ${esc(x.nombre)}${x.comentario?` — ${esc(x.comentario)}`:''}</div>`).join('') : '—'; }
+    if (c === 'Datos propuestos'){ const o = (()=>{ try{ return JSON.parse(v||'{}'); }catch(e){ return {}; } })();
+      return Object.keys(o).length ? Object.entries(o).filter(([k,x])=>x).map(([k,x])=>`<div><span class="sub">${esc(k)}:</span> ${esc(x)}</div>`).join('') : '—'; }
+    if (/^https?:\/\//.test(v)) return `<a href="${esc(v)}" target="_blank" rel="noopener">abrir enlace</a>`;
+    return esc(v) || '<span class="sub">—</span>';
+  };
+  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub">${esc(f.titulo)}</div><h2>${esc(r[S.adm[t].columnas[0]])}</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
+  <div class="modal-cuerpo">
+    <div class="aviso-caja info">Tabla de <b>solo consulta</b>. Debajo de cada dato se explica qué significa.</div>
+    <div class="ficha-campos">${S.adm[t].columnas.map(c => `<div class="fc"><div class="fc-et">${esc(c)}</div><div class="fc-val">${valor(c, r[c])}</div>
+      <div class="nota-campo">${esc((DICC[t]||{})[c]||'')}</div></div>`).join('')}</div>
+  </div><div class="modal-pie"><button class="btn" onclick="cerrarModal()">Cerrar</button></div>`);
+}
+
+/* Formulario de alta o edición */
+function formAdmin(t, recordId){
+  const f = FICHAS[t], d = S.adm[t], fila = recordId ? d.filas.find(x=>x.recordId===recordId) : {};
+  const nuevo = !recordId;
+  const control = (col, spec, i) => {
+    const v = fila[col] !== undefined && fila[col] !== '' ? fila[col] : (spec.defecto || (col==='Categoría' && filtroAdmin.categoria) || '');
+    const id = 'adm_'+i;
+    if (spec.tipo === 'lista') return `<select id="${id}">${opciones(spec.opciones, v, 'Seleccione')}</select>`;
+    if (spec.tipo === 'catalogo') return `<select id="${id}">${opciones(S.cat[spec.categoria].map(x=>x.nombre), v, 'Seleccione')}</select>`;
+    if (spec.tipo === 'area') return `<textarea id="${id}">${esc(v)}</textarea>`;
+    if (spec.tipo === 'procesos'){
+      const marcados = v.split(/[,;]/).map(x=>x.trim().toUpperCase()).filter(Boolean);
+      const raices = S.cat.procesos.filter(p => (p.nivel||0) === 0);
+      return `<div class="chips" id="${id}"><label><input type="checkbox" value="Todos" ${marcados.includes('TODOS')?'checked':''}>Todos</label>
+        ${raices.map(p=>`<label title="${esc(p.nombre)}"><input type="checkbox" value="${esc(p.codigo)}" ${marcados.includes(p.codigo.toUpperCase())?'checked':''}>${esc(p.codigo)} · ${esc(p.nombre)}</label>`).join('')}</div>`;
+    }
+    const tipoInput = {numero:'number', correo:'email', url:'url'}[spec.tipo] || 'text';
+    return `<input type="${tipoInput}" id="${id}" value="${esc(v)}"${spec.tipo==='numero'?' min="0" step="1"':''}>`;
+  };
+  const notaDe = (col, spec) => {
+    if (spec.nota === 'rol') return `<div class="nota-campo">${Object.entries(DESC_ROLES).map(([r,x])=>`<div><b>${esc(r)}:</b> ${esc(x)}</div>`).join('')}</div>`;
+    if (spec.nota && spec.nota.startsWith('origen:')) return origenLista(spec.nota.slice(7));
+    return `<div class="nota-campo">${spec.nota || esc((DICC[t]||{})[col] || '')}</div>`;
+  };
+  const cols = Object.keys(f.campos);
+  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub">${esc(f.titulo)}</div><h2>${nuevo?(f.nombreFila==='usuario'?'Nuevo ':'Nueva ')+esc(f.nombreFila):'Editar '+esc(f.nombreFila)}</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
+  <div class="modal-cuerpo">
+    <div class="comose"><b>Para qué sirve este formulario</b><div class="finalidad">${f.finalidad}</div></div>
+    ${f.soloVer && !nuevo ? `<dl class="meta" style="margin-bottom:14px">${f.soloVer.map(c=>`<dt>${esc(c)}</dt><dd>${esc(fila[c]||'—')}</dd>`).join('')}</dl>` : ''}
+    <div class="campos">${cols.map((c,i) => { const spec = f.campos[c];
+      const ancho = ['area','procesos'].includes(spec.tipo) || spec.nota==='rol' || /Enlace|Objetivo/.test(c);
+      return `<div class="campo${ancho?' completo':''}"><label${spec.req?' class="req"':''}>${esc(c)}</label>${control(c,spec,i)}${notaDe(c,spec)}</div>`; }).join('')}</div>
+  </div>
+  <div class="modal-pie"><span class="sub" style="margin-right:auto;align-self:center">El cambio queda registrado en la bitácora con el valor anterior y el nuevo.</span>
+    <button class="btn n" onclick="cerrarModal()">Cancelar</button><button class="btn" onclick="guardarAdmin('${t}','${esc(recordId||'')}')">Guardar</button></div>`);
+}
+
+async function guardarAdmin(t, recordId){
+  const f = FICHAS[t], datos = {};
+  Object.keys(f.campos).forEach((c,i) => {
+    const el = $('adm_'+i);
+    if (f.campos[c].tipo === 'procesos'){
+      const m = [...el.querySelectorAll('input:checked')].map(x=>x.value);
+      datos[c] = m.includes('Todos') ? 'Todos' : m.join(', ');
+    } else datos[c] = el.value;
+  });
+  try{
+    const r = await api('/admin-guardar', { tabla:t, recordId, datos });
+    aviso(r.sinCambios ? 'No había cambios que guardar' : 'Guardado');
+    cerrarModal();
+    if (['catalogos','usuarios','documentos'].includes(t)) await recargar();
+    vAdmin();
+  }catch(e){ aviso(e.message, true); }
+}
+
 async function diagnostico(limpiar){
   try{
     const d = await api('/diagnostico', { limpiar });
-    $('diag').innerHTML = `<div class="caja" style="margin-bottom:14px"><h3>Diagnóstico de tablas QuintaDB</h3><table><thead><tr><th>Tabla</th><th>ID</th><th>Filas</th><th>Estado</th></tr></thead><tbody>
+    $('admCuerpo').innerHTML = `
+    <div class="comose"><b>Diagnóstico técnico</b><div class="finalidad">Comprueba que el repositorio encuentre sus ocho tablas en QuintaDB con todas sus columnas, y muestra de dónde sale cada lista desplegable. Úsalo cuando algo no cargue o una lista salga vacía.</div></div>
+    <div class="caja" style="margin-bottom:14px"><h3>Tablas QuintaDB</h3><table><thead><tr><th>Tabla</th><th>ID</th><th>Filas</th><th>Estado</th></tr></thead><tbody>
       ${d.tablas.map(t=>`<tr><td>${esc(t.tabla)}</td><td class="mono sub">${esc(t.entity)}</td><td class="mono">${t.filas??'—'}</td>
-      <td>${t.error?`<span class="eti e-rechazada">${esc(t.error)}</span>`:t.ok?'<span class="eti e-vigente">Columnas completas</span>':`<span class="eti e-observada">Faltan: ${esc(t.faltan.join(', '))}</span>`}</td></tr>`).join('')}</tbody></table>
-      <h3 style="font-size:13px;margin:16px 0 8px">Origen de cada desplegable</h3>
-      <table><thead><tr><th>Desplegable</th><th>Se carga desde</th><th>Elementos</th></tr></thead><tbody>
+      <td>${t.error?`<span class="eti e-rechazada">${esc(t.error)}</span>`:t.ok?'<span class="eti e-vigente">Columnas completas</span>':`<span class="eti e-observada">Faltan: ${esc(t.faltan.join(', '))}</span>`}</td></tr>`).join('')}</tbody></table></div>
+    <div class="caja" style="margin-bottom:14px"><h3>Origen de cada lista desplegable</h3>
+      <table><thead><tr><th>Lista</th><th>Se carga desde</th><th>Opciones</th></tr></thead><tbody>
         ${(d.fuentes||[]).map(f=>`<tr><td>${esc(f.desplegable)}</td><td class="sub">${esc(f.origen)}</td>
-        <td class="mono">${f.elementos?f.elementos:'<span class="eti e-rechazada">0</span>'}</td></tr>`).join('')}</tbody></table>
-      ${(d.muestraProcesos||[]).length?`<div class="sub" style="margin-top:8px">Procesos leídos del inventario (muestra): ${d.muestraProcesos.map(p=>`<span class="mono">${esc(p.codigo)}</span> ${esc(p.nombre)}`).join(' · ')}</div>`:''}
-      <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><span class="sub" style="flex:1">Notificaciones por correo: ${d.notificaciones?'activas':'desactivadas'}. Si renombraste columnas en QuintaDB, vuelve a leer el mapa.</span>
-      <button class="btn n sm" onclick="diagnostico(true)">Volver a leer columnas</button></div></div>`;
-  }catch(e){ aviso(e.message, true); }
+        <td class="mono">${f.elementos?f.elementos:'<span class="eti e-rechazada">0 · lista vacía</span>'}</td></tr>`).join('')}</tbody></table>
+      ${(d.muestraProcesos||[]).length?`<div class="sub" style="margin-top:8px">Procesos leídos del inventario (muestra): ${d.muestraProcesos.map(p=>`<span class="mono">${esc(p.codigo)}</span> ${esc(p.nombre)}`).join(' · ')}</div>`:''}</div>
+    <div style="display:flex;gap:8px;align-items:center"><span class="sub" style="flex:1">Notificaciones por correo: ${d.notificaciones?'activas':'desactivadas'}. Si renombraste columnas en QuintaDB o agregaste procesos al inventario, vuelve a leer.</span>
+      <button class="btn n sm" onclick="diagnostico(true)">Volver a leer columnas y procesos</button></div>`;
+  }catch(e){ $('admCuerpo').innerHTML = `<div class="caja"><div class="aviso-caja">${esc(e.message)}</div><button class="btn" onclick="diagnostico(false)">Reintentar</button></div>`; }
+}
+
+
+/* ------------------------------------------------------ asistente de IA
+   Botón «💬 Ayuda» con panel de chat. Habla con el Worker asistente-riid,
+   que responde sobre el uso del repositorio y sobre información documentada.
+   Acepta capturas con 📎 o pegándolas con Ctrl+V. */
+const ASIS = { mensajes: [], imagen: null, ocupado: false, ultimo: null };
+const PESTANAS = { tablero:'Tablero', maestra:'Lista maestra', flujo:'Flujo documental', registros:'Registros y evidencias', admin:'Administración' };
+
+function mdSimple(t){
+  let h = esc(t);
+  h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, '$1<i>$2</i>').replace(/_\((.+?)\)_/g, '<i>($1)</i>');
+  h = h.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  h = h.replace(/([\w.+-]+@[\w-]+\.[\w.]+)/g, '<a href="mailto:$1">$1</a>');
+  const lineas = h.split('\n'); let out = '', lista = null;
+  const cerrar = () => { if (lista){ out += `</${lista}>`; lista = null; } };
+  for (const l of lineas){
+    let m;
+    if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(l))){ if (lista!=='ol'){ cerrar(); out += '<ol>'; lista='ol'; } out += `<li>${m[1]}</li>`; }
+    else if ((m = /^\s*[-•*]\s+(.*)$/.exec(l))){ if (lista!=='ul'){ cerrar(); out += '<ul>'; lista='ul'; } out += `<li>${m[1]}</li>`; }
+    else if ((m = /^#{1,4}\s+(.*)$/.exec(l))){ cerrar(); out += `<p><b>${m[1]}</b></p>`; }
+    else if (!l.trim()){ cerrar(); }
+    else { cerrar(); out += `<p>${l}</p>`; }
+  }
+  cerrar(); return out;
+}
+
+function montarAsistente(){
+  if ($('asisBoton') || !CFG.ASISTENTE_URL) return;
+  const b = document.createElement('button');
+  b.id = 'asisBoton'; b.className = 'asis-boton'; b.innerHTML = '💬 Ayuda';
+  b.onclick = () => { $('asisPanel').classList.toggle('oculto'); if (!$('asisPanel').classList.contains('oculto')) $('asisTexto').focus(); };
+  document.body.appendChild(b);
+  const p = document.createElement('div');
+  p.id = 'asisPanel'; p.className = 'asis-panel oculto';
+  p.innerHTML = `
+    <div class="asis-cab"><div><b>Asistente del RIID</b><span>Uso del repositorio e información documentada ISO 21001</span></div>
+      <button class="cerrar" onclick="$('asisPanel').classList.add('oculto')">×</button></div>
+    <div class="asis-cuerpo" id="asisCuerpo">
+      <div class="asis-msg asistente"><p>Hola. Puedo ayudarte a <b>usar el repositorio</b> (dónde está cada botón, qué poner en cada campo, de dónde salen las listas) y también con el <b>contenido</b>: cómo redactar un procedimiento, qué revisar antes de aprobar, cuánto conservar un registro o qué pide la cláusula 7.5.</p>
+      <p>Si algo no te sale, pégame una captura de pantalla con <b>Ctrl+V</b> o con el clip 📎.</p></div>
+      <div class="asis-sugeridas">${['¿Cómo pido un documento nuevo?','¿De dónde salen las listas desplegables?','¿Qué diferencia hay entre documento y registro?','¿Qué reviso antes de dar conformidad?']
+        .map(t=>`<button onclick="preguntarAsistente(${JSON.stringify(t).replace(/"/g,'&quot;')})">${esc(t)}</button>`).join('')}</div>
+    </div>
+    <div class="asis-adjunto oculto" id="asisAdjunto"><img id="asisMini" alt=""><span>Captura adjunta</span><button onclick="quitarImagen()">Quitar</button></div>
+    <div class="asis-pie">
+      <label class="asis-clip" title="Adjuntar captura">📎<input type="file" accept="image/*" id="asisArchivo" hidden></label>
+      <textarea id="asisTexto" rows="2" placeholder="Escribe tu pregunta… (Enter envía, Shift+Enter salto de línea)"></textarea>
+      <button class="btn" id="asisEnviar" onclick="enviarAsistente()">Enviar</button>
+    </div>
+    <div class="asis-nota">Responde con base en el manual del RIID. Puede equivocarse: verifica lo importante en la ficha del documento o con control documental.</div>`;
+  document.body.appendChild(p);
+  $('asisTexto').addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarAsistente(); } });
+  $('asisTexto').addEventListener('paste', e => {
+    const it = [...(e.clipboardData||{}).items||[]].find(x => x.type && x.type.startsWith('image/'));
+    if (it){ e.preventDefault(); cargarImagen(it.getAsFile()); }
+  });
+  $('asisArchivo').onchange = e => { if (e.target.files[0]) cargarImagen(e.target.files[0]); e.target.value=''; };
+}
+
+/* Reduce la captura en el navegador (máx. 1400 px, JPEG) antes de enviarla */
+function cargarImagen(archivo){
+  const lector = new FileReader();
+  lector.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const esc_ = Math.min(1, 1400 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width*esc_); c.height = Math.round(img.height*esc_);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const url = c.toDataURL('image/jpeg', 0.82);
+      ASIS.imagen = { mime:'image/jpeg', datos:url.split(',')[1] };
+      $('asisMini').src = url; $('asisAdjunto').classList.remove('oculto');
+    };
+    img.src = lector.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+function quitarImagen(){ ASIS.imagen = null; $('asisAdjunto').classList.add('oculto'); }
+
+function pintarMensaje(rol, html, extra){
+  const d = document.createElement('div');
+  d.className = 'asis-msg ' + rol + (extra ? ' '+extra : '');
+  d.innerHTML = html;
+  const sug = document.querySelector('.asis-sugeridas'); if (sug) sug.remove();
+  $('asisCuerpo').appendChild(d); $('asisCuerpo').scrollTop = $('asisCuerpo').scrollHeight;
+  return d;
+}
+
+function preguntarAsistente(t){ $('asisTexto').value = t; enviarAsistente(); }
+
+async function enviarAsistente(reintento){
+  if (ASIS.ocupado) return;
+  let texto, imagen;
+  if (reintento && ASIS.ultimo){ ({ texto, imagen } = ASIS.ultimo); }
+  else {
+    texto = $('asisTexto').value.trim();
+    imagen = ASIS.imagen;
+    if (!texto && !imagen) return;
+    if (!texto) texto = '¿Qué ves en esta captura y qué debo hacer?';
+    ASIS.mensajes.push({ rol:'usuario', texto });
+    pintarMensaje('usuario', esc(texto).replace(/\n/g,'<br>') + (imagen ? '<div class="sub">📎 captura adjunta</div>' : ''));
+    $('asisTexto').value = ''; quitarImagen();
+    ASIS.ultimo = { texto, imagen };
+  }
+  ASIS.ocupado = true; $('asisEnviar').disabled = true;
+  const espera = pintarMensaje('asistente', '<span class="asis-escribiendo">Pensando…</span>');
+  try{
+    const ctrl = new AbortController(); const reloj = setTimeout(() => ctrl.abort(), 80000);
+    const r = await fetch(CFG.ASISTENTE_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, signal: ctrl.signal,
+      body: JSON.stringify({ mensajes: ASIS.mensajes, imagen,
+        contexto: { pestana: PESTANAS[S.vista] || S.vista, roles: (S.perfil?.roles||[]).join(', '), nombre: S.perfil?.nombre } }) });
+    clearTimeout(reloj);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    espera.remove();
+    ASIS.mensajes.push({ rol:'asistente', texto: d.respuesta });
+    pintarMensaje('asistente', mdSimple(d.respuesta));
+    ASIS.ultimo = null;
+  }catch(e){
+    espera.remove();
+    const msg = e.name === 'AbortError' ? 'El asistente tardó demasiado en responder.' : (e.message || 'No se pudo conectar con el asistente.');
+    pintarMensaje('asistente', `<p>${esc(msg)}</p><button class="btn sm" onclick="this.parentElement.remove();enviarAsistente(true)">Reintentar</button>`, 'error');
+  }finally{ ASIS.ocupado = false; $('asisEnviar').disabled = false; }
 }
 
 /* --------------------------------------------------------------- arranque */
