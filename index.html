@@ -216,6 +216,20 @@ dl.meta dd{margin:0;word-break:break-word}
 .nota-campo.origen{border-left-color:var(--azul);background:var(--azul-suave);padding:6px 9px;border-radius:0 5px 5px 0}
 .nota-campo b{color:var(--tinta)}
 .nota-campo .ir{font-weight:600;white-space:nowrap}
+.req-previo{margin-bottom:3px}
+.lista-vacia{margin-top:6px;padding:6px 8px;border-radius:5px;background:var(--parcial-suave);color:#6d4f06;border:1px solid #efd9a0}
+.lista-vacia b{color:#6d4f06}
+
+/* puesta en marcha */
+.marcha{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+.marcha h3{font-size:13.5px;margin:0 0 4px}
+.marcha .sub{margin-bottom:8px}
+.marcha .paso-m{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #eef1ef}
+.marcha .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700}
+.marcha .ic.ok{background:var(--brand-suave);color:var(--brand-oscuro)}
+.marcha .ic.no{background:var(--parcial-suave);color:#8a6508}
+.marcha .tx b{display:block;font-size:13px}
+.marcha .tx span{font-size:12px;color:var(--tinta-media)}
 .ficha-campos{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
 @media(max-width:700px){.ficha-campos{grid-template-columns:1fr}}
 .fc-et{font-size:11px;font-weight:600;color:var(--tinta-media);text-transform:uppercase;letter-spacing:.03em}
@@ -306,6 +320,7 @@ dl.meta dd{margin:0;word-break:break-word}
     <button data-vista="admin" data-req="bitacora">Administración</button>
   </nav>
   <main id="principal">
+    <div id="avisoVersion" class="aviso-caja oculto" style="margin-bottom:14px;line-height:1.55"></div>
     <section id="v-tablero"></section>
     <section id="v-maestra" class="oculto"></section>
     <section id="v-flujo" class="oculto"></section>
@@ -321,6 +336,10 @@ dl.meta dd{margin:0;word-break:break-word}
 <script>
 'use strict';
 const CFG = window.RIID_CONFIG;
+/* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
+   Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
+const BACKEND_ESPERADO = '2026-09-22';
+const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RIID, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
 const DISPOSICION = ['Evaluar al vencer','Eliminar','Transferir a archivo central','Conservación permanente'];
@@ -424,6 +443,17 @@ function guiaRapida(){
   <div class="modal-pie"><button class="btn" onclick="cerrarModal()">Entendido</button></div>`);
 }
 
+function mostrarAvisoVersion(v){
+  const el = $('avisoVersion'); if (!el) return;
+  if (S.perfil && S.perfil.admin){
+    el.innerHTML = `<b>El Apps Script publicado está desactualizado</b> (${v?`versión ${esc(v)}`:'versión anterior'}; esta página necesita ${BACKEND_ESPERADO}). Por eso algunas pantallas muestran «Ruta no reconocida».<br>${PASOS_PUBLICAR}`;
+  } else {
+    el.innerHTML = '<b>El repositorio se está actualizando.</b> Algunas funciones pueden no estar disponibles todavía.';
+  }
+  el.classList.remove('oculto');
+}
+function ocultarAvisoVersion(){ const el = $('avisoVersion'); if (el) el.classList.add('oculto'); }
+
 function aviso(msg, error){ const d=document.createElement('div'); d.className='toast'+(error?' error':''); d.textContent=msg; $('avisos').appendChild(d); setTimeout(()=>d.remove(), error?7000:3500); }
 function cargando(on){ $('carga').classList.toggle('oculto', !on); }
 
@@ -478,6 +508,12 @@ async function api(ruta, cuerpo, intento){
       throw new Error('El puente respondió con una página web en lugar de datos. Suele resolverse volviendo a intentar; si persiste, revisa en el Apps Script que la implementación siga publicada con acceso «cualquier usuario».');
     }
 
+    if (d.error && (d.rutaDesconocida || /^Ruta no reconocida/.test(d.error))){
+      mostrarAvisoVersion(d.backend || '');
+      throw new Error(S.perfil && S.perfil.admin
+        ? 'El Apps Script publicado es una versión anterior y todavía no tiene esta función. Mira el aviso amarillo de arriba para actualizarlo.'
+        : 'Esta función aún no está disponible: el repositorio se está actualizando. Intenta más tarde o avisa al administrador.');
+    }
     if (d.error){
       if (/sesión venció|Sesión ausente|token/i.test(d.error)){
         if (intento < 1 && await renovarSesion()) return api(ruta, cuerpo, intento+1);
@@ -549,6 +585,8 @@ async function recargar(){
   const d = await api('/inicio');
   Object.assign(S, { perfil:d.perfil, cat:d.catalogos, cand:d.candidatos, docs:d.documentos, sols:d.solicitudes,
     obsAbiertas:d.observacionesAbiertas, totalReg:d.totalRegistros, hoy:d.hoy, prefijo:d.prefijo });
+  S.backend = d.backend || '';
+  if (S.backend < BACKEND_ESPERADO) mostrarAvisoVersion(S.backend); else ocultarAvisoVersion();
   const pend = pendientes().length;
   $('cPend').textContent = pend; $('cPend').classList.toggle('oculto', !pend);
 }
@@ -590,6 +628,7 @@ function vTablero(){
   $('v-tablero').innerHTML = `
   <div class="titulo-seccion"><div><h2>Tablero del repositorio</h2><p>Control de la información documentada · requisito 7.5 de la ISO 21001:2018</p></div>
     <div class="espacio"></div>${reg?'':'<span class="eti e-neutra">Acceso de consulta: documentos vigentes de distribución interna</span>'}</div>
+  ${S.perfil.control && puestaEnMarcha().faltan ? puestaEnMarcha().html : ''}
   ${reg?tiraFlujo(-1):''}
   ${reg?comoSeUsa('Cómo funciona el repositorio, en cuatro pasos', [
     'Un <b>documento nuevo</b> se pide desde <b>Lista maestra → + Solicitar nuevo documento</b>.',
@@ -775,10 +814,25 @@ async function guardarObservacion(codigo){
   try{ await api('/observacion', { codigo, tipo:$('obsTipo').value, texto }); aviso('Observación registrada');
     await recargar(); abrirDocumento(codigo, 'observaciones'); }catch(e){ aviso(e.message, true); }
 }
-async function atenderObservacion(id, codigo){
-  const respuesta = prompt('¿Cómo se atendió esta observación?');
-  if (!respuesta) return;
-  try{ await api('/observacion-atender', { id, respuesta }); aviso('Atención registrada'); await recargar(); abrirDocumento(codigo,'observaciones'); }catch(e){ aviso(e.message, true); }
+function atenderObservacion(id, codigo){
+  const o = (S.ficha && S.ficha.observaciones || []).find(x => x.id === id) || {};
+  modal(`<div class="modal-cab"><div style="flex:1"><div class="sub">${esc(codigo)} · <span class="mono">${esc(id)}</span></div><h2>Registrar atención de la observación</h2></div><button class="cerrar" onclick="abrirDocumento('${esc(codigo)}','observaciones')">×</button></div>
+  <div class="modal-cuerpo">
+    <div class="comose"><b>Para qué sirve este formulario</b><div class="finalidad">Deja constancia de <b>qué se hizo</b> con una observación registrada sobre el documento. Al guardar, la observación pasa de «Abierta» a <b>«Atendida»</b> y queda en el historial del documento con tu nombre y la fecha. Si la atención exige cambiar el contenido del documento, primero pide una modificación y luego registra aquí la atención indicando el número de la solicitud.</div></div>
+    <div class="aviso-caja info"><b>${esc(o.tipo || 'Observación')}</b> registrada por ${esc(o.autor || '—')} el ${fechaCorta(o.fecha)}:<br>${esc(o.texto || '')}</div>
+    <div class="campos">
+      <div class="campo completo"><label class="req">¿Cómo se atendió?</label><textarea id="atResp" placeholder="Ej.: Se corrigió la sección 4 en la versión 1.1 (solicitud SOL-2026-0003)"></textarea>
+        <div class="nota-campo">Describe la acción concreta: qué se corrigió, en qué versión o solicitud, o por qué se decidió no cambiar nada. Una respuesta como «ya se vio» no sirve como evidencia en una auditoría: debe poder verificarse.</div></div>
+    </div>
+  </div>
+  <div class="modal-pie"><button class="btn n" onclick="abrirDocumento('${esc(codigo)}','observaciones')">Cancelar</button>
+    <button class="btn" onclick="guardarAtencion('${esc(id)}','${esc(codigo)}')">Marcar como atendida</button></div>`);
+}
+async function guardarAtencion(id, codigo){
+  const respuesta = $('atResp').value.trim();
+  if (respuesta.length < 10) return aviso('Describe cómo se atendió (al menos una frase)', true);
+  try{ await api('/observacion-atender', { id, respuesta }); aviso('Atención registrada'); await recargar(); abrirDocumento(codigo,'observaciones'); }
+  catch(e){ aviso(e.message, true); }
 }
 
 /* ------------------------------------------ formularios de solicitud/alta
@@ -844,7 +898,6 @@ function selectorFlujo(){
   return `<h3 class="sec-form">¿Quién revisa y quién aprueba?</h3><div class="campos">
     ${campoF('Revisor', `<select id="fRevisor">${opciones(rev.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select>`, origenLista('Revisor'), {req:true})}
     ${campoF('Aprobador', `<select id="fAprobador">${opciones(apr.map(x=>({v:x.correo,t:x.nombre})),'','Seleccione')}</select>`, origenLista('Aprobador'), {req:true})}
-    ${!rev.length||!apr.length?'<div class="completo aviso-caja"><b>Una de las listas está vacía.</b> Todavía nadie tiene ese rol. Un administrador debe entrar a <b>Administración → Usuarios y roles</b> y agregar a la persona con rol «Revisor» o «Aprobador».</div>':''}
     <div class="completo aviso-caja info"><b>¿Qué pasa al pulsar «Iniciar flujo de aprobación»?</b> La solicitud pasa a revisión y al revisor le llega un correo. Tú la sigues desde <b>Flujo documental → Mis solicitudes</b>. Si te la observan, te llegará un correo para que la corrijas.</div>
   </div>`;
 }
@@ -1326,21 +1379,124 @@ const FICHAS = {
   }
 };
 
-/* Texto explicativo del origen de cada lista desplegable. Se usa en los
-   formularios, en las fichas de administración y en la guía. */
+/* ---------------------------------------------- requisitos previos
+   Varias listas desplegables se alimentan de otros formularios. Cada campo
+   que depende de otro formulario lo dice explícitamente: dónde se llena
+   antes, por qué, y si hoy tiene opciones o está vacía. */
+const PREREQ = {
+  'Tipo de documento': {
+    donde:'Administración → Catálogos, categoría «Tipo de documento»',
+    por:'Clasifica el documento y aporta las letras del código: si eliges Guía (GUI), el código será FI-GUI-…',
+    n:() => S.cat.tipos.length, ir:['catalogos','Tipo de documento'], permiso:() => S.perfil.control, quien:'control documental' },
+  'Programa': {
+    donde:'Administración → Catálogos, categoría «Programa»',
+    por:'Indica a qué escuela profesional aplica. «Facultad (transversal)» si aplica a todas.',
+    n:() => S.cat.programas.length, ir:['catalogos','Programa'], permiso:() => S.perfil.control, quien:'control documental' },
+  'Periodo': {
+    donde:'Administración → Catálogos, categoría «Periodo»',
+    por:'Ubica la evidencia en el tiempo para poder encontrarla después.',
+    n:() => S.cat.periodos.length, ir:['catalogos','Periodo'], permiso:() => S.perfil.control, quien:'control documental' },
+  'Proceso': {
+    donde:'Matriz de Indicadores → Inventario de Procesos (otro aplicativo)',
+    por:'El repositorio no crea procesos: los lee en vivo del inventario para que todos los aplicativos del SGOE usen los mismos. Las letras del macroproceso van en el código (M01 en FI-GUI-M01-003).',
+    n:() => S.cat.procesos.length, ir:null, permiso:() => false, quien:'el administrador del Inventario de Procesos de la Matriz de Indicadores' },
+  'Revisor': {
+    donde:'Administración → Usuarios y roles, con rol «Revisor» o «Controlador documental»',
+    por:'El revisor lee tu borrador y da conformidad u observa. No puedes elegirte a ti.',
+    n:() => (S.cand?.revisores||[]).filter(x=>x.correo!==S.perfil.correo).length, ir:['usuarios'], permiso:() => S.perfil.admin, quien:'un administrador' },
+  'Aprobador': {
+    donde:'Administración → Usuarios y roles, con rol «Aprobador»',
+    por:'El aprobador deja el documento vigente registrando la resolución o acta. Debe ser distinto del revisor y de ti.',
+    n:() => (S.cand?.aprobadores||[]).filter(x=>x.correo!==S.perfil.correo).length, ir:['usuarios'], permiso:() => S.perfil.admin, quien:'un administrador' },
+  'Formato': {
+    donde:'Lista maestra: un documento vigente de tipo «Formato» o «Matriz»',
+    por:'Una evidencia es un formato ya llenado; por eso el formato en blanco debe existir antes como documento. Se registra con «+ Solicitar nuevo documento» o, si ya estaba aprobado, con «Registrar documento ya aprobado». Si la evidencia no responde a ningún formato, elige «Otro registro».',
+    n:() => S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo)).length, ir:'maestra', permiso:() => S.perfil.puede.solicitar, quien:'el responsable del proceso o control documental', opcional:true }
+};
+
+function irPrereq(cual){
+  const r = PREREQ[cual]; cerrarModal();
+  if (r.ir === 'maestra') return mostrar('maestra');
+  if (Array.isArray(r.ir)) abrirAdmin(r.ir[0], r.ir[1]);
+}
+
+/* Bloque que va debajo de un campo dependiente */
+/* Cada lista desplegable depende de un formulario que se llena antes.
+   REQUISITOS dice cuál, por qué, cuántas opciones hay hoy y quién lo llena. */
+function requisitos(){
+  const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo)).length;
+  return {
+    'Tipo de documento': { antes:'Administración → Catálogos, categoría «Tipo de documento»', n:S.cat.tipos.length,
+      porque:'Aquí solo se eligen tipos que ya existen. Cada tipo trae las letras que van en el código (GUI, POL, PRO).',
+      ir:['catalogos','Tipo de documento'], puede:S.perfil.control, quien:'control documental',
+      que:'Sirve para clasificar el documento y armar su código.' },
+    'Programa': { antes:'Administración → Catálogos, categoría «Programa»', n:S.cat.programas.length,
+      porque:'Aquí solo se eligen escuelas que ya se registraron como opción.',
+      ir:['catalogos','Programa'], puede:S.perfil.control, quien:'control documental',
+      que:'Indica a qué escuela aplica. «Facultad (transversal)» si aplica a todas.' },
+    'Periodo': { antes:'Administración → Catálogos, categoría «Periodo»', n:S.cat.periodos.length,
+      porque:'Aquí solo se eligen periodos que ya se registraron (2026-I, 2026-II…).',
+      ir:['catalogos','Periodo'], puede:S.perfil.control, quien:'control documental',
+      que:'Ubica la evidencia en el tiempo para encontrarla después.' },
+    'Proceso': { antes:'la Matriz de Indicadores → Inventario de Procesos', n:S.cat.procesos.length,
+      porque:'El repositorio no crea procesos: los lee en vivo de ese inventario para que todos los aplicativos del SGOE usen los mismos.',
+      ir:null, puede:false, quien:'quien administra el inventario de procesos en la Matriz de Indicadores',
+      que:'Indica a qué proceso pertenece el documento; las letras de su macroproceso van en el código (M01 en FI-GUI-M01-003).' },
+    'Revisor': { antes:'Administración → Usuarios y roles, con rol «Revisor» o «Controlador documental»', n:(S.cand?.revisores||[]).length,
+      porque:'Solo aparecen aquí las personas a las que ya se les dio ese rol.',
+      ir:['usuarios',''], puede:S.perfil.admin, quien:'el administrador',
+      que:'Leerá tu borrador y le dará conformidad u observaciones. No puedes elegirte a ti.' },
+    'Aprobador': { antes:'Administración → Usuarios y roles, con rol «Aprobador»', n:(S.cand?.aprobadores||[]).length,
+      porque:'Solo aparecen aquí las personas a las que ya se les dio ese rol.',
+      ir:['usuarios',''], puede:S.perfil.admin, quien:'el administrador',
+      que:'Aprobará el documento registrando la resolución o acta. Debe ser distinto del revisor y de ti.' },
+    'Formato': { antes:'la Lista maestra, como documento de tipo «Formato» o «Matriz» en estado vigente', n:formatos,
+      porque:'Una evidencia es un formato ya llenado; para asociarla, el formato en blanco debe estar registrado primero como documento.',
+      ir:'maestra', puede:S.perfil.puede.solicitar || S.perfil.puede.registrarExistente, quien:'el responsable del proceso o control documental',
+      que:'Indica qué formato se usó. Si la evidencia no responde a ninguno, elige «Otro registro».' }
+  };
+}
+
+/* Orden de llenado: qué formulario debe completarse antes que otro */
+function puestaEnMarcha(){
+  const c = S.cat, cand = S.cand || {revisores:[],aprobadores:[]};
+  const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo)).length;
+  const pasos = [
+    { ok: cand.revisores.length>0 && cand.aprobadores.length>0, t:'1. Usuarios y roles',
+      d:`Dar rol a por lo menos un revisor y un aprobador. Sin ellos, las listas «Revisor» y «Aprobador» salen vacías y nadie puede iniciar una solicitud. Hoy: ${cand.revisores.length} revisor(es), ${cand.aprobadores.length} aprobador(es).`,
+      b: S.perfil.admin ? `<button class="btn g sm" onclick="abrirAdmin('usuarios')">Ir</button>` : '' },
+    { ok: c.tipos.length>0 && c.programas.length>0 && c.periodos.length>0, t:'2. Catálogos',
+      d:`Crear las opciones de las listas «Tipo de documento», «Programa» y «Periodo». Hoy: ${c.tipos.length} tipos, ${c.programas.length} programas, ${c.periodos.length} periodos.`,
+      b: `<button class="btn g sm" onclick="abrirAdmin('catalogos')">Ir</button>` },
+    { ok: c.procesos.length>0, t:'3. Inventario de procesos',
+      d:`Se llena en la Matriz de Indicadores, no aquí. El repositorio lo lee para la lista «Proceso». Hoy se leen ${c.procesos.length} procesos.`, b:'' },
+    { ok: S.docs.length>0, t:'4. Documentos ya aprobados',
+      d:'Cargar la Política de calidad, el Alcance del SGOE, las guías y demás documentos aprobados antes del repositorio, con «Lista maestra → Registrar documento ya aprobado».',
+      b: `<button class="btn g sm" onclick="mostrar('maestra')">Ir</button>` },
+    { ok: formatos>0, t:'5. Formatos en la lista maestra',
+      d:`Registrar los formatos (en blanco) como documentos de tipo «Formato». Las evidencias se asocian a ellos; sin formatos solo se puede usar «Otro registro». Hoy: ${formatos}.`,
+      b: `<button class="btn g sm" onclick="mostrar('maestra')">Ir</button>` }
+  ];
+  const faltan = pasos.filter(p=>!p.ok).length;
+  return { faltan, html: `<div class="marcha"><h3>Puesta en marcha · orden de llenado ${faltan?`<span class="eti e-observada">${faltan} pendiente(s)</span>`:'<span class="eti e-vigente">Completa</span>'}</h3>
+    <div class="sub">Cada paso alimenta las listas del siguiente, por eso conviene llenarlos en este orden.</div>
+    ${pasos.map(p=>`<div class="paso-m"><div class="ic ${p.ok?'ok':'no'}">${p.ok?'✓':'!'}</div><div class="tx"><b>${p.t}</b><span>${p.d}</span></div>${p.ok?'':p.b}</div>`).join('')}
+  </div>` };
+}
+
 function origenLista(cual){
-  const gestionar = (t, cat) => S.perfil.control
-    ? ` <a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('${t}','${cat||''}')">Gestionar esta lista →</a>` : '';
-  const txt = {
-    'Tipo de documento': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Catálogos</b>, filas con categoría «Tipo de documento». <b>¿Para qué sirve?</b> Clasifica el documento y aporta las letras del código: si eliges Guía (GUI), el código será FI-GUI-…${gestionar('catalogos','Tipo de documento')}`,
-    'Proceso': `<b>¿De dónde sale esta lista?</b> No se crea en el repositorio: se lee en vivo del <b>Inventario de Procesos de la Matriz de Indicadores</b>, para que ambos aplicativos usen exactamente los mismos procesos. Si falta un proceso, se agrega en la Matriz de Indicadores → Inventario y aparece aquí al recargar. <b>¿Para qué sirve?</b> Indica a qué proceso pertenece el documento; las letras de su macroproceso van en el código (M01 en FI-GUI-M01-003).`,
-    'Programa': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Catálogos</b>, filas con categoría «Programa». <b>¿Para qué sirve?</b> Indica a qué escuela aplica. Elige «Facultad (transversal)» si aplica a todas.${gestionar('catalogos','Programa')}`,
-    'Periodo': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Catálogos</b>, filas con categoría «Periodo». <b>¿Para qué sirve?</b> Ubica la evidencia en el tiempo para poder buscarla después.${gestionar('catalogos','Periodo')}`,
-    'Revisor': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Usuarios y roles</b>: aparecen las personas con rol «Revisor» o «Controlador documental» en estado Vigente. Si quien necesitas no aparece, un administrador debe darle ese rol. <b>¿Qué hará?</b> Leer tu borrador y darle conformidad u observarlo. No puedes elegirte a ti.${S.perfil.admin?` <a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('usuarios')">Asignar roles →</a>`:''}`,
-    'Aprobador': `<b>¿De dónde sale esta lista?</b> De <b>Administración → Usuarios y roles</b>: aparecen las personas con rol «Aprobador» en estado Vigente. <b>¿Qué hará?</b> Aprobar el documento registrando la resolución o acta; también puede observarlo o rechazarlo. Debe ser una persona distinta del revisor y de ti.${S.perfil.admin?` <a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('usuarios')">Asignar roles →</a>`:''}`,
-    'Formato': `<b>¿De dónde sale esta lista?</b> De la <b>Lista maestra</b>: documentos vigentes de tipo Formato o Matriz. Si el formato que usaste no aparece, primero debe registrarse como documento. Si la evidencia no responde a ningún formato, elige «Otro registro».`
-  }[cual];
-  return `<div class="nota-campo origen">${txt}</div>`;
+  const r = requisitos()[cual];
+  if (!r) return '';
+  const ir = r.ir === 'maestra'
+    ? `<a href="#" class="ir" onclick="event.preventDefault();cerrarModal();mostrar('maestra')">Ir a la Lista maestra →</a>`
+    : r.ir ? `<a href="#" class="ir" onclick="event.preventDefault();cerrarModal();abrirAdmin('${r.ir[0]}','${r.ir[1]}')">Ir a llenarlo →</a>` : '';
+  const vacia = r.n === 0 ? `<div class="lista-vacia">⚠ <b>Esta lista está vacía</b> porque todavía no se ha llenado ese formulario.
+      ${r.puede && ir ? `Llénalo primero y vuelve aquí. ${ir}` : `Pide a ${esc(r.quien)} que lo complete; mientras tanto no podrás continuar.`}</div>` : '';
+  return `<div class="nota-campo origen">
+    <div class="req-previo">📋 <b>Se llena antes en:</b> ${esc(r.antes)}.</div>
+    <div>${esc(r.porque)} <b>¿Para qué sirve aquí?</b> ${esc(r.que)}</div>
+    ${r.n > 0 && r.puede && ir ? `<div style="margin-top:3px">¿Falta una opción? ${ir}</div>` : ''}
+    ${vacia}</div>`;
 }
 
 let pestanaAdmin = 'catalogos', filtroAdmin = { q:'', categoria:'' };
@@ -1357,6 +1513,7 @@ async function vAdmin(){
     .concat(S.perfil.puede.diagnostico ? [['diagnostico','Diagnóstico']] : []);
   $('v-admin').innerHTML = `
   <div class="titulo-seccion"><div><h2>Administración</h2><p>Las tablas del repositorio viven en QuintaDB, pero se completan desde aquí. Cada pestaña explica para qué sirve su tabla.</p></div></div>
+  ${puestaEnMarcha().html}
   <div class="subnav">${tabs.map(([k,t])=>`<button class="${k===pestanaAdmin?'activa':''}" onclick="pestanaAdmin='${k}';filtroAdmin={q:'',categoria:''};vAdmin()">${t}${['versiones','solicitudes','observaciones','bitacora'].includes(k)?' <span class="candado" title="Solo consulta">🔒</span>':''}</button>`).join('')}</div>
   <div id="admCuerpo"><div class="caja"><div class="vacio">Cargando…</div></div></div>`;
   if (pestanaAdmin === 'diagnostico') return diagnostico(false);
