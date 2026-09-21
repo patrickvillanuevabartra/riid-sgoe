@@ -205,6 +205,10 @@ dl.meta dd{margin:0;word-break:break-word}
 .comose li{font-size:12.5px;color:var(--tinta-media);margin:3px 0;line-height:1.45}
 .comose li b,.comose li strong{color:var(--tinta)}
 
+.cascada{display:flex;flex-direction:column;gap:8px}
+.casc-nivel label{display:block;font-size:11px;font-weight:600;color:var(--tinta-media);margin-bottom:2px;text-transform:uppercase;letter-spacing:.03em}
+.casc-nivel select{width:100%}
+.casc-ruta{border:1px dashed var(--brand);border-radius:6px;padding:7px 10px;font-size:12.5px;background:var(--brand-suave)}
 .sec-form{font-size:13px;margin:18px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--linea);color:var(--brand-oscuro)}
 .subnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .subnav button{border:1px solid var(--linea);background:var(--papel);border-radius:16px;padding:5px 12px;font-size:12.5px;color:var(--tinta-media)}
@@ -344,7 +348,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-22';
+const BACKEND_ESPERADO = '2026-09-23';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RIID, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -551,7 +555,8 @@ function etiRevision(d){
   if (dias <= 60) return `<span class="eti e-proxima">${fechaCorta(d.proximaRevision)} · ${dias} d</span>`;
   return `<span class="sub mono">${fechaCorta(d.proximaRevision)}</span>`;
 }
-const procNombre = c => (S.cat.procesos.find(p=>p.codigo===c)||{}).nombre || c;
+const procNombre = c => { const s = String(c||'').split(/\s*[›>»]\s*/).filter(x => x && !/^n\.?\/?d\.?$/i.test(x.trim()));
+  if (s.length >= 2) return s[s.length-1]; return (S.cat.procesos.find(p=>p.codigo===c)||{}).nombre || c; };
 
 /* --------------------------------------------------------------- acceso */
 function iniciarGoogle(){
@@ -627,7 +632,7 @@ function vTablero(){
     const orden = (lista||Object.keys(cuenta)).filter(k=>cuenta[k]);
     return orden.length ? orden.map(k => `<div class="fila"><span>${esc(k)}</span><div class="pista"><div class="relleno" style="width:${cuenta[k]/max*100}%"></div></div><span class="num">${cuenta[k]}</span></div>`).join('') : '<div class="vacio">Sin documentos vigentes</div>';
   };
-  const macros = [...new Set(S.cat.procesos.map(p=>p.grupo))];
+  const macros = S.cat.procesos.map(p=>p.etiqueta);
   const pend = pendientes();
   const alertas = vencidas.concat(proximas).sort((a,b)=>a.proximaRevision.localeCompare(b.proximaRevision));
   const recientes = vig.filter(d=>d.fechaAprobacion).sort((a,b)=>b.fechaAprobacion.localeCompare(a.fechaAprobacion)).slice(0,6);
@@ -671,14 +676,14 @@ function vTablero(){
 /* -------------------------------------------------------- lista maestra */
 function docsFiltrados(){
   const q = F.q.toLowerCase();
-  return S.docs.filter(d => (!F.tipo||d.tipo===F.tipo) && (!F.macro||d.macroproceso===F.macro) && (!F.proceso||d.proceso===F.proceso)
+  return S.docs.filter(d => (!F.tipo||d.tipo===F.tipo) && (!F.macro||segsDe(d.proceso)[0]===F.macro) && (!F.proceso||d.macroproceso===F.proceso)
     && (!F.programa||d.programa===F.programa) && (!F.estado||d.estado===F.estado)
     && (!q || [d.codigo,d.titulo,d.palabras,d.responsable,d.unidad].join(' ').toLowerCase().includes(q)))
     .sort((a,b)=>a.codigo.localeCompare(b.codigo));
 }
 function vMaestra(){
   const p = S.perfil.puede;
-  const macros = [...new Set(S.cat.procesos.map(x=>x.grupo))];
+  const tiposProc = [...new Set((S.cat.rutas||[]).map(r=>r[0]))].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
   $('v-maestra').innerHTML = `
   <div class="titulo-seccion"><div><h2>Lista maestra de documentos${tip('Es el inventario oficial de la información documentada del SGOE. Cada fila es un documento controlado: su código, la versión vigente y cuándo toca revisarlo.', true)}</h2><p>Documentos controlados del SGOE con su versión, estado y revisión programada</p></div><div class="espacio"></div>
     <button class="btn n" onclick="exportarCSV()">Exportar CSV</button>
@@ -694,8 +699,8 @@ function vMaestra(){
   <div class="barra-filtros">
     <input type="text" class="buscar" id="fQ" placeholder="Buscar por código, título, palabra clave o responsable" value="${esc(F.q)}">
     <select id="fTipo">${opciones(S.cat.tipos.map(t=>t.nombre),F.tipo,'Todos los tipos')}</select>
-    <select id="fMacro">${opciones(macros,F.macro,'Todos los macroprocesos')}</select>
-    <select id="fProceso">${opciones(S.cat.procesos.filter(x=>!F.macro||x.grupo===F.macro).map(x=>({v:x.codigo,t:x.nombre})),F.proceso,'Todos los procesos')}</select>
+    <select id="fMacro" title="Tipo de proceso">${opciones(tiposProc,F.macro,'Todos los tipos de proceso')}</select>
+    <select id="fProceso" title="Proceso nivel 0">${opciones(S.cat.procesos.filter(x=>!F.macro||x.tipo===F.macro).map(x=>x.etiqueta),F.proceso,'Todos los procesos nivel 0')}</select>
     <select id="fPrograma">${opciones(S.cat.programas.map(x=>x.nombre),F.programa,'Todos los programas')}</select>
     <select id="fEstado">${opciones(S.perfil.registrado?['Vigente','Obsoleto']:['Vigente'],F.estado,'Todos los estados')}</select>
   </div>
@@ -758,7 +763,7 @@ function pintarFicha(pestana){
       <dt>Versión vigente</dt><dd class="mono">v${esc(d.version)}</dd>
       <dt>Estado</dt><dd>${etiEstado(d.estado)}${d.fechaBaja?` <span class="sub">desde ${fechaCorta(d.fechaBaja)}</span>`:''}</dd>
       <dt>Tipo</dt><dd>${esc(d.tipo)} · ${esc(d.origen)}</dd>
-      <dt>Proceso</dt><dd>${esc(procNombre(d.proceso))} <span class="sub">(${esc(d.macroproceso)})</span></dd>
+      <dt>Proceso</dt><dd>${esc(rutaLegible(d.proceso))}</dd>
       <dt>Programa</dt><dd>${esc(d.programa||'—')}</dd>
       <dt>Unidad responsable</dt><dd>${esc(d.unidad||'—')}</dd>
       <dt>Responsable</dt><dd>${esc(d.responsable||'—')}${d.correoResponsable?` <span class="sub">${esc(d.correoResponsable)}</span>`:''}</dd>
@@ -842,6 +847,92 @@ async function guardarAtencion(id, codigo){
   catch(e){ aviso(e.message, true); }
 }
 
+/* ---------------------------------------------- cascada de procesos
+   Igual que en la Matriz de Indicadores: se elige Tipo de proceso →
+   Proceso nivel 0 → nivel 1 → nivel 2 → nivel 3 → Procedimiento (nivel 4),
+   leyendo la «Ruta completa» del inventario. Si una rama no tiene un nivel
+   (viene como N.D.), la cascada lo salta y ofrece el siguiente que exista. */
+const esND = x => { const k = String(x||'').trim().toLowerCase(); return !k || k==='n.d.' || k==='nd' || k==='n/d' || k==='-'; };
+function segsDe(ruta){
+  const s = String(ruta||'').split(/\s*[›>»]\s*/).map(x => esND(x) ? '' : x.trim());
+  while (s.length && !s[s.length-1]) s.pop();
+  return s;
+}
+const rutaLegible = v => { const s = segsDe(v); return s.length >= 2 ? s.filter(Boolean).join(' › ') : procNombre(v); };
+function codigoTramo(t){
+  const m = /^([A-Za-z]{1,3}\s?\d{1,2}(?:\.\d{1,2})*)/.exec(String(t||'').trim());
+  return m ? m[1].replace(/[\s.]/g,'').toUpperCase() : '';
+}
+const NIVELES = () => (S.cat.niveles || ['Tipo de proceso','Proceso nivel 0','Proceso nivel 1','Proceso nivel 2','Proceso nivel 3','Procedimiento (nivel 4)']);
+
+/* Rutas que la persona puede usar: todas, o solo las de sus procesos */
+function rutasPermitidas(){
+  const rutas = S.cat.rutas || [];
+  if (S.perfil.puede.todosLosProcesos) return rutas;
+  const mios = S.perfil.procesos.map(p => p.toUpperCase().replace(/[\s.]/g,''));
+  return rutas.filter(r => r.slice(1).some(t => { const c = codigoTramo(t); return c && mios.some(m => c === m || c.startsWith(m)); }));
+}
+
+let CASC = [];   // niveles elegidos: [{i: posición en la ruta, v: valor}]
+function coincide(r, hasta){ return CASC.slice(0, hasta).every(e => r[e.i] === e.v); }
+
+/* Opciones para el paso k: el primer nivel con datos después del último elegido */
+function opcionesPaso(k){
+  const rutas = rutasPermitidas().filter(r => coincide(r, k));
+  const desde = k === 0 ? 0 : CASC[k-1].i + 1;
+  for (let i = desde; i < 6; i++){
+    const set = new Set();
+    rutas.forEach(r => { let libre = true; for (let j = desde; j < i; j++) if (r[j]) libre = false; if (libre && r[i]) set.add(r[i]); });
+    if (set.size) return { i, opciones: [...set].sort((a,b)=>a.localeCompare(b,'es',{numeric:true})) };
+  }
+  return null;
+}
+
+function valorCascada(){
+  if (!CASC.length) return '';
+  const ult = CASC[CASC.length-1].i, arr = [];
+  for (let i = 0; i <= ult; i++){ const e = CASC.find(x => x.i === i); arr.push(e ? e.v : 'N.D.'); }
+  return arr.join(' › ');
+}
+
+function pintarCascada(){
+  const cont = $('cascProc'); if (!cont) return;
+  const niv = NIVELES();
+  let html = '', k = 0;
+  while (true){
+    const p = opcionesPaso(k);
+    if (!p) break;
+    const elegido = CASC[k] && CASC[k].i === p.i ? CASC[k].v : '';
+    const obligatorio = p.i <= 1;
+    html += `<div class="casc-nivel"><label${obligatorio?' class="req"':''}>${esc(niv[p.i])}${p.i>1?' <span class="sub">(opcional)</span>':''}</label>
+      <select onchange="cambiarCascada(${k}, ${p.i}, this.value)">
+        <option value="">${obligatorio?'Seleccione':'— No bajar más: el documento pertenece al nivel anterior —'}</option>
+        ${p.opciones.map(o=>`<option value="${esc(o)}"${o===elegido?' selected':''}>${esc(o)}</option>`).join('')}
+      </select>${k>0 && CASC[k-1] && p.i > CASC[k-1].i+1 ? `<div class="sub">Se saltó ${esc(niv.slice(CASC[k-1].i+1, p.i).join(', '))}: esta rama no tiene ese nivel.</div>`:''}</div>`;
+    if (!elegido) break;
+    k++;
+  }
+  const v = valorCascada();
+  cont.innerHTML = (rutasPermitidas().length ? html : `<div class="lista-vacia">⚠ No hay procesos disponibles${S.perfil.puede.todosLosProcesos?' en el inventario':' asignados a tu usuario'}.</div>`) +
+    `<div class="casc-ruta"><span class="sub">Ruta seleccionada:</span> ${v ? esc(rutaLegible(v)) : '<span class="sub">— elige al menos el tipo y el proceso nivel 0 —</span>'}</div>`;
+  $('dProceso').value = v;
+  previoCodigo();
+}
+
+function cambiarCascada(k, i, valor){
+  CASC = CASC.slice(0, k);
+  if (valor) CASC.push({ i, v: valor });
+  pintarCascada();
+}
+
+function iniciarCascada(valor){
+  CASC = [];
+  const s = segsDe(valor);
+  if (s.length >= 2) s.forEach((v, i) => { if (v) CASC.push({ i, v }); });
+  // si la ruta guardada ya no existe en el inventario, se empieza de cero
+  if (CASC.length && !rutasPermitidas().some(r => coincide(r, CASC.length))) CASC = [];
+}
+
 /* ------------------------------------------ formularios de solicitud/alta
    Cada campo lleva una nota visible: qué es, qué poner y, en las listas,
    de dónde salen sus opciones. */
@@ -850,16 +941,17 @@ const campoF = (etiqueta, control, notaHtml, o = {}) =>
 const notaF = html => `<div class="nota-campo">${html}</div>`;
 
 function camposDocumento(v){
-  const procesos = S.cat.procesos.filter(x => S.perfil.puede.todosLosProcesos ||
-    S.perfil.procesos.some(p => x.codigo.toUpperCase().replace(/\./g,'').startsWith(p.toUpperCase().replace(/[\s.]/g,''))));
+  iniciarCascada(v.proceso);
+  setTimeout(pintarCascada, 0);
   const cl = (v.clausulas||'').split(';').map(x=>x.trim());
   return `<div class="campos">
     ${campoF('Título del documento', `<input type="text" id="dTitulo" value="${esc(v.titulo)}" placeholder="Ej. Guía de docentes">`,
       notaF('Nombre oficial, <b>sin el código</b>. Escríbelo como aparecerá en la carátula. No puede repetir el título de otro documento vigente.'), {req:true, completo:true})}
     ${campoF('Tipo de documento', `<select id="dTipo" onchange="previoCodigo()">${opciones(S.cat.tipos.map(t=>({v:t.nombre,t:`${t.nombre} (${t.codigo})`})),v.tipo,'Seleccione')}</select>`,
       origenLista('Tipo de documento'), {req:true})}
-    ${campoF('Proceso', `<select id="dProceso" onchange="previoCodigo()">${opcionesProcesos(procesos,v.proceso)}</select>`,
-      origenLista('Proceso') + (!S.perfil.puede.todosLosProcesos ? notaF('Solo ves los procesos que tienes asignados como responsable.') : ''), {req:true})}
+    ${campoF('Proceso al que pertenece el documento', `<input type="hidden" id="dProceso" value=""><div class="cascada" id="cascProc"></div>`,
+      notaF('Elige de arriba hacia abajo, como en la Matriz de Indicadores: <b>Tipo de proceso → Proceso nivel 0 → nivel 1 → nivel 2 → nivel 3 → Procedimiento (nivel 4)</b>. Cada lista muestra solo lo que cuelga de lo elegido arriba. <b>Baja hasta el nivel al que pertenece el documento:</b> una política o un manual general se queda en el nivel 0; una guía de un proceso, en su nivel 1 o 2; un procedimiento llega hasta el nivel 4. Tipo y nivel 0 son obligatorios; los demás, opcionales.') +
+      origenLista('Proceso') + (!S.perfil.puede.todosLosProcesos ? notaF('Solo ves los procesos que tienes asignados como responsable.') : ''), {req:true, completo:true})}
     ${campoF('Programa', `<select id="dPrograma">${opciones(S.cat.programas.map(x=>x.nombre),v.programa,'Seleccione')}</select>`,
       origenLista('Programa'))}
     ${campoF('Unidad responsable', `<input type="text" id="dUnidad" value="${esc(v.unidad)}" placeholder="Ej. Comisión de Calidad FI">`,
@@ -885,6 +977,7 @@ function camposDocumento(v){
   </div>`;
 }
 function leerCamposDocumento(){
+  if (!CASC.some(e => e.i >= 1)) throw new Error('Elige el proceso al menos hasta el «Proceso nivel 0».');
   return { titulo:$('dTitulo').value.trim(), tipo:$('dTipo').value, proceso:$('dProceso').value, programa:$('dPrograma').value,
     unidad:$('dUnidad').value.trim(), responsable:$('dResponsable').value.trim(), correoResponsable:$('dCorreoResp').value.trim().toLowerCase(),
     objetivo:$('dObjetivo').value.trim(), clausulas:[...document.querySelectorAll('#dClausulas input:checked')].map(i=>i.value).join('; '),
@@ -893,9 +986,9 @@ function leerCamposDocumento(){
 }
 function previoCodigo(){
   const el = $('codPrevio'); if (!el) return;
-  const t = S.cat.tipos.find(x=>x.nombre===$('dTipo').value), p = S.cat.procesos.find(x=>x.codigo===$('dProceso').value);
-  if (!t || !p){ el.textContent = 'Elige tipo y proceso'; return; }
-  const base = `${S.prefijo}-${t.codigo}-${p.raiz||p.codigo}-`;
+  const t = S.cat.tipos.find(x=>x.nombre===$('dTipo').value), raiz = codigoTramo(segsDe($('dProceso').value)[1]);
+  if (!t || !raiz){ el.textContent = 'Elige tipo y proceso nivel 0'; return; }
+  const base = `${S.prefijo}-${t.codigo}-${raiz}-`;
   const usados = S.docs.map(d=>d.codigo).concat(S.sols.map(s=>s.codigo)).filter(c=>c.startsWith(base)).map(c=>parseInt(c.slice(base.length))||0);
   el.textContent = base + String(Math.max(0,...usados)+1).padStart(3,'0');
 }
@@ -1023,7 +1116,7 @@ function abrirSolicitud(id){
   const datos = s.datos || {};
   const filas = s.tipo==='Anulación' ? '' : Object.keys(etiquetas).filter(k=>datos[k]!==undefined && datos[k]!=='').map(k => {
     const antes = doc ? String(doc[k]??'') : '', cambio = s.tipo==='Modificación' && antes !== String(datos[k]);
-    return `<dt>${etiquetas[k]}</dt><dd class="${cambio?'cambio':''}">${esc(k==='proceso'?procNombre(datos[k]):datos[k])}${cambio?`<div class="sub">antes: ${esc(k==='proceso'?procNombre(antes):antes)||'—'}</div>`:''}</dd>`; }).join('');
+    return `<dt>${etiquetas[k]}</dt><dd class="${cambio?'cambio':''}">${esc(k==='proceso'?rutaLegible(datos[k]):datos[k])}${cambio?`<div class="sub">antes: ${esc(k==='proceso'?rutaLegible(antes):antes)||'—'}</div>`:''}</dd>`; }).join('');
 
   let acciones = '';
   if (s.etapa==='En revisión' && s.correoRevisor===c) acciones = `
@@ -1445,10 +1538,10 @@ function requisitos(){
       porque:'Aquí solo se eligen periodos que ya se registraron (2026-I, 2026-II…).',
       ir:['catalogos','Periodo'], puede:S.perfil.control, quien:'control documental',
       que:'Ubica la evidencia en el tiempo para encontrarla después.' },
-    'Proceso': { antes:'la Matriz de Indicadores → Inventario de Procesos', n:S.cat.procesos.length,
+    'Proceso': { antes:'la Matriz de Indicadores → Inventario de Procesos (campo «Ruta completa»)', n:(S.cat.rutas||[]).length,
       porque:'El repositorio no crea procesos: los lee en vivo de ese inventario para que todos los aplicativos del SGOE usen los mismos.',
       ir:null, puede:false, quien:'quien administra el inventario de procesos en la Matriz de Indicadores',
-      que:'Indica a qué proceso pertenece el documento; las letras de su macroproceso van en el código (M01 en FI-GUI-M01-003).' },
+      que:'Ubica el documento en el mapa de procesos. El código del proceso nivel 0 va dentro del código del documento (M01 en FI-GUI-M01-003).' },
     'Revisor': { antes:'Administración → Usuarios y roles, con rol «Revisor» o «Controlador documental»', n:(S.cand?.revisores||[]).length,
       porque:'Solo aparecen aquí las personas a las que ya se les dio ese rol.',
       ir:['usuarios',''], puede:S.perfil.admin, quien:'el administrador',
@@ -1653,7 +1746,8 @@ async function diagnostico(limpiar){
       <table><thead><tr><th>Lista</th><th>Se carga desde</th><th>Opciones</th></tr></thead><tbody>
         ${(d.fuentes||[]).map(f=>`<tr><td>${esc(f.desplegable)}</td><td class="sub">${esc(f.origen)}</td>
         <td class="mono">${f.elementos?f.elementos:'<span class="eti e-rechazada">0 · lista vacía</span>'}</td></tr>`).join('')}</tbody></table>
-      ${(d.muestraProcesos||[]).length?`<div class="sub" style="margin-top:8px">Procesos leídos del inventario (muestra): ${d.muestraProcesos.map(p=>`<span class="mono">${esc(p.codigo)}</span> ${esc(p.nombre)}`).join(' · ')}</div>`:''}</div>
+      ${(d.muestraProcesos||[]).length?`<div class="sub" style="margin-top:8px">Procesos nivel 0 leídos del inventario: ${d.muestraProcesos.map(p=>`<span class="mono">${esc(p.codigo)}</span> ${esc(p.nombre)}`).join(' · ')}</div>`:''}
+      ${(d.muestraRutas||[]).length?`<div class="sub" style="margin-top:6px">Ejemplos de «Ruta completa» leídas (Tipo › Nivel 0 › Nivel 1 › …):<br>${d.muestraRutas.map(r=>esc(r)).join('<br>')}</div>`:''}</div>
     <div style="display:flex;gap:8px;align-items:center"><span class="sub" style="flex:1">Notificaciones por correo: ${d.notificaciones?'activas':'desactivadas'}. Si renombraste columnas en QuintaDB o agregaste procesos al inventario, vuelve a leer.</span>
       <button class="btn n sm" onclick="diagnostico(true)">Volver a leer columnas y procesos</button></div>`;
   }catch(e){ $('admCuerpo').innerHTML = `<div class="caja"><div class="aviso-caja">${esc(e.message)}</div><button class="btn" onclick="diagnostico(false)">Reintentar</button></div>`; }
