@@ -28,7 +28,7 @@ a{color:var(--brand)}
 .oculto{display:none!important}
 
 header{background:var(--papel);border-bottom:1px solid var(--linea);padding:10px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:30}
-.sello{width:30px;height:30px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none;font-family:'IBM Plex Mono',monospace}
+.sello{width:max-content;min-width:44px;height:30px;padding:0 6px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:11.5px;letter-spacing:.02em;flex:none;font-family:'IBM Plex Mono',monospace}
 .marca{display:flex;flex-direction:column;line-height:1.2}
 .marca b{font-size:14px;font-weight:600}
 .marca span{font-size:11px;color:var(--tinta-media)}
@@ -301,7 +301,7 @@ dl.meta dd{margin:0;word-break:break-word}
 
 <section id="pantallaAcceso" class="acceso">
   <div class="caja">
-    <div class="sello">RI</div>
+    <div class="sello">RIID</div>
     <h1>Repositorio Institucional de Información Documentada</h1>
     <p>SGOE ISO 21001 · Facultad de Ingeniería · Universidad Ricardo Palma.<br>Ingresa con tu cuenta institucional @urp.edu.pe.</p>
     <div id="botonGoogle"></div>
@@ -311,7 +311,7 @@ dl.meta dd{margin:0;word-break:break-word}
 
 <div id="aplicacion" class="oculto">
   <header>
-    <div class="sello">RI</div>
+    <div class="sello">RIID</div>
     <div class="marca"><b>Repositorio de Información Documentada</b><span>SGOE ISO 21001 · Facultad de Ingeniería URP</span></div>
     <div class="espacio"></div>
     <div class="usuario"><b id="uNombre"></b><span id="uRol"></span></div>
