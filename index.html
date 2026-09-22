@@ -120,7 +120,7 @@ tbody tr.clic:hover{background:#f8fbf9}
 
 .campos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
 .campos .completo{grid-column:1/-1}
-.campo label{display:block;font-size:11.5px;font-weight:600;color:var(--tinta-media);margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
+.campo label{display:block;font-size:13px;font-weight:600;color:var(--tinta);margin-bottom:4px}
 .campo input,.campo select{width:100%}
 .campo .ayuda{font-size:11.5px;color:var(--tinta-tenue);margin-top:2px}
 .req::after{content:' *';color:var(--falla)}
@@ -172,6 +172,8 @@ dl.meta dd{margin:0;word-break:break-word}
 .acceso p{color:var(--tinta-media);font-size:13px;margin:0 0 18px}
 
 #carga{position:fixed;inset:0;background:rgba(246,248,247,.7);z-index:80;display:grid;place-items:center}
+.carga-caja{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:360px;text-align:center}
+.carga-texto{font-size:13px;color:var(--tinta-media);line-height:1.5}
 .giro{width:30px;height:30px;border:3px solid var(--brand-suave);border-top-color:var(--brand);border-radius:50%;animation:g 0.8s linear infinite}
 @keyframes g{to{transform:rotate(360deg)}}
 #avisos{position:fixed;bottom:18px;right:18px;z-index:90;display:flex;flex-direction:column;gap:8px}
@@ -206,7 +208,7 @@ dl.meta dd{margin:0;word-break:break-word}
 .comose li b,.comose li strong{color:var(--tinta)}
 
 .cascada{display:flex;flex-direction:column;gap:8px}
-.casc-nivel label{display:block;font-size:11px;font-weight:600;color:var(--tinta-media);margin-bottom:2px;text-transform:uppercase;letter-spacing:.03em}
+.casc-nivel label{display:block;font-size:12.5px;font-weight:600;color:var(--tinta-media);margin-bottom:3px}
 .casc-nivel select{width:100%}
 .casc-ruta{border:1px dashed var(--brand);border-radius:6px;padding:7px 10px;font-size:12.5px;background:var(--brand-suave)}
 .sec-form{font-size:13px;margin:18px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--linea);color:var(--brand-oscuro)}
@@ -236,7 +238,7 @@ dl.meta dd{margin:0;word-break:break-word}
 .marcha .tx span{font-size:12px;color:var(--tinta-media)}
 .ficha-campos{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
 @media(max-width:700px){.ficha-campos{grid-template-columns:1fr}}
-.fc-et{font-size:11px;font-weight:600;color:var(--tinta-media);text-transform:uppercase;letter-spacing:.03em}
+.fc-et{font-size:12.5px;font-weight:600;color:var(--tinta-media)}
 .fc-val{font-size:13px;margin-top:2px;word-break:break-word}
 
 .guia h3{font-size:14px;margin:18px 0 6px}
@@ -340,7 +342,7 @@ dl.meta dd{margin:0;word-break:break-word}
   </main>
 </div>
 
-<div id="carga" class="oculto"><div class="giro"></div></div>
+<div id="carga" class="oculto"><div class="carga-caja"><div class="giro"></div><div id="cargaTexto" class="carga-texto"></div></div></div>
 <div id="avisos"></div>
 
 <script>
@@ -348,7 +350,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-23';
+const BACKEND_ESPERADO = '2026-09-25';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RIID, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -465,7 +467,18 @@ function mostrarAvisoVersion(v){
 function ocultarAvisoVersion(){ const el = $('avisoVersion'); if (el) el.classList.add('oculto'); }
 
 function aviso(msg, error){ const d=document.createElement('div'); d.className='toast'+(error?' error':''); d.textContent=msg; $('avisos').appendChild(d); setTimeout(()=>d.remove(), error?7000:3500); }
-function cargando(on){ $('carga').classList.toggle('oculto', !on); }
+let cargas = 0, relojCarga = null;
+function cargando(on){
+  cargas = Math.max(0, cargas + (on ? 1 : -1));
+  const activo = cargas > 0;
+  $('carga').classList.toggle('oculto', !activo);
+  clearTimeout(relojCarga);
+  if (!activo){ $('cargaTexto').textContent = ''; return; }
+  $('cargaTexto').textContent = '';
+  relojCarga = setTimeout(() => {
+    $('cargaTexto').textContent = 'Conectando con el servidor… La primera carga después de un rato sin uso puede tardar unos segundos más: Google está despertando el servicio.';
+  }, 6000);
+}
 
 const pausa = ms => new Promise(r => setTimeout(r, ms));
 
@@ -494,7 +507,7 @@ async function api(ruta, cuerpo, intento){
   cargando(true);
   try{
     const ctrl = new AbortController();
-    const reloj = setTimeout(() => ctrl.abort(), 70000);
+    const reloj = setTimeout(() => ctrl.abort(), 45000);
     let texto;
     try{
       const r = await fetch(CFG.API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
