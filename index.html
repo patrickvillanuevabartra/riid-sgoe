@@ -227,6 +227,16 @@ dl.meta dd{margin:0;word-break:break-word}
 .lista-vacia b{color:#6d4f06}
 
 /* puesta en marcha */
+.plegable{background:var(--papel);border:1px solid var(--linea);border-radius:10px;margin-bottom:14px}
+.plegable>summary{cursor:pointer;padding:11px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;list-style:none}
+.plegable>summary::-webkit-details-marker{display:none}
+.plegable>summary::before{content:'▸';color:var(--brand);font-size:12px}
+.plegable[open]>summary::before{content:'▾'}
+.plegable>summary:hover{color:var(--brand-oscuro)}
+.plegable-cuerpo{padding:0 16px 14px}
+.plegable-cuerpo>.marcha,.plegable-cuerpo>.comose,.plegable-cuerpo>.flujo{margin-bottom:10px;border:0;padding:0}
+.plegable-cuerpo>.flujo{border:1px solid var(--linea)}
+.plegable-cuerpo>*:last-child{margin-bottom:0}
 .marcha{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 16px;margin-bottom:14px}
 .marcha h3{font-size:13.5px;margin:0 0 4px}
 .marcha .sub{margin-bottom:8px}
@@ -390,6 +400,13 @@ const PASOS = [
 /* Caja de instrucciones paso a paso que encabeza cada pestaña */
 function comoSeUsa(titulo, pasos){
   return `<div class="comose"><b>${esc(titulo)}</b><ol>${pasos.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
+}
+
+/* Bloque plegable: mantiene el tablero limpio sin esconder la información */
+function desplegable(titulo, contenido, etiqueta, ok){
+  return `<details class="plegable"><summary>${esc(titulo)}
+    ${etiqueta?`<span class="eti ${ok?'e-vigente':'e-observada'}">${esc(etiqueta)}</span>`:''}</summary>
+    <div class="plegable-cuerpo">${contenido}</div></details>`;
 }
 
 function tiraFlujo(activo){
@@ -653,18 +670,6 @@ function vTablero(){
   $('v-tablero').innerHTML = `
   <div class="titulo-seccion"><div><h2>Tablero del repositorio</h2><p>Control de la información documentada · requisito 7.5 de la ISO 21001:2018</p></div>
     <div class="espacio"></div>${reg?'':'<span class="eti e-neutra">Acceso de consulta: documentos vigentes de distribución interna</span>'}</div>
-  ${S.perfil.control && puestaEnMarcha().faltan ? puestaEnMarcha().html : ''}
-  ${reg?tiraFlujo(-1):''}
-  ${reg?comoSeUsa('Cómo funciona el repositorio, en cuatro pasos', [
-    'Un <b>documento nuevo</b> se pide desde <b>Lista maestra → + Solicitar nuevo documento</b>.',
-    'Un <b>cambio o una baja</b> se piden abriendo el documento en la Lista maestra y usando <b>Solicitar modificación</b> o <b>Solicitar anulación</b>.',
-    'Lo que te toca hacer a ti siempre aparece abajo en <b>Mis pendientes</b> y en la pestaña <b>Flujo documental</b>.',
-    'Las <b>evidencias</b> (actas, listas, informes) no pasan por el flujo: se cargan en <b>Registros y evidencias</b>.'
-  ]):comoSeUsa('Cómo consultar un documento', [
-    'Entra a la pestaña <b>Lista maestra</b>.',
-    'Busca por nombre o código, o usa los filtros.',
-    'Haz clic en la fila: el documento se abre y se lee dentro del repositorio.'
-  ])}
   <div class="cifras">
     <div><b>${vig.length}</b><span>Vigentes</span></div>
     <div><b>${S.docs.filter(d=>d.estado==='Obsoleto').length}</b><span>Obsoletos</span></div>
@@ -673,6 +678,16 @@ function vTablero(){
     <div><b>${reg?nObs:'—'}</b><span>Observ. abiertas</span></div>
     <div><b>${reg?S.totalReg:'—'}</b><span>Registros</span></div>
   </div>
+  ${reg?desplegable('Cómo funciona el repositorio, en cuatro pasos', tiraFlujo(-1) + comoSeUsa('Los cuatro pasos, con el lugar exacto', [
+    'Un <b>documento nuevo</b> se pide desde <b>Lista maestra → + Solicitar nuevo documento</b>.',
+    'Un <b>cambio o una baja</b> se piden abriendo el documento en la Lista maestra y usando <b>Solicitar modificación</b> o <b>Solicitar anulación</b>.',
+    'Lo que te toca hacer a ti siempre aparece abajo en <b>Mis pendientes</b> y en la pestaña <b>Flujo documental</b>.',
+    'Las <b>evidencias</b> (actas, listas, informes) no pasan por el flujo: se cargan en <b>Registros y evidencias</b>.'
+  ])):desplegable('Cómo consultar un documento', comoSeUsa('Tres pasos', [
+    'Entra a la pestaña <b>Lista maestra</b>.',
+    'Busca por nombre o código, o usa los filtros.',
+    'Haz clic en la fila: el documento se abre y se lee dentro del repositorio.'
+  ]))}
   <div class="rejilla g2">
     ${reg?`<div class="caja"><h3>Mis pendientes (${pend.length})</h3><div class="lista-tareas">${pend.length? pend.map(s=>`
       <div class="tarea" onclick="abrirSolicitud('${esc(s.id)}')">${etiEstado(s.etapa)}<div style="flex:1;min-width:0"><div class="t-tit">${esc(s.titulo)}</div>
@@ -681,6 +696,7 @@ function vTablero(){
       <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><div style="flex:1;min-width:0"><div class="t-tit">${esc(d.titulo)}</div><div class="sub"><span class="mono">${esc(d.codigo)}</span> · ${esc(d.responsable||d.unidad||'')}</div></div>${etiRevision(d)}</div>`).join('')}</div>`:'<div class="vacio">Ningún documento vence en los próximos 60 días.</div>'}</div>
     <div class="caja"><h3>Vigentes por macroproceso</h3><div class="barras">${barras('macroproceso', macros)}</div></div>
     <div class="caja"><h3>Vigentes por tipo de documento</h3><div class="barras">${barras('tipo', S.cat.tipos.map(t=>t.nombre))}</div></div>
+    ${S.perfil.control ? `<div style="grid-column:1/-1">${desplegable('Puesta en marcha · orden de llenado', puestaEnMarcha().html, puestaEnMarcha().faltan ? `${puestaEnMarcha().faltan} pendiente(s)` : 'Completa', !puestaEnMarcha().faltan)}</div>` : ''}
     <div class="caja" style="grid-column:1/-1"><h3>Aprobados recientemente</h3>${recientes.length?`<div class="lista-tareas">${recientes.map(d=>`
       <div class="tarea" onclick="abrirDocumento('${esc(d.codigo)}')"><span class="cod" style="width:130px">${esc(d.codigo)}</span><div style="flex:1" class="t-tit">${esc(d.titulo)}</div><span class="sub mono">v${esc(d.version)} · ${fechaCorta(d.fechaAprobacion)}</span></div>`).join('')}</div>`:`<div class="vacio">Aún no hay documentos registrados.${S.perfil.puede.registrarExistente?'<br><span class="sub">Empieza por «Lista maestra → Registrar documento ya aprobado» con la Política de calidad, el Alcance y las guías.</span>':''}</div>`}</div>
   </div>`;
@@ -827,10 +843,22 @@ function pintarFicha(pestana){
       ${d.enlace?`<a class="btn n" href="${esc(d.enlace)}" target="_blank" rel="noopener">Abrir en Drive</a>`:''}
       ${d.enlaceEditable && reg?`<a class="btn n" href="${esc(d.enlaceEditable)}" target="_blank" rel="noopener">Formato editable</a>`:''}
       <button class="btn n" onclick="pintarFicha('ficha');setTimeout(()=>window.print(),150)">Imprimir ficha</button>
+      ${S.perfil.control?`<button class="btn g" onclick="corregirDocumento('${esc(d.codigo)}')">Corregir datos</button>`:''}
       ${puedeGestionar?`<button class="btn g" onclick="formDocumento('Anulación','${esc(d.codigo)}')">Solicitar anulación</button>
       <button class="btn" onclick="formDocumento('Modificación','${esc(d.codigo)}')">Solicitar modificación</button>`:''}
     </div>`, true);
 }
+/* Corrección directa, sin flujo: enlaces, responsable, frecuencia de revisión…
+   Abre el mismo formulario de Administración → Documentos desde la ficha. */
+async function corregirDocumento(codigo){
+  try{
+    if (!S.adm.documentos) S.adm.documentos = await api('/admin-tabla', { tabla:'documentos' });
+    const fila = S.adm.documentos.filas.find(x => x['Código'] === codigo);
+    if (!fila) return aviso('No se encontró el documento para corregir', true);
+    formAdmin('documentos', fila.recordId);
+  }catch(e){ aviso(e.message, true); }
+}
+
 function puedeGestionarProc(d){ return S.perfil.puede.solicitar && (S.perfil.puede.todosLosProcesos || S.perfil.procesos.some(x=>x.toLowerCase()===d.proceso.toLowerCase())); }
 
 async function guardarObservacion(codigo){
@@ -1743,7 +1771,10 @@ async function guardarAdmin(t, recordId){
     aviso(r.sinCambios ? 'No había cambios que guardar' : 'Guardado');
     cerrarModal();
     if (['catalogos','usuarios','documentos'].includes(t)) await recargar();
-    vAdmin();
+    S.adm[t] = null;
+    if (S.vista === 'admin') vAdmin();
+    else if (t === 'documentos' && S.ficha) abrirDocumento(S.ficha.documento.codigo);
+    else mostrar(S.vista);
   }catch(e){ aviso(e.message, true); }
 }
 
