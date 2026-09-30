@@ -1329,7 +1329,8 @@ function filaRegistro(r){
     <td>${vencido?`<span class="eti e-vencida">${fechaCorta(r.conservarHasta)}</span>`:`<span class="mono sub">${fechaCorta(r.conservarHasta)}</span>`}<div class="sub">${esc(r.disposicion)}</div></td>
     <td class="sub">${esc(r.registradoPor)}<br>${fechaCorta(r.fecha)}</td>
     <td style="white-space:nowrap"><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a>
-      ${puedeEditar?` <button class="btn n sm" onclick="editarRegistro('${esc(r.recordId)}')">Editar</button>`:''}</td></tr>`;
+      ${puedeEditar?` <button class="btn n sm" onclick="editarRegistro('${esc(r.recordId)}')">Editar</button>`:''}
+      ${S.perfil.puede.registrar?` <button class="btn n sm" title="Registrar otra evidencia igual, cambiando fecha y enlace" onclick="duplicarRegistro('${esc(r.recordId)}')">Duplicar</button>`:''}</td></tr>`;
 }
 
 const TABLA_REG = filas => `<div class="tabla-envoltura"><table><thead><tr><th>Registro</th><th>Formato</th><th>Fecha evidencia</th><th>Programa · periodo</th><th>Descripción</th><th>Conservar hasta</th><th>Registró</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
@@ -1390,31 +1391,42 @@ function editarRegistro(recordId){
    exigirse, porque no habría dónde guardarla. */
 const fechaEvidenciaLista = () => !((S.columnasFaltantes && S.columnasFaltantes.registros) || []).includes('Fecha de la evidencia');
 
-function formRegistro(){
+/* Evidencias periódicas (un acta por sesión): se copia la anterior y solo se
+   cambia lo que de verdad cambia. La fecha y el enlace quedan en blanco a
+   propósito, para que nadie los herede por descuido. */
+function duplicarRegistro(recordId){
+  const r = (S.registros || []).find(x => x.recordId === recordId);
+  if (!r) return aviso('No se encontró la evidencia', true);
+  formRegistro(r);
+}
+
+function formRegistro(modelo){
+  modelo = modelo || {};
   const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
   const cats = (S.cat.categoriasRegistro||[]).map(c=>c.nombre);
-  modal(`<div class="modal-cab"><h2 style="flex:1">Registrar evidencia</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
+  modal(`<div class="modal-cab"><div style="flex:1">${modelo.id?`<div class="sub">Copia de ${esc(modelo.id)}</div>`:''}<h2>Registrar evidencia</h2></div><button class="cerrar" onclick="cerrarModal()">×</button></div>
   <div class="modal-cuerpo">
+    ${modelo.id?`<div class="aviso-caja info">Se copiaron el formato, la categoría, el programa, el periodo y la retención de <b>${esc(modelo.id)}</b>. <b>La fecha y el enlace quedan vacíos a propósito</b>, y la descripción debe ajustarse a esta sesión: si queda idéntica, no se podrá distinguir una evidencia de otra.</div>`:''}
     <div class="comose"><b>Para qué sirve este formulario</b><div class="finalidad">Deja constancia de que una actividad se hizo: un acta, una lista de asistencia, un informe, un formato llenado. En la norma esto se llama <b>información documentada que se conserva</b>. A diferencia de los documentos, las evidencias <b>no pasan por revisión ni aprobación</b>: quedan registradas al guardar y se conservan el tiempo que indiques.</div></div>
     <div class="campos">
-    ${cats.length ? campoF('Categoría', `<select id="gCategoria">${opciones(cats,'','Seleccione')}</select>`, origenLista('Categoría de registro'), {completo:true}) : ''}
-    ${campoF('Formato asociado', `<select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (no responde a un formato controlado)</option></select>`,
+    ${cats.length ? campoF('Categoría', `<select id="gCategoria">${opciones(cats,modelo.categoria||'','Seleccione')}</select>`, origenLista('Categoría de registro'), {completo:true}) : ''}
+    ${campoF('Formato asociado', `<select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),modelo.codigoFormato||'','Seleccione')}<option value="__otro"${modelo.formato&&!modelo.codigoFormato?' selected':''}>Otro registro (no responde a un formato controlado)</option></select>`,
       origenLista('Formato'), {req:true, completo:true})}
-    <div class="campo completo oculto" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro" placeholder="Ej. Acta de reunión de la Comisión de Calidad">
+    <div class="campo completo${modelo.formato&&!modelo.codigoFormato?'':' oculto'}" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro" value="${modelo.codigoFormato?'':esc(modelo.formato||'')}" placeholder="Ej. Acta de reunión de la Comisión de Calidad">
       ${notaF('Nombre claro de lo que se está registrando.')}</div>
-    ${campoF('Programa', `<select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),'','Seleccione')}</select>`, origenLista('Programa'), {req:true})}
-    ${campoF('Periodo', `<select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),'','Seleccione')}</select>`, origenLista('Periodo'), {req:true})}
+    ${campoF('Programa', `<select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),modelo.programa||'','Seleccione')}</select>`, origenLista('Programa'), {req:true})}
+    ${campoF('Periodo', `<select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),modelo.periodo||'','Seleccione')}</select>`, origenLista('Periodo'), {req:true})}
     ${campoF('Fecha de la evidencia', `<input type="date" id="gFecha" max="${S.hoy}">`,
       notaF('<b>La fecha del hecho</b>, no la de hoy: el día del acta, de la sustentación o de la capacitación. Es la que ordena la lista, así que un acta del 9 de setiembre registrada hoy igual aparece antes que la del 16.') +
       (fechaEvidenciaLista() ? '' : notaF('⚠ Todavía no se puede guardar: falta crear la columna <b>«Fecha de la evidencia»</b> en la tabla RIID Registros de QuintaDB.')),
       {req:fechaEvidenciaLista(), completo:false})}
-    ${campoF('Descripción', `<textarea id="gDesc" placeholder="Qué contiene la evidencia"></textarea>`,
-      notaF('Qué contiene y de qué actividad es. Ej.: «Lista de asistencia a la capacitación en sílabos del 12/09, 34 docentes».'), {req:true, completo:true})}
+    ${campoF('Descripción', `<textarea id="gDesc" placeholder="Qué contiene la evidencia">${esc(modelo.descripcion||'')}</textarea>`,
+      notaF('Qué contiene <b>esta</b> evidencia en particular. No repitas lo que ya dicen el formato, el programa y el periodo: escribe lo que la distingue de las demás. Ej.: «Acta de la 3.ª sesión: se aprueba el alcance del SGOE y se asignan responsables de los nueve procesos; 7 asistentes». Si dos descripciones son idénticas, no se podrá saber cuál evidencia es cuál al buscar.'), {req:true, completo:true})}
     ${campoF('Enlace de la evidencia (Drive)', `<input type="url" id="gEnlace" placeholder="https://drive.google.com/...">`,
       notaF('Sube el archivo o la carpeta a Drive → <b>Compartir</b> → acceso para <b>Universidad Ricardo Palma</b> como lector → <b>Copiar enlace</b>.'), {req:true, completo:true})}
-    ${campoF('Retención (años)', `<input type="number" id="gRet" min="1" max="50" value="5">`,
+    ${campoF('Retención (años)', `<input type="number" id="gRet" min="1" max="50" value="${esc(modelo.retencion||'5')}">`,
       notaF('Cuántos años debe guardarse. Si no hay una regla institucional, <b>5 años</b> es una práctica común (cubre un ciclo de acreditación). El sistema calcula la fecha límite.'))}
-    ${campoF('Disposición final', `<select id="gDisp">${opciones(DISPOSICION,'Evaluar al vencer')}</select>`,
+    ${campoF('Disposición final', `<select id="gDisp">${opciones(DISPOSICION,modelo.disposicion||'Evaluar al vencer')}</select>`,
       notaF('Qué hacer cuando venza el plazo: <b>Eliminar</b>, <b>Transferir a archivo central</b>, <b>Conservación permanente</b> o <b>Evaluar al vencer</b> si aún no se sabe.'))}
   </div></div>
   <div class="modal-pie"><button class="btn n" onclick="cerrarModal()">Cancelar</button><button class="btn" onclick="guardarRegistro()">Guardar evidencia</button></div>`);
