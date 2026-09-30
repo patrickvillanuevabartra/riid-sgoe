@@ -361,7 +361,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-30c';
+const BACKEND_ESPERADO = '2026-09-30d';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RID-SGOE, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -1245,6 +1245,7 @@ async function vRegistros(force){
     ${S.perfil.puede.registrar?'<button class="btn" onclick="formRegistro()">+ Registrar evidencia</button>':''}</div>
   ${comoSeUsa('Cómo se registra una evidencia', [
     'Sube el archivo a Google Drive y <b>compártelo con el dominio urp.edu.pe</b> (como lector). Copia su enlace.',
+    'La <b>fecha de la evidencia</b> (el día del acta o de la actividad) es obligatoria: además de ordenar la lista, forma el número del registro (REG-20260909-01).',
     'Pulsa <b>+ Registrar evidencia</b>, elige la <b>categoría</b> (acta, sustentación, plan de trabajo…), el <b>formato</b>, el <b>programa</b> y el <b>periodo</b>.',
     'Describe qué contiene, pega el enlace e indica cuántos años debe conservarse. El sistema calcula la fecha límite.',
     'Si te equivocaste, usa <b>Editar</b> en la fila: puedes corregir tus propias evidencias (control documental puede corregir todas).'
@@ -1511,7 +1512,7 @@ const DICC = {
     'Fecha de cierre':'Cuándo terminó el trámite (aprobado, rechazado o desistido).'
   },
   registros: {
-    'ID registro':'Número de la evidencia: REG-año-correlativo.',
+    'ID registro':'Número de la evidencia. Se arma con la fecha del hecho: REG-20260909-01 es la primera evidencia del 9 de setiembre de 2026.',
     'Categoría':'Tipo de evidencia: acta, exposición o sustentación, plan de trabajo, informe… Sirve para filtrar y agrupar.',
     'Fecha de la evidencia':'Fecha del hecho que se evidencia (AAAA-MM-DD). Puede ser muy anterior a la fecha de registro.',
     'Código formato':'Código del formato de la lista maestra al que responde la evidencia. Vacío si es «otro registro».',
@@ -1631,9 +1632,10 @@ const FICHAS = {
     titulo:'Registros — correcciones',
     finalidad:'Corrige datos de una evidencia ya cargada: el formato o nombre del registro, la categoría, un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. <b>Cada quien puede corregir las evidencias que registró</b>; control documental puede corregir todas. Cada corrección queda en la bitácora.',
     mostrar:['ID registro','Nombre formato','Categoría','Fecha de la evidencia','Programa','Periodo','Conservar hasta','Registrado por'],
-    soloVer:['ID registro','Registrado por','Fecha de registro'],
+    soloVer:['Registrado por','Fecha de registro'],
     nombreFila:'registro',
     campos:{
+      'ID registro':{ tipo:'texto', req:true, nota:'Número de la evidencia. Desde ahora se arma con la <b>fecha del hecho</b>: REG-20260909-01 es la primera evidencia del 9 de setiembre de 2026. Solo se corrige para alinear las evidencias cargadas antes de este cambio; no puede repetirse.' },
       'Formato asociado':{ tipo:'formato', nota:'origen:Formato' },
       'Categoría':{ tipo:'catalogo', categoria:'categoriasRegistro', nota:'origen:Categoría de registro' },
       'Fecha de la evidencia':{ tipo:'fecha', req:true, nota:'La fecha del hecho (el día del acta, la sustentación o la capacitación), no la del registro. Ordena la lista. Es obligatoria.' },
