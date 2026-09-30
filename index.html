@@ -71,6 +71,7 @@ main{max-width:1240px;margin:0 auto;padding:20px}
 @media(max-width:900px){.cifras{grid-template-columns:repeat(3,1fr)}}
 
 .barra-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filtro-fecha{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tinta-media)}
 input[type=text],input[type=url],input[type=email],input[type=date],input[type=number],select,textarea{border:1px solid var(--linea);border-radius:6px;padding:7px 9px;background:var(--papel);min-width:0}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-suave);border-color:var(--brand)}
 textarea{width:100%;min-height:70px;resize:vertical}
@@ -360,7 +361,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-25';
+const BACKEND_ESPERADO = '2026-09-29';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RIID, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -368,7 +369,7 @@ const DISPOSICION = ['Evaluar al vencer','Eliminar','Transferir a archivo centra
 
 let S = { cred:'', perfil:null, cat:null, cand:null, docs:[], sols:[], obsAbiertas:{}, totalReg:0, hoy:'', prefijo:'FI', registros:null, vista:'tablero' };
 const F = { q:'', tipo:'', macro:'', proceso:'', programa:'', estado:'Vigente' };
-const FR = { q:'', formato:'', programa:'', periodo:'' };
+const FR = { q:'', categoria:'', formato:'', programa:'', periodo:'', desde:'', hasta:'', quien:'', retencion:'', agrupar:'' };
 
 /* ------------------------------------------------------------ utilidades */
 const $ = id => document.getElementById(id);
@@ -1233,45 +1234,135 @@ async function vRegistros(force){
       return;
     }
   }
-  const formatos = [...new Set(S.registros.map(r=>r.formato))].sort();
+  const cats = [...new Set(S.registros.map(r=>r.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const catOpciones = [...new Set(S.cat.categoriasRegistro.map(c=>c.nombre).concat(cats))].sort((a,b)=>a.localeCompare(b,'es'));
+  const formatos = [...new Set(S.registros.map(r=>r.formato).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const quienes = [...new Set(S.registros.map(r=>r.registradoPor).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
   $('v-registros').innerHTML = `
   <div class="titulo-seccion"><div><h2>Registros y evidencias${tip('Aquí se deja constancia de que un formato se usó: actas, listas de asistencia, informes. No pasan por el flujo de aprobación; se registran y se conservan el plazo indicado.', true)}</h2><p>Información documentada conservada · retención y disposición final (7.5.3)</p></div><div class="espacio"></div>
     ${S.perfil.puede.registrar?'<button class="btn" onclick="formRegistro()">+ Registrar evidencia</button>':''}</div>
   ${comoSeUsa('Cómo se registra una evidencia', [
     'Sube el archivo a Google Drive y <b>compártelo con el dominio urp.edu.pe</b> (como lector). Copia su enlace.',
-    'Pulsa <b>+ Registrar evidencia</b>, elige el <b>formato</b> al que corresponde, el <b>programa</b> y el <b>periodo</b>.',
+    'Pulsa <b>+ Registrar evidencia</b>, elige la <b>categoría</b> (acta, sustentación, plan de trabajo…), el <b>formato</b>, el <b>programa</b> y el <b>periodo</b>.',
     'Describe qué contiene, pega el enlace e indica cuántos años debe conservarse. El sistema calcula la fecha límite.',
-    'Las evidencias <b>no pasan por revisión ni aprobación</b>: quedan registradas al guardar.'
+    'Si te equivocaste, usa <b>Editar</b> en la fila: puedes corregir tus propias evidencias (control documental puede corregir todas).'
   ])}
+  ${!S.cat.categoriasRegistro.length ? `<div class="aviso-caja">Para clasificar y agrupar las evidencias falta preparar dos cosas en QuintaDB: la columna <b>«Categoría»</b> en la tabla <b>RIID Registros</b> y las opciones en <b>Administración → Catálogos</b> con categoría <b>«Categoría de registro»</b> (Actas, Exposiciones y sustentaciones, Planes de trabajo…). Mientras tanto, todo lo demás funciona igual.</div>` : ''}
   <div class="barra-filtros">
-    <input type="text" class="buscar" id="rQ" placeholder="Buscar en descripción, código o responsable" value="${esc(FR.q)}">
+    <input type="text" class="buscar" id="rQ" placeholder="Buscar en descripción, número, formato o responsable" value="${esc(FR.q)}">
+    <select id="rCategoria">${opciones(catOpciones,FR.categoria,'Todas las categorías')}</select>
     <select id="rFormato">${opciones(formatos,FR.formato,'Todos los formatos')}</select>
     <select id="rPrograma">${opciones(S.cat.programas.map(x=>x.nombre),FR.programa,'Todos los programas')}</select>
     <select id="rPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),FR.periodo,'Todos los periodos')}</select>
   </div>
-  <div class="tabla-envoltura"><table><thead><tr><th>Registro</th><th>Formato</th><th>Programa · periodo</th><th>Descripción</th><th>Conservar hasta</th><th>Registró</th><th></th></tr></thead><tbody id="tbReg"></tbody></table></div>`;
-  $('rQ').oninput = e => { FR.q=e.target.value; pintarRegistros(); };
-  [['rFormato','formato'],['rPrograma','programa'],['rPeriodo','periodo']].forEach(([i,k]) => $(i).onchange = e => { FR[k]=e.target.value; pintarRegistros(); });
+  <div class="barra-filtros">
+    <label class="filtro-fecha">Registradas desde <input type="date" id="rDesde" value="${esc(FR.desde)}"></label>
+    <label class="filtro-fecha">hasta <input type="date" id="rHasta" value="${esc(FR.hasta)}"></label>
+    <select id="rQuien">${opciones(quienes,FR.quien,'Registradas por cualquiera')}</select>
+    <select id="rRetencion">${opciones(['Retención vigente','Vence en 12 meses','Retención vencida'],FR.retencion,'Cualquier estado de retención')}</select>
+    <select id="rAgrupar">${opciones(['Categoría','Formato','Programa','Periodo','Estado de retención'],FR.agrupar,'Sin agrupar')}</select>
+    <button class="btn n sm" onclick="limpiarFiltrosRegistros()">Limpiar filtros</button>
+    <span class="espacio"></span>
+    <button class="btn n sm" onclick="exportarRegistros()">Exportar CSV</button>
+  </div>
+  <div id="regCuerpo"></div>`;
+  $('rQ').oninput = e => { FR.q=e.target.value; const pos=e.target.selectionStart; pintarRegistros(); $('rQ').focus(); $('rQ').setSelectionRange(pos,pos); };
+  [['rCategoria','categoria'],['rFormato','formato'],['rPrograma','programa'],['rPeriodo','periodo'],
+   ['rDesde','desde'],['rHasta','hasta'],['rQuien','quien'],['rRetencion','retencion'],['rAgrupar','agrupar']]
+    .forEach(([i,k]) => $(i).onchange = e => { FR[k]=e.target.value; pintarRegistros(); });
   pintarRegistros();
 }
-function pintarRegistros(){
+
+function limpiarFiltrosRegistros(){
+  Object.keys(FR).forEach(k => FR[k]='');
+  vRegistros();
+}
+
+function estadoRetencion(r){
+  if (!r.conservarHasta) return 'Sin plazo';
+  if (r.conservarHasta < S.hoy) return 'Retención vencida';
+  return diasEntre(S.hoy, r.conservarHasta) <= 365 ? 'Vence en 12 meses' : 'Retención vigente';
+}
+
+function registrosFiltrados(){
   const q = FR.q.toLowerCase();
-  const lista = S.registros.filter(r => (!FR.formato||r.formato===FR.formato) && (!FR.programa||r.programa===FR.programa) && (!FR.periodo||r.periodo===FR.periodo)
-    && (!q || [r.id,r.codigoFormato,r.descripcion,r.registradoPor].join(' ').toLowerCase().includes(q)));
-  $('tbReg').innerHTML = lista.length ? lista.map(r => {
-    const vencido = r.conservarHasta && r.conservarHasta < S.hoy;
-    return `<tr><td class="cod">${esc(r.id)}</td><td><div>${esc(r.formato)}</div><div class="sub mono">${esc(r.codigoFormato)}</div></td>
+  return S.registros.filter(r =>
+    (!FR.categoria || r.categoria === FR.categoria) &&
+    (!FR.formato || r.formato === FR.formato) &&
+    (!FR.programa || r.programa === FR.programa) &&
+    (!FR.periodo || r.periodo === FR.periodo) &&
+    (!FR.quien || r.registradoPor === FR.quien) &&
+    (!FR.retencion || estadoRetencion(r) === FR.retencion) &&
+    (!FR.desde || (r.fecha || '').slice(0,10) >= FR.desde) &&
+    (!FR.hasta || (r.fecha || '').slice(0,10) <= FR.hasta) &&
+    (!q || [r.id, r.codigoFormato, r.formato, r.categoria, r.descripcion, r.registradoPor, r.periodo, r.programa]
+      .join(' ').toLowerCase().includes(q)));
+}
+
+function filaRegistro(r){
+  const vencido = r.conservarHasta && r.conservarHasta < S.hoy;
+  const puedeEditar = S.perfil.control || (r.correo && r.correo.toLowerCase() === S.perfil.correo);
+  return `<tr><td class="cod">${esc(r.id)}</td>
+    <td><div>${esc(r.formato)}</div><div class="sub mono">${esc(r.codigoFormato)}</div>${r.categoria?`<div class="sub"><span class="eti e-neutra">${esc(r.categoria)}</span></div>`:''}</td>
     <td>${esc(r.programa)}<div class="sub">${esc(r.periodo)}</div></td><td style="max-width:340px">${esc(r.descripcion)}</td>
     <td>${vencido?`<span class="eti e-vencida">${fechaCorta(r.conservarHasta)}</span>`:`<span class="mono sub">${fechaCorta(r.conservarHasta)}</span>`}<div class="sub">${esc(r.disposicion)}</div></td>
     <td class="sub">${esc(r.registradoPor)}<br>${fechaCorta(r.fecha)}</td>
-    <td><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a></td></tr>`; }).join('') : '<tr><td colspan="7" class="vacio">Sin registros con esos filtros.<br><span class="sub">Si es la primera vez, usa «+ Registrar evidencia» para cargar la primera.</span></td></tr>';
+    <td style="white-space:nowrap"><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a>
+      ${puedeEditar?` <button class="btn n sm" onclick="editarRegistro('${esc(r.recordId)}')">Editar</button>`:''}</td></tr>`;
 }
+
+const TABLA_REG = filas => `<div class="tabla-envoltura"><table><thead><tr><th>Registro</th><th>Formato</th><th>Programa · periodo</th><th>Descripción</th><th>Conservar hasta</th><th>Registró</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
+
+function pintarRegistros(){
+  const lista = registrosFiltrados();
+  if (!lista.length){
+    $('regCuerpo').innerHTML = TABLA_REG(`<tr><td colspan="7" class="vacio">Sin registros con esos filtros.<br><span class="sub">Prueba con «Limpiar filtros», o usa «+ Registrar evidencia» si es la primera.</span></td></tr>`);
+    return;
+  }
+  if (!FR.agrupar){
+    $('regCuerpo').innerHTML = TABLA_REG(lista.map(filaRegistro).join('')) +
+      `<div class="sub" style="margin-top:8px">${lista.length} de ${S.registros.length} evidencias</div>`;
+    return;
+  }
+  const clave = { 'Categoría':r=>r.categoria||'Sin categoría', 'Formato':r=>r.formato||'Sin formato',
+    'Programa':r=>r.programa||'Sin programa', 'Periodo':r=>r.periodo||'Sin periodo',
+    'Estado de retención':estadoRetencion }[FR.agrupar];
+  const grupos = {};
+  lista.forEach(r => { const k = clave(r); (grupos[k] = grupos[k] || []).push(r); });
+  const orden = Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
+  $('regCuerpo').innerHTML = orden.map(g => `<details class="plegable" open><summary>${esc(g)}
+      <span class="eti e-neutra">${grupos[g].length}</span></summary>
+      <div class="plegable-cuerpo">${TABLA_REG(grupos[g].map(filaRegistro).join(''))}</div></details>`).join('') +
+    `<div class="sub" style="margin-top:8px">${lista.length} de ${S.registros.length} evidencias en ${orden.length} grupo(s), agrupadas por ${esc(FR.agrupar.toLowerCase())}</div>`;
+}
+
+function exportarRegistros(){
+  const cols = [['id','Registro'],['categoria','Categoría'],['codigoFormato','Código formato'],['formato','Formato'],
+    ['programa','Programa'],['periodo','Periodo'],['descripcion','Descripción'],['retencion','Retención (años)'],
+    ['conservarHasta','Conservar hasta'],['disposicion','Disposición final'],['registradoPor','Registró'],['fecha','Fecha de registro'],['enlace','Enlace']];
+  const filas = [cols.map(c=>c[1])].concat(registrosFiltrados().map(r=>cols.map(c=>r[c[0]]||'')));
+  const csv = '\ufeff' + filas.map(f=>f.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `Registros_RIID_${S.hoy}.csv`; a.click();
+}
+
+/* Corregir una evidencia: mismo formulario de Administración → Registros */
+async function editarRegistro(recordId){
+  try{
+    if (!S.adm.registros) S.adm.registros = await api('/admin-tabla', { tabla:'registros' });
+    if (!S.adm.registros.filas.some(f => f.recordId === recordId)) return aviso('No se encontró la evidencia', true);
+    formAdmin('registros', recordId);
+  }catch(e){ aviso(e.message, true); }
+}
+
 function formRegistro(){
   const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
+  const cats = S.cat.categoriasRegistro.map(c=>c.nombre);
   modal(`<div class="modal-cab"><h2 style="flex:1">Registrar evidencia</h2><button class="cerrar" onclick="cerrarModal()">×</button></div>
   <div class="modal-cuerpo">
     <div class="comose"><b>Para qué sirve este formulario</b><div class="finalidad">Deja constancia de que una actividad se hizo: un acta, una lista de asistencia, un informe, un formato llenado. En la norma esto se llama <b>información documentada que se conserva</b>. A diferencia de los documentos, las evidencias <b>no pasan por revisión ni aprobación</b>: quedan registradas al guardar y se conservan el tiempo que indiques.</div></div>
     <div class="campos">
+    ${cats.length ? campoF('Categoría', `<select id="gCategoria">${opciones(cats,'','Seleccione')}</select>`, origenLista('Categoría de registro'), {completo:true}) : ''}
     ${campoF('Formato asociado', `<select id="gFormato">${opciones(formatos.map(d=>({v:d.codigo,t:`${d.codigo} · ${d.titulo}`})),'','Seleccione')}<option value="__otro">Otro registro (no responde a un formato controlado)</option></select>`,
       origenLista('Formato'), {req:true, completo:true})}
     <div class="campo completo oculto" id="gOtroCampo"><label class="req">Nombre del registro</label><input type="text" id="gOtro" placeholder="Ej. Acta de reunión de la Comisión de Calidad">
@@ -1290,9 +1381,11 @@ function formRegistro(){
   <div class="modal-pie"><button class="btn n" onclick="cerrarModal()">Cancelar</button><button class="btn" onclick="guardarRegistro()">Guardar evidencia</button></div>`);
   $('gFormato').onchange = e => $('gOtroCampo').classList.toggle('oculto', e.target.value!=='__otro');
 }
+
 async function guardarRegistro(){
   const cod = $('gFormato').value, doc = S.docs.find(d=>d.codigo===cod);
   const cuerpo = { codigoFormato: doc?cod:'', formato: doc?doc.titulo:(cod==='__otro'?$('gOtro').value.trim():''), proceso: doc?doc.proceso:'',
+    categoria: $('gCategoria')?$('gCategoria').value:'',
     programa:$('gPrograma').value, periodo:$('gPeriodo').value, descripcion:$('gDesc').value.trim(), enlace:$('gEnlace').value.trim(),
     retencion:$('gRet').value, disposicion:$('gDisp').value };
   try{ const r = await api('/registro', cuerpo); aviso('Evidencia registrada: '+r.id); cerrarModal(); S.totalReg++; vRegistros(true); }catch(e){ aviso(e.message, true); }
@@ -1370,6 +1463,7 @@ const DICC = {
   },
   registros: {
     'ID registro':'Número de la evidencia: REG-año-correlativo.',
+    'Categoría':'Tipo de evidencia: acta, exposición o sustentación, plan de trabajo, informe… Sirve para filtrar y agrupar.',
     'Código formato':'Código del formato de la lista maestra al que responde la evidencia. Vacío si es «otro registro».',
     'Nombre formato':'Nombre del formato o del registro.',
     'Proceso':'Proceso del formato.',
@@ -1438,8 +1532,8 @@ const FICHAS = {
     mostrar:['Categoría','Código','Nombre','Grupo','Orden','Estado'],
     nombreFila:'opción',
     campos:{
-      'Categoría':{ tipo:'lista', opciones:['Tipo de documento','Programa','Periodo','Proceso'], req:true,
-        nota:'¿En qué lista aparecerá? <b>Tipo de documento</b> → campo «Tipo» al crear un documento. <b>Programa</b> → campo «Programa» de documentos y evidencias. <b>Periodo</b> → campo «Periodo» de las evidencias. <b>Proceso</b> → solo respaldo del inventario.' },
+      'Categoría':{ tipo:'lista', opciones:['Tipo de documento','Programa','Periodo','Categoría de registro','Proceso'], req:true,
+        nota:'¿En qué lista aparecerá? <b>Tipo de documento</b> → campo «Tipo» al crear un documento. <b>Programa</b> → campo «Programa» de documentos y evidencias. <b>Periodo</b> → campo «Periodo» de las evidencias. <b>Categoría de registro</b> → campo «Categoría» de las evidencias (actas, sustentaciones, planes de trabajo…). <b>Proceso</b> → solo respaldo del inventario.' },
       'Código':{ tipo:'texto', req:true,
         nota:'Abreviatura corta y única en su categoría. En <b>Tipo de documento</b> usa 2 a 4 letras: esas letras van dentro del código de cada documento (GUI → FI-GUI-M01-003), así que no conviene cambiarlas después. En <b>Periodo</b> escribe el periodo tal cual (2026-II).' },
       'Nombre':{ tipo:'texto', req:true, nota:'Lo que la gente verá en la lista: «Guía», «Ingeniería Civil», «2026-II».' },
@@ -1485,11 +1579,12 @@ const FICHAS = {
   },
   registros: {
     titulo:'Registros — correcciones',
-    finalidad:'Corrige datos de una evidencia ya cargada: un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. Cada corrección queda en la bitácora.',
-    mostrar:['ID registro','Nombre formato','Programa','Periodo','Conservar hasta','Registrado por'],
+    finalidad:'Corrige datos de una evidencia ya cargada: la categoría, un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. <b>Cada quien puede corregir las evidencias que registró</b>; control documental puede corregir todas. Cada corrección queda en la bitácora.',
+    mostrar:['ID registro','Nombre formato','Categoría','Programa','Periodo','Conservar hasta','Registrado por'],
     soloVer:['ID registro','Código formato','Nombre formato','Registrado por','Fecha de registro'],
     nombreFila:'registro',
     campos:{
+      'Categoría':{ tipo:'catalogo', categoria:'categoriasRegistro', nota:'origen:Categoría de registro' },
       'Programa':{ tipo:'catalogo', categoria:'programas', nota:'origen:Programa' },
       'Periodo':{ tipo:'catalogo', categoria:'periodos', nota:'origen:Periodo' },
       'Descripción':{ tipo:'area' },
@@ -1591,6 +1686,10 @@ function requisitos(){
       porque:'Solo aparecen aquí las personas a las que ya se les dio ese rol.',
       ir:['usuarios',''], puede:S.perfil.admin, quien:'el administrador',
       que:'Aprobará el documento registrando la resolución o acta. Debe ser distinto del revisor y de ti.' },
+    'Categoría de registro': { antes:'Administración → Catálogos, categoría «Categoría de registro»', n:S.cat.categoriasRegistro.length,
+      porque:'Agrupa las evidencias por tipo: actas, exposiciones y sustentaciones, planes de trabajo, informes…',
+      ir:['catalogos','Categoría de registro'], puede:S.perfil.control, quien:'control documental',
+      que:'Permite filtrar y agrupar las evidencias en la pestaña «Registros y evidencias».' },
     'Formato': { antes:'la Lista maestra, como documento de tipo «Formato» o «Matriz» en estado vigente', n:formatos,
       porque:'Una evidencia es un formato ya llenado; para asociarla, el formato en blanco debe estar registrado primero como documento.',
       ir:'maestra', puede:S.perfil.puede.solicitar || S.perfil.puede.registrarExistente, quien:'el responsable del proceso o control documental',
@@ -1681,7 +1780,7 @@ function pintarAdmin(){
   ${t==='catalogos' ? `<div class="aviso-caja info">¿Buscas la lista de <b>procesos</b>? No se edita aquí: se administra en la <b>Matriz de Indicadores → Inventario de Procesos</b> y el repositorio la lee de allá automáticamente.</div>` : ''}
   <div class="barra-filtros">
     <input type="text" class="buscar" id="admQ" placeholder="Buscar en esta tabla" value="${esc(filtroAdmin.q)}">
-    ${t==='catalogos' ? `<select id="admCat">${opciones(['Tipo de documento','Programa','Periodo','Proceso'], filtroAdmin.categoria, 'Todas las categorías')}</select>` : ''}
+    ${t==='catalogos' ? `<select id="admCat">${opciones(['Tipo de documento','Programa','Periodo','Categoría de registro','Proceso'], filtroAdmin.categoria, 'Todas las categorías')}</select>` : ''}
     <span class="espacio"></span>
     ${puedeEditar && ed.alta ? `<button class="btn" onclick="formAdmin('${t}')">+ ${f.nombreFila==='usuario'?'Nuevo':'Nueva'} ${esc(f.nombreFila)}</button>` : ''}
   </div>
@@ -1772,7 +1871,9 @@ async function guardarAdmin(t, recordId){
     cerrarModal();
     if (['catalogos','usuarios','documentos'].includes(t)) await recargar();
     S.adm[t] = null;
+    if (t === 'registros') S.registros = null;
     if (S.vista === 'admin') vAdmin();
+    else if (t === 'registros') vRegistros(true);
     else if (t === 'documentos' && S.ficha) abrirDocumento(S.ficha.documento.codigo);
     else mostrar(S.vista);
   }catch(e){ aviso(e.message, true); }
@@ -1785,7 +1886,7 @@ async function diagnostico(limpiar){
     <div class="comose"><b>Diagnóstico técnico</b><div class="finalidad">Comprueba que el repositorio encuentre sus ocho tablas en QuintaDB con todas sus columnas, y muestra de dónde sale cada lista desplegable. Úsalo cuando algo no cargue o una lista salga vacía.</div></div>
     <div class="caja" style="margin-bottom:14px"><h3>Tablas QuintaDB</h3><table><thead><tr><th>Tabla</th><th>ID</th><th>Filas</th><th>Estado</th></tr></thead><tbody>
       ${d.tablas.map(t=>`<tr><td>${esc(t.tabla)}</td><td class="mono sub">${esc(t.entity)}</td><td class="mono">${t.filas??'—'}</td>
-      <td>${t.error?`<span class="eti e-rechazada">${esc(t.error)}</span>`:t.ok?'<span class="eti e-vigente">Columnas completas</span>':`<span class="eti e-observada">Faltan: ${esc(t.faltan.join(', '))}</span>`}</td></tr>`).join('')}</tbody></table></div>
+      <td>${t.error?`<span class="eti e-rechazada">${esc(t.error)}</span>`:t.ok?`<span class="eti e-vigente">Columnas completas</span>${(t.opcionales||[]).length?`<div class="sub">Opcional aún no creada: ${esc(t.opcionales.join(', '))}</div>`:''}`:`<span class="eti e-observada">Faltan: ${esc(t.faltan.join(', '))}</span>`}</td></tr>`).join('')}</tbody></table></div>
     <div class="caja" style="margin-bottom:14px"><h3>Origen de cada lista desplegable</h3>
       <table><thead><tr><th>Lista</th><th>Se carga desde</th><th>Opciones</th></tr></thead><tbody>
         ${(d.fuentes||[]).map(f=>`<tr><td>${esc(f.desplegable)}</td><td class="sub">${esc(f.origen)}</td>
