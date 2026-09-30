@@ -361,7 +361,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-30b';
+const BACKEND_ESPERADO = '2026-09-30c';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RID-SGOE, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -627,6 +627,7 @@ async function entrar(){
 async function recargar(){
   const d = await api('/inicio');
   S.columnasFaltantes = d.columnasFaltantes || {};
+  if (d.registros) S.registros = d.registros;   // llegan con el inicio: la pestaña abre sin esperar
   Object.assign(S, { perfil:d.perfil, cat:d.catalogos, cand:d.candidatos, docs:d.documentos, sols:d.solicitudes,
     obsAbiertas:d.observacionesAbiertas, totalReg:d.totalRegistros, hoy:d.hoy, prefijo:d.prefijo });
   S.backend = d.backend || '';
@@ -1225,7 +1226,7 @@ async function reenviar(id){
 
 /* ---------------------------------------------------- registros/evidencias */
 async function vRegistros(force){
-  if (!S.registros || force){
+  if (!S.registros || force){   // solo si aún no llegaron con el inicio
     $('v-registros').innerHTML = '<div class="caja"><h3>Registros y evidencias</h3><div class="vacio">Cargando registros…</div></div>';
     try{ S.registros = (await api('/registros')).registros; }
     catch(e){
@@ -1366,12 +1367,22 @@ function exportarRegistros(){
 }
 
 /* Corregir una evidencia: mismo formulario de Administración → Registros */
-async function editarRegistro(recordId){
-  try{
-    if (!S.adm.registros) S.adm.registros = await api('/admin-tabla', { tabla:'registros' });
-    if (!S.adm.registros.filas.some(f => f.recordId === recordId)) return aviso('No se encontró la evidencia', true);
-    formAdmin('registros', recordId);
-  }catch(e){ aviso(e.message, true); }
+/* La ficha de corrección se arma con los registros que ya están cargados:
+   antes se volvía a pedir la tabla entera y por eso tardaba en abrir. */
+function filaDeRegistro(r){
+  return { recordId:r.recordId, 'ID registro':r.id, 'Código formato':r.codigoFormato, 'Nombre formato':r.formato,
+    'Categoría':r.categoria, 'Fecha de la evidencia':r.fechaEvidencia, 'Proceso':r.proceso, 'Programa':r.programa,
+    'Periodo':r.periodo, 'Descripción':r.descripcion, 'Enlace evidencia':r.enlace, 'Retención (años)':r.retencion,
+    'Conservar hasta':r.conservarHasta, 'Disposición final':r.disposicion, 'Registrado por':r.registradoPor,
+    'Correo':r.correo, 'Fecha de registro':r.fecha };
+}
+function editarRegistro(recordId){
+  const r = (S.registros || []).find(x => x.recordId === recordId);
+  if (!r) return aviso('No se encontró la evidencia', true);
+  S.adm.registros = { tabla:'registros', columnas:Object.keys(filaDeRegistro(r)).filter(k=>k!=='recordId'),
+    filas:(S.registros||[]).map(filaDeRegistro),
+    editable:{ campos:[], alta:false, permitido:S.perfil.control, propioDe:'Correo' } };
+  formAdmin('registros', recordId);
 }
 
 /* ¿Ya existe la columna en QuintaDB? Mientras no exista, la fecha no puede
@@ -1798,6 +1809,12 @@ async function vAdmin(){
   <div class="subnav">${tabs.map(([k,t])=>`<button class="${k===pestanaAdmin?'activa':''}" onclick="pestanaAdmin='${k}';filtroAdmin={q:'',categoria:''};vAdmin()">${t}${['versiones','solicitudes','observaciones','bitacora'].includes(k)?' <span class="candado" title="Solo consulta">🔒</span>':''}</button>`).join('')}</div>
   <div id="admCuerpo"><div class="caja"><div class="vacio">Cargando…</div></div></div>`;
   if (pestanaAdmin === 'diagnostico') return diagnostico(false);
+  if (pestanaAdmin === 'registros' && S.registros){   // ya están en memoria
+    S.adm.registros = { tabla:'registros', columnas:Object.keys(filaDeRegistro(S.registros[0]||{})).filter(k=>k!=='recordId'),
+      filas:S.registros.map(filaDeRegistro),
+      editable:{ campos:[], alta:false, permitido:S.perfil.control, propioDe:'Correo' } };
+    return pintarAdmin();
+  }
   try{
     const d = await api('/admin-tabla', { tabla: pestanaAdmin });
     S.adm[pestanaAdmin] = d;
