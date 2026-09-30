@@ -1388,7 +1388,11 @@ async function guardarRegistro(){
     categoria: $('gCategoria')?$('gCategoria').value:'',
     programa:$('gPrograma').value, periodo:$('gPeriodo').value, descripcion:$('gDesc').value.trim(), enlace:$('gEnlace').value.trim(),
     retencion:$('gRet').value, disposicion:$('gDisp').value };
-  try{ const r = await api('/registro', cuerpo); aviso('Evidencia registrada: '+r.id); cerrarModal(); S.totalReg++; vRegistros(true); }catch(e){ aviso(e.message, true); }
+  try{
+    const r = await api('/registro', cuerpo);
+    aviso(r.aviso || ('Evidencia registrada: '+r.id), !!r.aviso);
+    cerrarModal(); S.totalReg++; vRegistros(true);
+  }catch(e){ aviso(e.message, true); }
 }
 
 /* ------------------------------------------------------ administración
