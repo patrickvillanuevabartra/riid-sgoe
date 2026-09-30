@@ -771,7 +771,8 @@ function pintarMaestra(){
       <td class="mono">v${esc(d.version)}</td>
       <td>${etiEstado(d.estado)}${d.solicitudEnCurso?'<div style="margin-top:3px"><span class="eti e-flujo">En actualización</span></div>':''}${S.obsAbiertas[d.codigo]?`<div class="sub" style="margin-top:3px">${S.obsAbiertas[d.codigo]} observ. abierta(s)</div>`:''}</td>
       <td>${etiRevision(d)}</td>
-      <td><button class="btn g sm" onclick="event.stopPropagation();abrirDocumento('${esc(d.codigo)}')">Ver</button></td>
+      <td style="white-space:nowrap"><button class="btn g sm" onclick="event.stopPropagation();abrirDocumento('${esc(d.codigo)}')">Ver</button>
+        ${S.perfil.control?` <button class="btn n sm" title="Corregir datos administrativos, sin flujo de aprobación" onclick="event.stopPropagation();corregirDocumento('${esc(d.codigo)}')">Editar</button>`:''}</td>
     </tr>`).join('') : '<tr><td colspan="8" class="vacio">No hay documentos con esos filtros.<br><span class="sub">Prueba con el estado «Todos los estados» o limpia el buscador.</span></td></tr>';
   $('pieMaestra').textContent = `Mostrando ${lista.length} de ${S.docs.length} documentos · consultado el ${fechaCorta(S.hoy)} por ${S.perfil.nombre}`;
 }
@@ -869,13 +870,26 @@ function pintarFicha(pestana){
 }
 /* Corrección directa, sin flujo: enlaces, responsable, frecuencia de revisión…
    Abre el mismo formulario de Administración → Documentos desde la ficha. */
-async function corregirDocumento(codigo){
-  try{
-    if (!S.adm.documentos) S.adm.documentos = await api('/admin-tabla', { tabla:'documentos' });
-    const fila = S.adm.documentos.filas.find(x => x['Código'] === codigo);
-    if (!fila) return aviso('No se encontró el documento para corregir', true);
-    formAdmin('documentos', fila.recordId);
-  }catch(e){ aviso(e.message, true); }
+/* La ficha de corrección se arma con los documentos ya cargados, sin pedir
+   nada al servidor: así abre al instante. */
+function filaDeDocumento(d){
+  return { recordId:d.recordId, 'Código':d.codigo, 'Título':d.titulo, 'Tipo':d.tipo, 'Proceso':d.proceso,
+    'Macroproceso':d.macroproceso, 'Programa':d.programa, 'Unidad responsable':d.unidad, 'Responsable':d.responsable,
+    'Correo responsable':d.correoResponsable, 'Objetivo y alcance':d.objetivo, 'Cláusulas ISO 21001':d.clausulas,
+    'Origen':d.origen, 'Distribución':d.distribucion, 'Versión vigente':d.version, 'Estado':d.estado,
+    'Fecha de aprobación':d.fechaAprobacion, 'Documento de aprobación':d.documentoAprobacion,
+    'Frecuencia de revisión (meses)':d.frecuencia, 'Próxima revisión':d.proximaRevision,
+    'Enlace documento':d.enlace, 'Enlace editable':d.enlaceEditable, 'Palabras clave':d.palabras,
+    'Solicitud en curso':d.solicitudEnCurso, 'Fecha de baja':d.fechaBaja, 'Registrado por':d.registradoPor,
+    'Fecha de registro':d.fechaRegistro, 'Última actualización':d.actualizado };
+}
+function corregirDocumento(codigo){
+  const d = (S.docs || []).find(x => x.codigo === codigo);
+  if (!d) return aviso('No se encontró el documento para corregir', true);
+  S.adm.documentos = { tabla:'documentos', columnas:Object.keys(filaDeDocumento(d)).filter(k=>k!=='recordId'),
+    filas:(S.docs||[]).map(filaDeDocumento),
+    editable:{ campos:[], alta:false, permitido:S.perfil.control } };
+  formAdmin('documentos', d.recordId);
 }
 
 function puedeGestionarProc(d){ return S.perfil.puede.solicitar && (S.perfil.puede.todosLosProcesos || S.perfil.procesos.some(x=>x.toLowerCase()===d.proceso.toLowerCase())); }
@@ -1853,6 +1867,11 @@ async function vAdmin(){
   <div class="subnav">${tabs.map(([k,t])=>`<button class="${k===pestanaAdmin?'activa':''}" onclick="pestanaAdmin='${k}';filtroAdmin={q:'',categoria:''};vAdmin()">${t}${['versiones','solicitudes','observaciones','bitacora'].includes(k)?' <span class="candado" title="Solo consulta">🔒</span>':''}</button>`).join('')}</div>
   <div id="admCuerpo"><div class="caja"><div class="vacio">Cargando…</div></div></div>`;
   if (pestanaAdmin === 'diagnostico') return diagnostico(false);
+  if (pestanaAdmin === 'documentos' && S.docs && S.docs.length){   // ya están en memoria
+    S.adm.documentos = { tabla:'documentos', columnas:Object.keys(filaDeDocumento(S.docs[0])).filter(k=>k!=='recordId'),
+      filas:S.docs.map(filaDeDocumento), editable:{ campos:[], alta:false, permitido:S.perfil.control } };
+    return pintarAdmin();
+  }
   if (pestanaAdmin === 'registros' && S.registros){   // ya están en memoria
     S.adm.registros = { tabla:'registros', columnas:Object.keys(filaDeRegistro(S.registros[0]||{})).filter(k=>k!=='recordId'),
       filas:S.registros.map(filaDeRegistro),
@@ -1994,6 +2013,16 @@ async function guardarAdmin(t, recordId){
     // ella, sin volver a pedir toda la tabla (eso es lo que hacía esperar).
     if (r.fila){
       if (S.adm[t]) S.adm[t].filas = S.adm[t].filas.map(x => x.recordId === recordId ? r.fila : x);
+      if (t === 'documentos' && S.docs){
+        S.docs = S.docs.map(x => x.recordId === recordId ? Object.assign({}, x, {
+          programa:r.fila['Programa'], unidad:r.fila['Unidad responsable'], responsable:r.fila['Responsable'],
+          correoResponsable:r.fila['Correo responsable'], objetivo:r.fila['Objetivo y alcance'],
+          clausulas:r.fila['Cláusulas ISO 21001'], distribucion:r.fila['Distribución'],
+          frecuencia:r.fila['Frecuencia de revisión (meses)'], proximaRevision:r.fila['Próxima revisión'],
+          documentoAprobacion:r.fila['Documento de aprobación'], enlace:r.fila['Enlace documento'],
+          enlaceEditable:r.fila['Enlace editable'], palabras:r.fila['Palabras clave'],
+          actualizado:r.fila['Última actualización'] }) : x);
+      }
       if (t === 'registros' && S.registros){
         S.registros = S.registros.map(x => x.recordId === recordId ? Object.assign({}, x, {
           id:r.fila['ID registro'],   // faltaba: por eso la lista seguía mostrando el número anterior
@@ -2007,8 +2036,9 @@ async function guardarAdmin(t, recordId){
       S.adm[t] = null;
       if (t === 'registros') S.registros = null;
     }
-    if (['catalogos','usuarios','documentos'].includes(t)) await recargar();
+    if (['catalogos','usuarios'].includes(t) || !r.fila) await recargar();
     if (S.vista === 'admin') vAdmin();
+    else if (t === 'documentos') { S.adm.documentos = null; if (S.ficha) abrirDocumento(S.ficha.documento.codigo); else mostrar('maestra'); }
     else if (t === 'registros') vRegistros();
     else if (t === 'documentos' && S.ficha) abrirDocumento(S.ficha.documento.codigo);
     else mostrar(S.vista);
