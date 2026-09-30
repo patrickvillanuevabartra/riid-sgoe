@@ -1583,11 +1583,12 @@ const FICHAS = {
   },
   registros: {
     titulo:'Registros — correcciones',
-    finalidad:'Corrige datos de una evidencia ya cargada: la categoría, un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. <b>Cada quien puede corregir las evidencias que registró</b>; control documental puede corregir todas. Cada corrección queda en la bitácora.',
+    finalidad:'Corrige datos de una evidencia ya cargada: el formato o nombre del registro, la categoría, un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. <b>Cada quien puede corregir las evidencias que registró</b>; control documental puede corregir todas. Cada corrección queda en la bitácora.',
     mostrar:['ID registro','Nombre formato','Categoría','Programa','Periodo','Conservar hasta','Registrado por'],
-    soloVer:['ID registro','Código formato','Nombre formato','Registrado por','Fecha de registro'],
+    soloVer:['ID registro','Registrado por','Fecha de registro'],
     nombreFila:'registro',
     campos:{
+      'Formato asociado':{ tipo:'formato', nota:'origen:Formato' },
       'Categoría':{ tipo:'catalogo', categoria:'categoriasRegistro', nota:'origen:Categoría de registro' },
       'Programa':{ tipo:'catalogo', categoria:'programas', nota:'origen:Programa' },
       'Periodo':{ tipo:'catalogo', categoria:'periodos', nota:'origen:Periodo' },
@@ -1833,6 +1834,16 @@ function formAdmin(t, recordId){
     if (spec.tipo === 'lista') return `<select id="${id}">${opciones(spec.opciones, v, 'Seleccione')}</select>`;
     if (spec.tipo === 'catalogo') return `<select id="${id}">${opciones(S.cat[spec.categoria].map(x=>x.nombre), v, 'Seleccione')}</select>`;
     if (spec.tipo === 'area') return `<textarea id="${id}">${esc(v)}</textarea>`;
+    if (spec.tipo === 'formato'){
+      const formatos = S.docs.filter(x => x.estado==='Vigente' && /formato|matriz/i.test(x.tipo));
+      const cod = fila['Código formato'] || '', nombre = fila['Nombre formato'] || '';
+      const esOtro = !cod;
+      return `<select id="${id}" onchange="document.getElementById('${id}_otro').parentElement.classList.toggle('oculto', this.value!=='__otro')">
+          ${opciones(formatos.map(x=>({v:x.codigo,t:`${x.codigo} · ${x.titulo}`})), esOtro?'__otro':cod, '')}
+          <option value="__otro"${esOtro?' selected':''}>Otro registro (nombre libre)</option>
+        </select>
+        <div class="${esOtro?'':'oculto'}" style="margin-top:6px"><input type="text" id="${id}_otro" value="${esOtro?esc(nombre):''}" placeholder="Nombre del registro"></div>`;
+    }
     if (spec.tipo === 'procesos'){
       const marcados = v.split(/[,;]/).map(x=>x.trim().toUpperCase()).filter(Boolean);
       const raices = S.cat.procesos.filter(p => (p.nivel||0) === 0);
@@ -1864,6 +1875,13 @@ async function guardarAdmin(t, recordId){
   const f = FICHAS[t], datos = {};
   Object.keys(f.campos).forEach((c,i) => {
     const el = $('adm_'+i);
+    if (!el) return;
+    if (f.campos[c].tipo === 'formato'){
+      const v = el.value, doc = S.docs.find(x => x.codigo === v);
+      datos['Código formato'] = doc ? doc.codigo : '';
+      datos['Nombre formato'] = doc ? doc.titulo : ($(('adm_'+i)+'_otro') ? $(('adm_'+i)+'_otro').value.trim() : '');
+      return;
+    }
     if (f.campos[c].tipo === 'procesos'){
       const m = [...el.querySelectorAll('input:checked')].map(x=>x.value);
       datos[c] = m.includes('Todos') ? 'Todos' : m.join(', ');
