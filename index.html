@@ -1297,6 +1297,10 @@ label .req{color:var(--falla)}
   function api(ruta, opciones = {}, reintento = false) {
     const cfg = Object.assign({ headers: {} }, opciones);
     const credEnviada = estado.credential;
+    if (!credEnviada || credEnviada === 'null' || credEnviada === 'undefined') {
+      console.warn('Portal: petición sin sesión descartada →', ruta);
+      return Promise.reject(new Error('La sesión todavía no está lista. Espere un momento y reintente.'));
+    }
     cfg.headers['Authorization'] = 'Bearer ' + credEnviada;
     if (cfg.body) cfg.headers['Content-Type'] = 'application/json';
     // Ninguna petición puede dejar la pantalla en «Cargando…» indefinidamente.
@@ -1485,6 +1489,7 @@ label .req{color:var(--falla)}
       hd: CFG.DOMINIO,
       auto_select: true,
       callback: (r) => {
+        if (!r || !r.credential) return;
         estado.credential = r.credential;
         estado.tokenDesde = Date.now();
         if (estado.alRenovar) estado.alRenovar(r.credential);
@@ -1497,9 +1502,12 @@ label .req{color:var(--falla)}
   };
 
   function alIngresar(respuesta) {
+    if (estado.ingresando) return;
+    estado.ingresando = true;
     estado.credential = respuesta.credential;
     $('ingresoError').textContent = '';
     api('/sesion')
+      .finally(() => { estado.ingresando = false; })
       .then(datos => {
         // El portal cambia el identificador de Google por su propia sesión de
         // ocho horas: ya no depende de renovaciones que Google limita.
