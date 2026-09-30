@@ -222,6 +222,9 @@ dl.meta dd{margin:0;word-break:break-word}
 .nota-campo{font-size:11.5px;color:var(--tinta-media);margin-top:4px;line-height:1.45;padding-left:9px;border-left:2px solid var(--linea)}
 .nota-campo.origen{border-left-color:var(--azul);background:var(--azul-suave);padding:6px 9px;border-radius:0 5px 5px 0}
 .nota-campo b{color:var(--tinta)}
+.convencion{margin-top:6px;padding:7px 9px;background:var(--fondo);border-radius:5px}
+.convencion>div{margin-top:2px}
+.convencion .mono{color:var(--brand-oscuro);font-weight:500}
 .nota-campo .ir{font-weight:600;white-space:nowrap}
 .req-previo{margin-bottom:3px}
 .lista-vacia{margin-top:6px;padding:6px 8px;border-radius:5px;background:var(--parcial-suave);color:#6d4f06;border:1px solid #efd9a0}
@@ -365,7 +368,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-30d';
+const BACKEND_ESPERADO = '2026-09-30e';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RID-SGOE, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -452,6 +455,15 @@ function guiaRapida(){
     ${paso(1,'Ábrelo desde la Lista maestra','<p>Los botones están al pie de la ficha.</p>')}
     ${paso(2,'«Solicitar modificación» o «Solicitar anulación»','<p>La modificación crea una versión nueva (mayor si cambia el contenido, menor si es de forma). La anulación deja el documento obsoleto.</p>')}
     ${paso(3,'Mientras tanto, nadie se queda sin documento','<p>La versión vigente sigue siendo la oficial hasta que se apruebe el cambio. Verás la etiqueta «En actualización».</p>')}
+
+    <h3>Cómo se numeran las evidencias</h3>
+    <p>La evidencia lleva <b>el número del propio documento</b>, no uno inventado por el repositorio. Convención sugerida:</p>
+    <ul><li><span class="mono">ACTA-003-2026</span> — acta de sesión N.° 3 del 2026</li>
+    <li><span class="mono">OFICIO-045-2026-FI</span> — oficio N.° 45 de la Facultad de Ingeniería</li>
+    <li><span class="mono">RD-123-2026</span> — Resolución de Decanato N.° 123</li>
+    <li><span class="mono">MEMO-012-2026-FI</span> — memorando N.° 12</li>
+    <li><span class="mono">INF-007-2026-FI</span> — informe N.° 7</li></ul>
+    <p>Tres dígitos para el correlativo y el año completo. Si el documento no tiene número propio (una lista de asistencia, un comunicado), el sistema asigna uno con la fecha del hecho: <span class="mono">REG-20260909-01</span>.</p>
 
     <h3>F. Quiero registrar una evidencia</h3>
     ${paso(1,'Registros y evidencias → «+ Registrar evidencia»','<p>Son las pruebas de que un formato se usó: actas, listas de asistencia, informes.</p>')}
@@ -1249,7 +1261,8 @@ async function vRegistros(force){
     ${S.perfil.puede.registrar?'<button class="btn" onclick="formRegistro()">+ Registrar evidencia</button>':''}</div>
   ${comoSeUsa('Cómo se registra una evidencia', [
     'Sube el archivo a Google Drive y <b>compártelo con el dominio urp.edu.pe</b> (como lector). Copia su enlace.',
-    'La <b>fecha de la evidencia</b> (el día del acta o de la actividad) es obligatoria: además de ordenar la lista, forma el número del registro (REG-20260909-01).',
+    'Escribe el <b>número propio del documento</b> con la convención de la Facultad: <span class="mono">ACTA-003-2026</span>, <span class="mono">OFICIO-045-2026-FI</span>, <span class="mono">RD-123-2026</span>, <span class="mono">MEMO-012-2026-FI</span>, <span class="mono">INF-007-2026-FI</span>. Si no tiene número, déjalo vacío y el sistema le asigna uno con la fecha.',
+    'La <b>fecha de la evidencia</b> (el día del acta o de la actividad) es obligatoria: es la que ordena la lista.',
     'Pulsa <b>+ Registrar evidencia</b>, elige la <b>categoría</b> (acta, sustentación, plan de trabajo…), el <b>formato</b>, el <b>programa</b> y el <b>periodo</b>.',
     'Describe qué contiene, pega el enlace e indica cuántos años debe conservarse. El sistema calcula la fecha límite.',
     'Si te equivocaste, usa <b>Editar</b> en la fila: puedes corregir tus propias evidencias (control documental puede corregir todas).'
@@ -1430,6 +1443,8 @@ function formRegistro(modelo){
       ${notaF('Nombre claro de lo que se está registrando.')}</div>
     ${campoF('Programa', `<select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),modelo.programa||'','Seleccione')}</select>`, origenLista('Programa'), {req:true})}
     ${campoF('Periodo', `<select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),modelo.periodo||'','Seleccione')}</select>`, origenLista('Periodo'), {req:true})}
+    ${campoF('Número del documento', `<input type="text" id="gNumero" class="mono" placeholder="Ej. ACTA-003-2026 · OFICIO-045-2026-FI · RD-123-2026">`,
+      notaF('<b>El número que ya trae el documento</b>, tal como figura en él: si el acta dice «Acta N.° 3 de 2026», escribe <span class="mono">ACTA-003-2026</span>. Así el repositorio y el papel se llaman igual, sin dos numeraciones para lo mismo.<br>Si el documento <b>no tiene número propio</b> (una lista de asistencia, un comunicado), déjalo vacío: el sistema le asignará uno con la fecha.' + `<div class="convencion"><b>Convención sugerida</b><div><span class="mono">ACTA-003-2026</span> acta de sesión N.° 3 del 2026</div><div><span class="mono">OFICIO-045-2026-FI</span> oficio N.° 45 de la Facultad</div><div><span class="mono">RD-123-2026</span> Resolución de Decanato N.° 123</div><div><span class="mono">MEMO-012-2026-FI</span> memorando N.° 12</div><div><span class="mono">INF-007-2026-FI</span> informe N.° 7</div><div class="sub">Tres dígitos para el correlativo y el año completo: así se ordenan bien y se leen igual que en el papel.</div></div>`), {completo:true})}
     ${campoF('Fecha de la evidencia', `<input type="date" id="gFecha" max="${S.hoy}">`,
       notaF('<b>La fecha del hecho</b>, no la de hoy: el día del acta, de la sustentación o de la capacitación. Es la que ordena la lista, así que un acta del 9 de setiembre registrada hoy igual aparece antes que la del 16.') +
       (fechaEvidenciaLista() ? '' : notaF('⚠ Todavía no se puede guardar: falta crear la columna <b>«Fecha de la evidencia»</b> en la tabla RIID Registros de QuintaDB.')),
@@ -1451,6 +1466,7 @@ async function guardarRegistro(){
   const cod = $('gFormato').value, doc = S.docs.find(d=>d.codigo===cod);
   const cuerpo = { codigoFormato: doc?cod:'', formato: doc?doc.titulo:(cod==='__otro'?$('gOtro').value.trim():''), proceso: doc?doc.proceso:'',
     categoria: $('gCategoria')?$('gCategoria').value:'', fechaEvidencia: $('gFecha')?$('gFecha').value:'',
+    numero: $('gNumero')?$('gNumero').value.trim():'',
     programa:$('gPrograma').value, periodo:$('gPeriodo').value, descripcion:$('gDesc').value.trim(), enlace:$('gEnlace').value.trim(),
     retencion:$('gRet').value, disposicion:$('gDisp').value };
   if (fechaEvidenciaLista() && !cuerpo.fechaEvidencia) return aviso('Indica la fecha de la evidencia (el día del acta o de la actividad)', true);
@@ -1538,7 +1554,7 @@ const DICC = {
     'Fecha de cierre':'Cuándo terminó el trámite (aprobado, rechazado o desistido).'
   },
   registros: {
-    'ID registro':'Número de la evidencia. Se arma con la fecha del hecho: REG-20260909-01 es la primera evidencia del 9 de setiembre de 2026.',
+    'ID registro':'Número de la evidencia. Es el número propio del documento (ACTA-003-2026); si no tenía, el sistema asigna uno con la fecha del hecho.',
     'Categoría':'Tipo de evidencia: acta, exposición o sustentación, plan de trabajo, informe… Sirve para filtrar y agrupar.',
     'Fecha de la evidencia':'Fecha del hecho que se evidencia (AAAA-MM-DD). Puede ser muy anterior a la fecha de registro.',
     'Código formato':'Código del formato de la lista maestra al que responde la evidencia. Vacío si es «otro registro».',
@@ -1661,7 +1677,7 @@ const FICHAS = {
     soloVer:['Registrado por','Fecha de registro'],
     nombreFila:'registro',
     campos:{
-      'ID registro':{ tipo:'texto', req:true, nota:'Número de la evidencia. Desde ahora se arma con la <b>fecha del hecho</b>: REG-20260909-01 es la primera evidencia del 9 de setiembre de 2026. Solo se corrige para alinear las evidencias cargadas antes de este cambio; no puede repetirse.' },
+      'ID registro':{ tipo:'texto', req:true, nota:'<b>El número propio del documento</b>, tal como figura en él. Si no tenía número, aquí aparece el que asignó el sistema con la fecha; reemplázalo por el real cuando lo tengas. No puede repetirse.' + `<div class="convencion"><b>Convención sugerida</b><div><span class="mono">ACTA-003-2026</span> acta de sesión N.° 3 del 2026</div><div><span class="mono">OFICIO-045-2026-FI</span> oficio N.° 45 de la Facultad</div><div><span class="mono">RD-123-2026</span> Resolución de Decanato N.° 123</div><div><span class="mono">MEMO-012-2026-FI</span> memorando N.° 12</div><div><span class="mono">INF-007-2026-FI</span> informe N.° 7</div><div class="sub">Tres dígitos para el correlativo y el año completo: así se ordenan bien y se leen igual que en el papel.</div></div>` },
       'Formato asociado':{ tipo:'formato', nota:'origen:Formato' },
       'Categoría':{ tipo:'catalogo', categoria:'categoriasRegistro', nota:'origen:Categoría de registro' },
       'Fecha de la evidencia':{ tipo:'fecha', req:true, nota:'La fecha del hecho (el día del acta, la sustentación o la capacitación), no la del registro. Ordena la lista. Es obligatoria.' },
