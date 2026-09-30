@@ -1269,7 +1269,7 @@ label .req{color:var(--falla)}
   // 'rechazada' (el servidor dice que la sesión ya no vale) o 'transitorio'
   // (no se pudo confirmar: red, tiempo, Apps Script saturado). Solo 'rechazada'
   // justifica sacar al usuario.
-  const TIEMPO_LIMITE_MS = 60000;
+  const TIEMPO_LIMITE_MS = 150000;
   let renovacionEnCurso = null;
   function renovarUnaVez() {
     if (renovacionEnCurso) return renovacionEnCurso;
@@ -4105,8 +4105,10 @@ label .req{color:var(--falla)}
     delegados: {
       guardar: 'Guardar delegados',
       bloques: [
+        { tipo:'grid', campos:[
+          { k:'revisor', etq:'Revisor del área', tipo:'texto', req:true, auto:'nombre', soloVista:true }
+        ]},
         { tipo:'grid', titulo:'Delegado', campos:[
-          { k:'revisor', etq:'Revisor del área', tipo:'texto', req:true, auto:'nombre', soloVista:true },
           { k:'codigoDelegado', etq:'Código', col:'Codigo del delegado', tipo:'texto', req:true },
           { k:'delegado', etq:'Apellidos y nombres', col:'Delegado (apellidos y nombres)', tipo:'texto', req:true },
           { k:'correoDelegado', etq:'Correo', col:'Correo del delegado', tipo:'correo', req:true },
@@ -4121,7 +4123,11 @@ label .req{color:var(--falla)}
           { k:'fijoSubdelegado', etq:'Teléfono fijo', col:'Telefono fijo del subdelegado', tipo:'texto' }
         ]},
         { tipo:'grid', ancho:true, campos:[
-          { k:'estado', etq:'Estado', tipo:'select', opciones:['Vigente','Reemplazado'], req:true },
+          { k:'estado', etq:'¿Cómo llegaron al cargo estos delegados?', tipo:'select', req:true, full:true,
+            opciones:[ { v:'Vigente',     t:'Elegidos por el aula al inicio del ciclo' },
+                       { v:'Reemplazado', t:'Asumieron después, en reemplazo de otros delegados' } ],
+            nota:'Arriba van siempre los delegados que están hoy en el cargo. Si asumieron en ' +
+                 'reemplazo de otros, anote en Observaciones a quiénes reemplazan y desde qué fecha.' },
           { k:'observaciones', etq:'Observaciones', tipo:'textarea' }
         ]}
       ]
@@ -4224,7 +4230,9 @@ label .req{color:var(--falla)}
     let control;
     if (c.tipo === 'select') {
       control = '<select id="' + id + '"><option value="">Seleccione</option>' +
-        c.opciones.map(o => '<option>' + esc(o) + '</option>').join('') + '</select>';
+        c.opciones.map(o => typeof o === 'object'
+          ? '<option value="' + esc(o.v) + '">' + esc(o.t) + '</option>'
+          : '<option>' + esc(o) + '</option>').join('') + '</select>';
     } else if (c.tipo === 'textarea') {
       control = '<textarea id="' + id + '"' +
         (c.ayuda ? ' placeholder="' + esc(c.ayuda) + '"' : '') + '></textarea>';
@@ -4246,8 +4254,9 @@ label .req{color:var(--falla)}
         '</div>';
     }
 
-    const ancho = (c.tipo === 'textarea') ? ' class="full"' : '';
-    return '<div' + ancho + '><label for="' + id + '">' + esc(c.etq) + req + '</label>' + control + '</div>';
+    const ancho = (c.tipo === 'textarea' || c.full) ? ' class="full"' : '';
+    const nota = c.nota ? '<p class="ayuda" style="margin:6px 0 0">' + esc(c.nota) + '</p>' : '';
+    return '<div' + ancho + '><label for="' + id + '">' + esc(c.etq) + req + '</label>' + control + nota + '</div>';
   }
 
   /* --------------------------------------------------- las evidencias ----
@@ -4527,7 +4536,8 @@ label .req{color:var(--falla)}
         (b.campos || []).forEach(c => {
           if (c.auto || c.soloVista) return;
           lista.push({ clave: 'campo:' + c.k, etiqueta: c.etq, tipo: c.tipo,
-                       opciones: c.opciones || null });
+                       opciones: c.opciones
+                         ? c.opciones.map(o => typeof o === 'object' ? o.v : o) : null });
         });
       }
       if (b.tipo === 'escala') {
@@ -5143,9 +5153,23 @@ label .req{color:var(--falla)}
             '<details><summary>Ver la sumilla de ' + esc(x.programa) + '</summary><p>' +
             esc(textoPlano(x.sumilla)) + '</p></details>').join('') + '</div>');
       })
-      .catch(() => {
+      .catch(e => {
+        // Un fallo de la consulta NO es un curso ausente del catálogo: se dice
+        // lo que pasó y se ofrece reintentar, en lugar del mensaje de «falta».
+        console.error('Portal: no se pudieron traer las referencias del sílabo →', e.message);
         document.querySelectorAll('.referencia-item').forEach(x => x.remove());
-        pintarReferencias(null);
+        const filas = [...$('fichaForm').querySelectorAll('#listaItems .item')];
+        if (!filas[0]) return;
+        const caja = document.createElement('div');
+        caja.className = 'referencia-item sin-referencia';
+        caja.innerHTML = '<b>No se pudieron consultar las referencias oficiales</b>' +
+          '<p>El servidor no respondió a tiempo. La revisión se puede registrar igual; ' +
+          'las referencias solo sirven de apoyo.</p>' +
+          '<button class="btn" type="button" style="margin-top:8px">Reintentar</button>';
+        caja.querySelector('button').addEventListener('click', () => {
+          caja.remove(); mostrarReferenciasSilabo();
+        });
+        filas[0].appendChild(caja);
       });
   }
 
@@ -5374,10 +5398,23 @@ label .req{color:var(--falla)}
       '&curso=' + encodeURIComponent(nombreCurso(a.asignatura || '')) +
       '&grupo=' + encodeURIComponent(a.grupo || '') +
       '&subGrupo=' + encodeURIComponent(a.subGrupo === undefined ? '' : a.subGrupo) +
-      '&docente=' + encodeURIComponent(a.docente || '')).catch(e => ({ error: e.message }));
+      '&docente=' + encodeURIComponent(a.docente || ''));
 
+    // Uno tras otro y con un reintento: pedir los cuatro a la vez satura Apps
+    // Script, que rechaza parte de las llamadas con una página de error.
+    const pedirSeguro = async (fmt) => {
+      for (let intento = 1; intento <= 2; intento++) {
+        try { return await pedir(fmt); }
+        catch (e) {
+          console.error('Portal: ' + fmt + ' falló (intento ' + intento + ') →', e.message);
+          if (intento === 2) return { error: 'el servidor no respondió; vuelva a abrir el formato para reintentar' };
+          await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+    };
     const formatos = ['F1', 'F2', 'F3', 'F4'];
-    const res = await Promise.all(formatos.map(pedir));
+    const res = [];
+    for (const fmt of formatos) res.push(await pedirSeguro(fmt));
 
     const lineas = [];
     let puestos = 0;
@@ -5737,6 +5774,12 @@ label .req{color:var(--falla)}
         const n = b.contar.desde.filter(k => $('f_' + k) && $('f_' + k).value === b.contar.valor).length;
         if (M.campos[b.contar.campo]) valores[M.campos[b.contar.campo]] = n;
       }
+    }
+
+    if (clave === 'delegados' && $('f_estado') && $('f_estado').value === 'Reemplazado' &&
+        $('f_observaciones') && !$('f_observaciones').value.trim()) {
+      $('f_observaciones').focus();
+      return aviso('Anote en Observaciones a quiénes reemplazan estos delegados y desde qué fecha.', 'error');
     }
 
     // Escala de criterios o ítems
