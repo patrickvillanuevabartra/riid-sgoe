@@ -1366,6 +1366,7 @@ label .req{color:var(--falla)}
     if (renovando || !estado.credential) return;
     if (String(estado.credential).indexOf('pca.') !== 0) return;
     renovando = true;
+    estado.ultimaRenovacion = Date.now();
     renovarUnaVez().then(() => { renovando = false; });
   }
 
@@ -1553,9 +1554,16 @@ label .req{color:var(--falla)}
         if (!estado.temporizador) {
           estado.temporizador = setInterval(renovarSesion, 30 * 60 * 1000);
         }
-        document.addEventListener('visibilitychange', () => {
-          if (!document.hidden) renovarSesion();
-        });
+        // Al volver a la pestaña se renueva, pero como mucho cada 15 minutos:
+        // renovar en cada cambio de ventana llenaba el servidor de pedidos.
+        if (!estado.escuchaVisible) {
+          estado.escuchaVisible = true;
+          document.addEventListener('visibilitychange', () => {
+            if (document.hidden) return;
+            if (Date.now() - (estado.ultimaRenovacion || 0) < 15 * 60 * 1000) return;
+            renovarSesion();
+          });
+        }
         $('usuarioCaja').classList.remove('oculto');
         $('btnSalir').classList.remove('oculto');
         prepararCiclos();
