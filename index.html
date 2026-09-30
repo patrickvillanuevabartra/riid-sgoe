@@ -4141,6 +4141,7 @@ label .req{color:var(--falla)}
     estado.vueltaA = (a.programa || '') + '¦' + (a.codigo || '') + '¦' + (a.asignatura || '');
     estado.soloLectura = !!a.soloConsulta;
     estado.registro = null;
+    estado.reiniciando = false;
 
     mostrar('ficha');
     $('fichaModulo').textContent = M.nombre;
@@ -4148,8 +4149,14 @@ label .req{color:var(--falla)}
     // Si la fila del tablero agrupaba varias cargas del mismo docente, se dice
     // aqui cuales, para que la ficha no parezca cubrir solo una.
     const varias = (partes || '').indexOf(',') > -1;
+    const NOMBRE_TIPO = { Teo: 'teoría', Tal: 'taller', 'Prá': 'práctica', Pra: 'práctica', Lab: 'laboratorio' };
+    const piezas = [...new Set((partes || '').split(',').map(x => x.trim()).filter(Boolean)
+      .map(x => NOMBRE_TIPO[x.split(':')[0]] || x.split(':')[0] || 'otra parte'))];
+    const enLista = (xs) => xs.length > 1 ? xs.slice(0, -1).join(', ') + ' y ' + xs[xs.length - 1] : (xs[0] || '');
     $('fichaAlcance').textContent = varias
-      ? 'Este registro cubre las cargas: ' + partes.replace(/:/g, ' subgrupo ') + '.'
+      ? 'El grupo ' + (a.grupo || '') + ' tiene ' + enLista(piezas) + ' con el mismo docente. ' +
+        'Se supervisan juntos: este registro corresponde a ' +
+        (piezas.length === 2 ? 'ambos' : 'todos') + '.'
       : '';
     $('fichaAlcance').classList.toggle('oculto', !varias);
     $('btnGuardar').textContent = F.guardar;
@@ -4164,9 +4171,10 @@ label .req{color:var(--falla)}
       (a.area ? '<span>Área <b class="marca-area">' + esc(a.area) + '</b></span>' : '') +
       dato('Código', a.codigo) +
       dato('Grupo', a.grupo) +
-      dato('Subgrupo', a.subGrupo) +
-      dato('Tipo', a.tipo) +
-      (horasDe(a.horas).total ? dato('Horas', horasDe(a.horas).total + ' (' + horasDe(a.horas).detalle + ')') : '') +
+      (varias ? metaConjunta(a, partes) :
+        dato('Subgrupo', a.subGrupo) +
+        dato('Tipo', a.tipo) +
+        (horasDe(a.horas).total ? dato('Horas', horasDe(a.horas).total + ' (' + horasDe(a.horas).detalle + ')') : '')) +
       dato('Semestre', a.semestre) +
       dato('Plan de estudio', a.planEstudio) +
       dato('Ciclo', a.ciclo);
@@ -4191,6 +4199,23 @@ label .req{color:var(--falla)}
     pintarFormulario(M, F);
     aplicarSoloLectura(a);
     cargarRegistro(a, clave);
+  }
+
+  // Cuando un registro abarca varias cargas del mismo docente en un grupo, la
+  // cabecera muestra el conjunto (tipos, subgrupos y horas sumadas), no solo
+  // la primera carga: si no, contradice el aviso de alcance.
+  function metaConjunta(a, partes) {
+    const dato = (etq, v) => v ? '<span>' + etq + ' <b>' + esc(v) + '</b></span>' : '';
+    const pares = partes.split(',').map(x => x.trim().split(':'));
+    const del = estado.asignaciones.filter(x =>
+      x.codigo === a.codigo && x.grupo === a.grupo && x.docente === a.docente &&
+      x.ciclo === a.ciclo && pares.some(([t, sg]) => x.tipo === t && String(x.subGrupo) === String(sg)));
+    const h = { teoria: 0, practica: 0, laboratorio: 0, taller: 0 };
+    del.forEach(x => Object.keys(h).forEach(k => { h[k] += parseInt((x.horas || {})[k], 10) || 0; }));
+    const hh = horasDe(h);
+    return dato('Tipos', pares.map(p => p[0]).join(' + ')) +
+           dato('Subgrupos', [...new Set(pares.map(p => p[1]))].join(' y ')) +
+           (hh.total ? dato('Horas', hh.total + ' (' + hh.detalle + ')') : '');
   }
 
   function campoHTML(c, idx) {
@@ -5784,7 +5809,12 @@ label .req{color:var(--falla)}
         // El avance se actualiza aquí: volver a consultarlo al servidor por un
         // registro obligaría a releer las siete tablas de módulos.
         const hechos = estado.avance[a.idAsignacion] || [];
-        if (!hechos.includes(clave)) estado.avance[a.idAsignacion] = hechos.concat(clave);
+        if (estado.reiniciando) {
+          // Una revisión reiniciada vuelve a quedar pendiente, sin semáforo.
+          estado.avance[a.idAsignacion] = hechos.filter(m => m !== clave);
+          if (estado.nivel && estado.nivel[a.idAsignacion]) delete estado.nivel[a.idAsignacion][clave];
+          estado.reiniciando = false;
+        } else if (!hechos.includes(clave)) estado.avance[a.idAsignacion] = hechos.concat(clave);
         estado.indicadores = null;
         // El resultado del formato recién guardado se pide por detrás, para que
         // su botón en Mis cursos muestre el porcentaje o el estado al volver.
