@@ -368,7 +368,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-30f';
+const BACKEND_ESPERADO = '2026-09-30g';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RID-SGOE, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -1665,11 +1665,12 @@ const FICHAS = {
   },
   documentos: {
     titulo:'Documentos — correcciones',
-    finalidad:'Sirve para corregir <b>datos administrativos</b> de un documento sin crear una versión nueva: un enlace roto, el cambio de responsable, una resolución mal escrita, un título mal tipeado. <br><b>No lo uses si cambia el contenido</b> del documento: para eso está «Solicitar modificación», que pasa por revisión y aprobación. El tipo, el proceso y la versión no se corrigen aquí, porque forman el código del documento. Cada corrección queda en la bitácora con el valor anterior y el nuevo.',
+    finalidad:'Sirve para corregir <b>datos administrativos</b> de un documento sin crear una versión nueva: el código oficial, un enlace roto, el cambio de responsable, una resolución mal escrita, un título mal tipeado. <br><b>No lo uses si cambia el contenido</b> del documento: para eso está «Solicitar modificación», que pasa por revisión y aprobación. El tipo, el proceso y la versión no se corrigen aquí, porque forman el código del documento. Cada corrección queda en la bitácora con el valor anterior y el nuevo.',
     mostrar:['Código','Título','Versión vigente','Estado','Responsable','Próxima revisión'],
-    soloVer:['Código','Tipo','Proceso','Versión vigente','Estado','Fecha de aprobación'],
+    soloVer:['Tipo','Proceso','Versión vigente','Estado','Fecha de aprobación'],
     nombreFila:'documento',
     campos:{
+      'Código':{ tipo:'texto', req:true, nota:'<b>El código oficial del documento</b>, tal como figura en él: <span class="mono">FI-GCA-DG-001</span>, <span class="mono">FI-GCA-PL-001</span>. Si el documento ya tiene código propio, escríbelo aquí y reemplaza al que generó el sistema, para no tener dos códigos para lo mismo.<br><b>Al cambiarlo, el sistema arrastra el cambio</b> a sus versiones, solicitudes, observaciones y evidencias asociadas, para que el historial no quede huérfano. No puede repetir el de otro documento.' },
       'Título':{ tipo:'texto', req:true, nota:'<b>Corrige la redacción del título</b>: un error de tipeo, una mayúscula, el nombre oficial mal copiado en la carga inicial. <b>No crea versión nueva</b>, así que no lo uses si el documento cambió de contenido o de alcance: para eso está «Solicitar modificación», que deja constancia de quién revisó y aprobó el cambio. No puede repetir el título de otro documento vigente.' },
       'Programa':{ tipo:'catalogo', categoria:'programas', nota:'origen:Programa' },
       'Unidad responsable':{ tipo:'texto' },
@@ -2008,6 +2009,7 @@ async function guardarAdmin(t, recordId){
   try{
     const r = await api('/admin-guardar', { tabla:t, recordId, datos });
     if (r.aviso) aviso(r.aviso, true);
+    else if (r.arrastre) aviso(`Guardado. El código nuevo se aplicó también a ${r.arrastre.total} fila(s) vinculada(s): ${r.arrastre.detalle.join(', ')}`);
     else aviso(r.sinCambios ? 'No había cambios que guardar' : 'Guardado');
     cerrarModal();
     // El servidor devuelve la fila ya actualizada: la pantalla se refresca con
@@ -2016,7 +2018,7 @@ async function guardarAdmin(t, recordId){
       if (S.adm[t]) S.adm[t].filas = S.adm[t].filas.map(x => x.recordId === recordId ? r.fila : x);
       if (t === 'documentos' && S.docs){
         S.docs = S.docs.map(x => x.recordId === recordId ? Object.assign({}, x, {
-          titulo:r.fila['Título'], programa:r.fila['Programa'], unidad:r.fila['Unidad responsable'], responsable:r.fila['Responsable'],
+          codigo:r.fila['Código'], titulo:r.fila['Título'], programa:r.fila['Programa'], unidad:r.fila['Unidad responsable'], responsable:r.fila['Responsable'],
           correoResponsable:r.fila['Correo responsable'], objetivo:r.fila['Objetivo y alcance'],
           clausulas:r.fila['Cláusulas ISO 21001'], distribucion:r.fila['Distribución'],
           frecuencia:r.fila['Frecuencia de revisión (meses)'], proximaRevision:r.fila['Próxima revisión'],
@@ -2039,7 +2041,7 @@ async function guardarAdmin(t, recordId){
     }
     if (['catalogos','usuarios'].includes(t) || !r.fila) await recargar();
     if (S.vista === 'admin') vAdmin();
-    else if (t === 'documentos') { S.adm.documentos = null; if (S.ficha) abrirDocumento(S.ficha.documento.codigo); else mostrar('maestra'); }
+    else if (t === 'documentos') { S.adm.documentos = null; if (S.ficha && r.fila) abrirDocumento(r.fila['Código']); else mostrar('maestra'); }
     else if (t === 'registros') vRegistros();
     else if (t === 'documentos' && S.ficha) abrirDocumento(S.ficha.documento.codigo);
     else mostrar(S.vista);
