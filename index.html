@@ -1672,7 +1672,7 @@ const FICHAS = {
   },
   registros: {
     titulo:'Registros — correcciones',
-    finalidad:'Corrige datos de una evidencia ya cargada: el formato o nombre del registro, la categoría, un enlace equivocado, el periodo o la retención. El número de registro, el formato y quién lo registró no cambian. <b>Cada quien puede corregir las evidencias que registró</b>; control documental puede corregir todas. Cada corrección queda en la bitácora.',
+    finalidad:'Corrige datos de una evidencia ya cargada: su número, el formato o nombre del registro, la categoría, la fecha, un enlace equivocado, el periodo o la retención. Quién la registró y cuándo no cambian. <b>Cada quien puede corregir las evidencias que registró</b>; control documental puede corregir todas. Cada corrección queda en la bitácora.',
     mostrar:['ID registro','Nombre formato','Categoría','Fecha de la evidencia','Programa','Periodo','Conservar hasta','Registrado por'],
     soloVer:['Registrado por','Fecha de registro'],
     nombreFila:'registro',
@@ -1996,6 +1996,7 @@ async function guardarAdmin(t, recordId){
       if (S.adm[t]) S.adm[t].filas = S.adm[t].filas.map(x => x.recordId === recordId ? r.fila : x);
       if (t === 'registros' && S.registros){
         S.registros = S.registros.map(x => x.recordId === recordId ? Object.assign({}, x, {
+          id:r.fila['ID registro'],   // faltaba: por eso la lista seguía mostrando el número anterior
           codigoFormato:r.fila['Código formato'], formato:r.fila['Nombre formato'], categoria:r.fila['Categoría'],
           programa:r.fila['Programa'], periodo:r.fila['Periodo'], descripcion:r.fila['Descripción'],
           fechaEvidencia:r.fila['Fecha de la evidencia'],
