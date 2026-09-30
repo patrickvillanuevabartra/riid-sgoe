@@ -2008,6 +2008,15 @@ async function guardarAdmin(t, recordId){
   });
   try{
     const r = await api('/admin-guardar', { tabla:t, recordId, datos });
+    // Si el servidor devuelve la fila con valores distintos a los enviados, es
+    // que ignoró esos campos (casi siempre, por estar en una versión anterior).
+    const ignorados = r.fila ? Object.keys(datos).filter(k => r.fila[k] !== undefined &&
+      String(r.fila[k]).trim() !== String(datos[k]).trim()) : [];
+    if (ignorados.length){
+      aviso(`El servidor no guardó: ${ignorados.join(', ')}. Publica en Apps Script la versión más reciente del Codigo.gs (Implementar → Administrar implementaciones → Nueva versión).`, true);
+      mostrarAvisoVersion(S.backend || '');
+      return;
+    }
     if (r.aviso) aviso(r.aviso, true);
     else if (r.arrastre) aviso(`Guardado. El código nuevo se aplicó también a ${r.arrastre.total} fila(s) vinculada(s): ${r.arrastre.detalle.join(', ')}`);
     else aviso(r.sinCambios ? 'No había cambios que guardar' : 'Guardado');
