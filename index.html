@@ -230,6 +230,10 @@ dl.meta dd{margin:0;word-break:break-word}
 /* puesta en marcha */
 .plegable{background:var(--papel);border:1px solid var(--linea);border-radius:10px;margin-bottom:14px}
 .plegable>summary{cursor:pointer;padding:11px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;list-style:none}
+.plegable.grupo-reg>summary{font-size:15px;background:var(--brand-suave);color:var(--brand-oscuro);border-radius:9px 9px 0 0}
+.vistas{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;font-size:12.5px;color:var(--tinta-media)}
+.vistas button{border:1px solid var(--linea);background:var(--papel);border-radius:14px;padding:4px 12px;font-size:12.5px;color:var(--tinta-media)}
+.vistas button.activa{background:var(--brand);border-color:var(--brand);color:#fff}
 .plegable>summary::-webkit-details-marker{display:none}
 .plegable>summary::before{content:'▸';color:var(--brand);font-size:12px}
 .plegable[open]>summary::before{content:'▾'}
@@ -1263,16 +1267,19 @@ async function vRegistros(force){
     <label class="filtro-fecha">hasta <input type="date" id="rHasta" value="${esc(FR.hasta)}"></label>
     <select id="rQuien">${opciones(quienes,FR.quien,'Registradas por cualquiera')}</select>
     <select id="rRetencion">${opciones(['Retención vigente','Vence en 12 meses','Retención vencida'],FR.retencion,'Cualquier estado de retención')}</select>
-    <select id="rAgrupar">${opciones(['Categoría','Formato','Programa','Periodo','Estado de retención'],FR.agrupar,'Sin agrupar')}</select>
     <select id="rOrden" title="Orden de la lista">${opciones(['Fecha de la evidencia (antiguas primero)','Fecha de registro (recientes primero)','Número de registro','Formato A-Z'],FR.orden,'Fecha de la evidencia (recientes primero)')}</select>
     <button class="btn n sm" onclick="limpiarFiltrosRegistros()">Limpiar filtros</button>
     <span class="espacio"></span>
     <button class="btn n sm" onclick="exportarRegistros()">Exportar CSV</button>
   </div>
+  <div class="vistas">Ver:
+    ${[['','Lista simple'],['Categoría','Por categoría'],['Formato','Por formato'],['Periodo','Por periodo'],['Programa','Por programa']]
+      .map(([v,t])=>`<button class="${FR.agrupar===v?'activa':''}" onclick="FR.agrupar='${v}';vRegistros()">${t}</button>`).join('')}
+  </div>
   <div id="regCuerpo"></div>`;
   $('rQ').oninput = e => { FR.q=e.target.value; const pos=e.target.selectionStart; pintarRegistros(); $('rQ').focus(); $('rQ').setSelectionRange(pos,pos); };
   [['rCategoria','categoria'],['rFormato','formato'],['rPrograma','programa'],['rPeriodo','periodo'],
-   ['rDesde','desde'],['rHasta','hasta'],['rQuien','quien'],['rRetencion','retencion'],['rAgrupar','agrupar'],['rOrden','orden']]
+   ['rDesde','desde'],['rHasta','hasta'],['rQuien','quien'],['rRetencion','retencion'],['rOrden','orden']]
     .forEach(([i,k]) => $(i).onchange = e => { FR[k]=e.target.value; pintarRegistros(); });
   pintarRegistros();
 }
@@ -1322,10 +1329,12 @@ const registrosOrdenados = () => ordenarRegistros(registrosFiltrados());
 function filaRegistro(r){
   const vencido = r.conservarHasta && r.conservarHasta < S.hoy;
   const puedeEditar = S.perfil.control || (r.correo && r.correo.toLowerCase() === S.perfil.correo);
+  const g = FR.agrupar;   // lo que ya dice el título del grupo no se repite en cada fila
   return `<tr><td class="cod">${esc(r.id)}</td>
-    <td><div>${esc(r.formato)}</div><div class="sub mono">${esc(r.codigoFormato)}</div>${r.categoria?`<div class="sub"><span class="eti e-neutra">${esc(r.categoria)}</span></div>`:''}</td>
+    <td>${g==='Formato'?'<span class="sub">—</span>':`<div>${esc(r.formato)}</div><div class="sub mono">${esc(r.codigoFormato)}</div>`}
+      ${r.categoria && g!=='Categoría'?`<div class="sub"><span class="eti e-neutra">${esc(r.categoria)}</span></div>`:''}</td>
     <td>${r.fechaEvidencia?`<span class="mono">${fechaCorta(r.fechaEvidencia)}</span>`:'<span class="sub">— sin fecha —</span>'}</td>
-    <td>${esc(r.programa)}<div class="sub">${esc(r.periodo)}</div></td><td style="max-width:340px">${esc(r.descripcion)}</td>
+    <td>${g==='Programa'?'':esc(r.programa)}${g==='Periodo'?'':`<div class="sub">${esc(r.periodo)}</div>`}${g==='Programa'&&g==='Periodo'?'<span class="sub">—</span>':''}</td><td style="max-width:340px">${esc(r.descripcion)}</td>
     <td>${vencido?`<span class="eti e-vencida">${fechaCorta(r.conservarHasta)}</span>`:`<span class="mono sub">${fechaCorta(r.conservarHasta)}</span>`}<div class="sub">${esc(r.disposicion)}</div></td>
     <td class="sub">${esc(r.registradoPor)}<br>${fechaCorta(r.fecha)}</td>
     <td style="white-space:nowrap"><a class="btn g sm" href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir</a>
@@ -1333,7 +1342,12 @@ function filaRegistro(r){
       ${S.perfil.puede.registrar?` <button class="btn n sm" title="Registrar otra evidencia igual, cambiando fecha y enlace" onclick="duplicarRegistro('${esc(r.recordId)}')">Duplicar</button>`:''}</td></tr>`;
 }
 
-const TABLA_REG = filas => `<div class="tabla-envoltura"><table><thead><tr><th>Registro</th><th>Formato</th><th>Fecha evidencia</th><th>Programa · periodo</th><th>Descripción</th><th>Conservar hasta</th><th>Registró</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
+const TABLA_REG = filas => {
+  const g = FR.agrupar;
+  const colFormato = g==='Formato' ? '' : 'Formato';
+  const colPrograma = g==='Programa' ? 'Periodo' : (g==='Periodo' ? 'Programa' : 'Programa · periodo');
+  return `<div class="tabla-envoltura"><table><thead><tr><th>Registro</th><th>${colFormato}</th><th>Fecha evidencia</th><th>${colPrograma}</th><th>Descripción</th><th>Conservar hasta</th><th>Registró</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
+};
 
 function pintarRegistros(){
   const lista = registrosOrdenados();
@@ -1352,8 +1366,8 @@ function pintarRegistros(){
   const grupos = {};
   lista.forEach(r => { const k = clave(r); (grupos[k] = grupos[k] || []).push(r); });
   const orden = Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
-  $('regCuerpo').innerHTML = orden.map(g => `<details class="plegable" open><summary>${esc(g)}
-      <span class="eti e-neutra">${grupos[g].length}</span></summary>
+  $('regCuerpo').innerHTML = orden.map(g => `<details class="plegable grupo-reg" open><summary>${esc(g)}
+      <span class="eti e-neutra">${grupos[g].length} evidencia(s)</span></summary>
       <div class="plegable-cuerpo">${TABLA_REG(grupos[g].map(filaRegistro).join(''))}</div></details>`).join('') +
     `<div class="sub" style="margin-top:8px">${lista.length} de ${S.registros.length} evidencias en ${orden.length} grupo(s), agrupadas por ${esc(FR.agrupar.toLowerCase())} y ordenadas dentro de cada grupo por ${esc(FR.orden||'fecha de la evidencia (recientes primero)').toLowerCase()}</div>`;
 }
