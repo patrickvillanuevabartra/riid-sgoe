@@ -361,7 +361,7 @@ dl.meta dd{margin:0;word-break:break-word}
 const CFG = window.RIID_CONFIG;
 /* Versión mínima del Apps Script (Codigo.gs) que necesita esta página.
    Si el publicado es más antiguo, se avisa al administrador cómo actualizarlo. */
-const BACKEND_ESPERADO = '2026-09-30';
+const BACKEND_ESPERADO = '2026-09-30b';
 const PASOS_PUBLICAR = 'En script.google.com abre el proyecto del RID-SGOE, pega el Codigo.gs nuevo, guarda y ve a <b>Implementar → Administrar implementaciones → ✏️ (lápiz) → Versión: «Nueva versión» → Implementar</b>. La URL no cambia, así que no hay que tocar el Worker. Guardar el código no basta: Google sigue ejecutando la versión implementada hasta que publicas una nueva.';
 const CLAUSULAS = ['4 Contexto','5 Liderazgo','6 Planificación','7 Apoyo','7.5 Información documentada','8 Operación','9 Evaluación del desempeño','10 Mejora'];
 const TIPOS_OBS = ['Observación','Recomendación','Oportunidad de mejora','No conformidad','Conformidad'];
@@ -626,6 +626,7 @@ async function entrar(){
 }
 async function recargar(){
   const d = await api('/inicio');
+  S.columnasFaltantes = d.columnasFaltantes || {};
   Object.assign(S, { perfil:d.perfil, cat:d.catalogos, cand:d.candidatos, docs:d.documentos, sols:d.solicitudes,
     obsAbiertas:d.observacionesAbiertas, totalReg:d.totalRegistros, hoy:d.hoy, prefijo:d.prefijo });
   S.backend = d.backend || '';
@@ -1373,6 +1374,10 @@ async function editarRegistro(recordId){
   }catch(e){ aviso(e.message, true); }
 }
 
+/* ¿Ya existe la columna en QuintaDB? Mientras no exista, la fecha no puede
+   exigirse, porque no habría dónde guardarla. */
+const fechaEvidenciaLista = () => !((S.columnasFaltantes && S.columnasFaltantes.registros) || []).includes('Fecha de la evidencia');
+
 function formRegistro(){
   const formatos = S.docs.filter(d=>d.estado==='Vigente' && /formato|matriz/i.test(d.tipo));
   const cats = (S.cat.categoriasRegistro||[]).map(c=>c.nombre);
@@ -1387,8 +1392,10 @@ function formRegistro(){
       ${notaF('Nombre claro de lo que se está registrando.')}</div>
     ${campoF('Programa', `<select id="gPrograma">${opciones(S.cat.programas.map(x=>x.nombre),'','Seleccione')}</select>`, origenLista('Programa'), {req:true})}
     ${campoF('Periodo', `<select id="gPeriodo">${opciones(S.cat.periodos.map(x=>x.nombre),'','Seleccione')}</select>`, origenLista('Periodo'), {req:true})}
-    ${campoF('Fecha de la evidencia', `<input type="date" id="gFecha">`,
-      notaF('<b>La fecha del hecho</b>, no la de hoy: el día del acta, de la sustentación o de la capacitación. Es la que ordena la lista, así que un acta del 9 de setiembre registrada hoy igual aparece antes que la del 16. Si no aplica, déjala vacía.'), {req:false})}
+    ${campoF('Fecha de la evidencia', `<input type="date" id="gFecha" max="${S.hoy}">`,
+      notaF('<b>La fecha del hecho</b>, no la de hoy: el día del acta, de la sustentación o de la capacitación. Es la que ordena la lista, así que un acta del 9 de setiembre registrada hoy igual aparece antes que la del 16.') +
+      (fechaEvidenciaLista() ? '' : notaF('⚠ Todavía no se puede guardar: falta crear la columna <b>«Fecha de la evidencia»</b> en la tabla RIID Registros de QuintaDB.')),
+      {req:fechaEvidenciaLista(), completo:false})}
     ${campoF('Descripción', `<textarea id="gDesc" placeholder="Qué contiene la evidencia"></textarea>`,
       notaF('Qué contiene y de qué actividad es. Ej.: «Lista de asistencia a la capacitación en sílabos del 12/09, 34 docentes».'), {req:true, completo:true})}
     ${campoF('Enlace de la evidencia (Drive)', `<input type="url" id="gEnlace" placeholder="https://drive.google.com/...">`,
@@ -1408,6 +1415,7 @@ async function guardarRegistro(){
     categoria: $('gCategoria')?$('gCategoria').value:'', fechaEvidencia: $('gFecha')?$('gFecha').value:'',
     programa:$('gPrograma').value, periodo:$('gPeriodo').value, descripcion:$('gDesc').value.trim(), enlace:$('gEnlace').value.trim(),
     retencion:$('gRet').value, disposicion:$('gDisp').value };
+  if (fechaEvidenciaLista() && !cuerpo.fechaEvidencia) return aviso('Indica la fecha de la evidencia (el día del acta o de la actividad)', true);
   try{
     let r = await api('/registro', cuerpo);
     // Un mismo enlace puede servir a varias evidencias: se avisa y decide la persona.
@@ -1617,7 +1625,7 @@ const FICHAS = {
     campos:{
       'Formato asociado':{ tipo:'formato', nota:'origen:Formato' },
       'Categoría':{ tipo:'catalogo', categoria:'categoriasRegistro', nota:'origen:Categoría de registro' },
-      'Fecha de la evidencia':{ tipo:'fecha', nota:'La fecha del hecho (el día del acta, la sustentación o la capacitación), no la del registro. Ordena la lista.' },
+      'Fecha de la evidencia':{ tipo:'fecha', req:true, nota:'La fecha del hecho (el día del acta, la sustentación o la capacitación), no la del registro. Ordena la lista. Es obligatoria.' },
       'Programa':{ tipo:'catalogo', categoria:'programas', nota:'origen:Programa' },
       'Periodo':{ tipo:'catalogo', categoria:'periodos', nota:'origen:Periodo' },
       'Descripción':{ tipo:'area' },
